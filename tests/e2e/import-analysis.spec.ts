@@ -30,6 +30,9 @@ test('import from Lichess, analyze on device, review a blunder', async ({ page }
 
   await rows.first().click();
   await expect(page.getByRole('heading', { name: /You vs Opponent/ })).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: /^Evaluation of this position: .*(equal|better|winning)/ }),
+  ).toBeVisible();
   const mistake = page.locator('.mistake-row').first();
   await expect(mistake).toContainText('Blunder');
   await expect(mistake).toContainText('3... Nf6');

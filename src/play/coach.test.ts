@@ -3,18 +3,33 @@ import { makeFen } from 'chessops/fen';
 import { fromFen, playUci } from '../detectors/board';
 import { positionKey } from '../engine/uci';
 import { makeGame } from '../../tests/support/games';
-import { gameEnd, refuses, skillFor } from './coach';
+import { gameEnd, judgeMove, refuses, skillFor } from './coach';
 import { buildIndex, yourVisits } from './positions';
 
 describe('coach', () => {
   it('refuses a move by strictness', () => {
     const best = { kind: 'cp' as const, value: 50 };
-    const slightlyWorse = { kind: 'cp' as const, value: 0 };
     const muchWorse = { kind: 'cp' as const, value: -300 };
-    expect(refuses('inaccuracies', best, slightlyWorse)).toBe(false);
-    expect(refuses('inaccuracies', best, { kind: 'cp', value: -40 })).toBe(true);
-    expect(refuses('mistakes', best, { kind: 'cp', value: -40 })).toBe(false);
+    expect(refuses('inaccuracies', best, { kind: 'cp', value: 30 })).toBe(false);
+    expect(refuses('inaccuracies', best, { kind: 'cp', value: 0 })).toBe(true);
+    expect(refuses('mistakes', best, { kind: 'cp', value: 0 })).toBe(false);
     expect(refuses('blunders', best, muchWorse)).toBe(true);
+  });
+
+  it('calls a pawn given away near equality a mistake', () => {
+    // +0.3 to -0.7: only 0.18 of winning chances, but a full pawn.
+    const v = judgeMove({ kind: 'cp', value: 30 }, { kind: 'cp', value: -70 });
+    expect(v.drop).toBeLessThan(0.2);
+    expect(v.class).toBe('mistake');
+    expect(refuses('mistakes', { kind: 'cp', value: 30 }, { kind: 'cp', value: -70 })).toBe(true);
+  });
+
+  it('calls a piece given away a blunder', () => {
+    expect(judgeMove({ kind: 'cp', value: 0 }, { kind: 'cp', value: -300 }).class).toBe('blunder');
+  });
+
+  it('ignores pawns when the game is already decided', () => {
+    expect(judgeMove({ kind: 'cp', value: 900 }, { kind: 'cp', value: 800 }).class).toBeNull();
   });
 
   it('maps rating to Skill Level within 0 to 20', () => {

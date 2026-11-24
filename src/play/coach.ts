@@ -4,14 +4,68 @@ import { winningChances, type Score } from '../engine/eval';
 import { positionKey } from '../engine/uci';
 import type { Side } from '../import/types';
 
-/** How strict the coach is: the smallest drop in winning chances it refuses. */
+export type MoveClass = 'inaccuracy' | 'mistake' | 'blunder';
+
+/** How strict the coach is: the mildest class of move it refuses. */
 export const STRICTNESS = {
-  blunders: 0.3,
-  mistakes: 0.2,
-  inaccuracies: 0.1,
-} as const;
+  blunders: 'blunder',
+  mistakes: 'mistake',
+  inaccuracies: 'inaccuracy',
+} as const satisfies Record<string, MoveClass>;
 
 export type Strictness = keyof typeof STRICTNESS;
+
+const RANK: Record<MoveClass, number> = { inaccuracy: 1, mistake: 2, blunder: 3 };
+
+/**
+ * Centipawn loss for each class. Winning chances alone treat a pawn given
+ * away near equality as an inaccuracy; a coach should call it a mistake.
+ */
+export const CP_LOSS = { inaccuracy: 40, mistake: 90, blunder: 200 } as const;
+/** Beyond this, in centipawns, the game is decided and pawns matter less. */
+export const DECIDED_CP = 700;
+
+const WC_LOSS = { inaccuracy: 0.1, mistake: 0.2, blunder: 0.3 } as const;
+
+/** Centipawns with mates counted as plus or minus 1000. */
+function cp(s: Score): number {
+  if (s.kind === 'mate') return s.value > 0 ? 1000 : -1000;
+  return Math.max(-1000, Math.min(1000, s.value));
+}
+
+export interface Verdict {
+  class: MoveClass | null;
+  /** Drop in winning chances, 0 to 2. */
+  drop: number;
+  /** Loss in centipawns, mates counted as 1000. */
+  cpLoss: number;
+}
+
+function byThreshold<T extends Record<MoveClass, number>>(value: number, t: T): MoveClass | null {
+  if (value >= t.blunder) return 'blunder';
+  if (value >= t.mistake) return 'mistake';
+  if (value >= t.inaccuracy) return 'inaccuracy';
+  return null;
+}
+
+/**
+ * Classifies a move by both scales and keeps the worse result. Scores are
+ * from the player's side: the best move's, then the played move's.
+ */
+export function judgeMove(best: Score, played: Score): Verdict {
+  const drop = moveDrop(best, played);
+  const b = cp(best);
+  const p = cp(played);
+  const cpLoss = Math.max(0, b - p);
+  const decided = (b >= DECIDED_CP && p >= DECIDED_CP) || (b <= -DECIDED_CP && p <= -DECIDED_CP);
+  const byWc = byThreshold(drop, WC_LOSS);
+  const byCp = decided ? null : byThreshold(cpLoss, CP_LOSS);
+  const cls = [byWc, byCp].reduce<MoveClass | null>(
+    (worst, c) => (c && (!worst || RANK[c] > RANK[worst]) ? c : worst),
+    null,
+  );
+  return { class: cls, drop, cpLoss };
+}
 
 export const STRICTNESS_TEXT: Record<Strictness, string> = {
   blunders: 'Refuse blunders only',
@@ -29,7 +83,8 @@ export function moveDrop(best: Score, played: Score): number {
 
 /** True when the coach sends the move back. */
 export function refuses(strictness: Strictness, best: Score, played: Score): boolean {
-  return moveDrop(best, played) >= STRICTNESS[strictness];
+  const v = judgeMove(best, played);
+  return !!v.class && RANK[v.class] >= RANK[STRICTNESS[strictness]];
 }
 
 /** Stockfish Skill Level for a practice opponent near the player's rating. */

@@ -31,6 +31,14 @@ export interface PracticeGame {
   startedAt: number;
   yourMoves: PlyRecord[];
   savedDrills: number;
+  /** Weak moves: refused ones, and ones the coach let through at this strictness. */
+  refusals?: {
+    ply: number;
+    san: string;
+    class: import('./coach').MoveClass;
+    tags: import('../detectors').TagName[];
+    accepted?: boolean;
+  }[];
   /** Where the start position came from, for the summary. */
   source?: { label: string; gameId?: string; ply?: number };
   end?: GameEnd | { kind: 'resigned' };

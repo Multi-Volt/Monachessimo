@@ -8,14 +8,15 @@ import { pvToSan, uciSquares, uciToSan } from '../../chess/san';
 import { standardUci } from '../../chess/uci';
 import { getRating } from '../../drills/data';
 import { Engine, type SearchResult } from '../../engine/engine';
-import { negate } from '../../engine/eval';
+import { negate, type Score } from '../../engine/eval';
 import { workerTransport } from '../../engine/worker';
 import type { Game, Side } from '../../import/types';
 import {
   endText,
   gameEnd,
-  moveDrop,
+  judgeMove,
   refuses,
+  type MoveClass,
   skillFor,
   skillLabel,
   STRICTNESS_TEXT,
@@ -31,8 +32,14 @@ import {
   type PracticeGame,
 } from '../../play/data';
 import { buildIndex, yourVisits, type Visit } from '../../play/positions';
+import { balance, playLine } from '../../detectors/board';
+import { explainMove } from '../../play/explain';
+import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
-import { formatDate } from '../../ui/format';
+import { EvalGraph } from '../../ui/EvalGraph';
+import { EvalBar, whiteScore } from '../../ui/EvalBar';
+import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
+import { formatDate, formatScore } from '../../ui/format';
 import { useAsync, useServices } from '../../ui/hooks';
 import { TypedMove } from '../drills/ConversionDrill';
 import { href, navigate } from '../router';
@@ -139,6 +146,8 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
     };
     await saveCurrent(services.repo, game);
     onStart(game);
+    // Show the game on the plain route, whatever start link led here.
+    navigate('play');
   };
 
   return (
@@ -204,31 +213,16 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
         </fieldset>
 
         {from === 'game' && chosen && (
-          <div class="field">
-            <label for="game">Game</label>
-            <select
-              id="game"
-              value={chosen.id}
-              onChange={(e) => (setGameId(e.currentTarget.value), setPly(0))}
-            >
-              {games.slice(0, 50).map((g) => (
-                <option key={g.id} value={g.id}>
-                  {formatDate(g.playedAt)} vs {opponentOf(g)}, {g.speed}
-                </option>
-              ))}
-            </select>
-            <label for="ply">
-              Start after {ply === 0 ? 'no moves' : `${moveLabel(ply - 1)} ${chosen.san[ply - 1]}`}
-            </label>
-            <input
-              id="ply"
-              type="range"
-              min={0}
-              max={Math.max(0, chosen.uci.length - 1)}
-              value={Math.min(ply, chosen.uci.length - 1)}
-              onInput={(e) => setPly(Number(e.currentTarget.value))}
-            />
-          </div>
+          <GamePicker
+            games={games}
+            game={chosen}
+            ply={Math.min(ply, chosen.uci.length - 1)}
+            onGame={(id) => {
+              setGameId(id);
+              setPly(0);
+            }}
+            onPly={setPly}
+          />
         )}
 
         {from === 'start' && route.kind !== 'fen' && (
@@ -288,6 +282,152 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
   );
 }
 
+/**
+ * Chooses a start position in one of the player's games: a board preview,
+ * the evaluation graph with the player's mistakes marked, the next move in
+ * the game with its verdict, and steps by move or by mistake.
+ */
+function GamePicker(props: {
+  games: Game[];
+  game: Game;
+  ply: number;
+  onGame: (id: string) => void;
+  onPly: (ply: number) => void;
+}) {
+  const services = useServices()!;
+  const { game, ply } = props;
+  const fens = useMemo(() => replay(game.uci), [game.id]);
+  const analysis = useAsync(async () => {
+    const a = await services.repo.getAnalysis(game.id);
+    return a?.settings === settingsKey(services.settings.analysis) ? a : undefined;
+  }, [game.id]);
+  const a = analysis.status === 'ok' ? analysis.value : undefined;
+  const reviews = new Map((a?.reviews ?? []).filter((r) => r.class).map((r) => [r.ply, r]));
+  const blunders = [...reviews.values()].filter((r) => r.class === 'blunder').map((r) => r.ply);
+  const mistakes = [...reviews.values()].filter((r) => r.class === 'mistake').map((r) => r.ply);
+  const yourErrors = [...blunders, ...mistakes].sort((x, y) => x - y);
+  const last = Math.max(0, game.uci.length - 1);
+  const next = reviews.get(ply);
+  const nextYours = (ply % 2 === 0) === (game.userColor === 'white');
+  const prevError = [...yourErrors].reverse().find((p) => p < ply);
+  const nextError = yourErrors.find((p) => p > ply);
+  const go = (p: number) => props.onPly(Math.max(0, Math.min(last, p)));
+
+  return (
+    <div class="field game-picker">
+      <label for="game">Game</label>
+      <select id="game" value={game.id} onChange={(e) => props.onGame(e.currentTarget.value)}>
+        {props.games.slice(0, 50).map((g) => (
+          <option key={g.id} value={g.id}>
+            {formatDate(g.playedAt)} vs {opponentOf(g)}, {g.speed}
+          </option>
+        ))}
+      </select>
+
+      <Board
+        fen={fens[ply]!}
+        orientation={game.userColor}
+        lastMove={ply > 0 ? uciSquares(game.uci[ply - 1]!) : undefined}
+        label={`Position after ${ply === 0 ? 'no moves' : `${moveLabel(ply - 1)} ${game.san[ply - 1]}`}`}
+      />
+
+      {a?.evals[ply] && (
+        <EvalBar
+          score={whiteScore(a.evals[ply]!, ply % 2 === 0 ? 'white' : 'black')}
+          label="Evaluation of this position"
+        />
+      )}
+      {a ? (
+        <EvalGraph
+          evals={a.evals}
+          marks={blunders}
+          minorMarks={mistakes}
+          current={ply}
+          onSelect={(p) => go(p)}
+        />
+      ) : (
+        <p class="hint">This game is not analyzed yet, so mistakes are not marked.</p>
+      )}
+
+      <label for="ply">
+        Start after {ply === 0 ? 'no moves' : `${moveLabel(ply - 1)} ${game.san[ply - 1]}`}
+      </label>
+      <input
+        id="ply"
+        type="range"
+        min={0}
+        max={last}
+        value={ply}
+        onInput={(e) => go(Number(e.currentTarget.value))}
+      />
+
+      <p class="game-picker__next" aria-live="polite">
+        {ply >= game.uci.length ? (
+          'The game ends here.'
+        ) : (
+          <>
+            Next in your game: {moveLabel(ply)} {game.san[ply]}
+            {next?.class ? CLASS_SYMBOL[next.class] : ''}
+            {nextYours ? ' (your move)' : ` (${opponentOf(game)})`}.
+            {next?.class && (
+              <>
+                {' '}
+                <span class={`tag tag--${next.class}`}>{CLASS_LABEL[next.class]}</span> Your
+                evaluation went from {formatScore(next.lines[0]?.score ?? next.playedScore)} to{' '}
+                {formatScore(next.playedScore)}.
+              </>
+            )}
+          </>
+        )}
+      </p>
+
+      <div class="row row--nav" role="group" aria-label="Choose the start move">
+        <button
+          type="button"
+          class="button"
+          disabled={prevError === undefined}
+          onClick={() => go(prevError!)}
+        >
+          Previous mistake
+        </button>
+        <button type="button" class="button" disabled={ply === 0} onClick={() => go(ply - 1)}>
+          Back
+        </button>
+        <button type="button" class="button" disabled={ply >= last} onClick={() => go(ply + 1)}>
+          Next
+        </button>
+        <button
+          type="button"
+          class="button"
+          disabled={nextError === undefined}
+          onClick={() => go(nextError!)}
+        >
+          Next mistake
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const SHOW_EVAL_KEY = 'monachessimo.showEval';
+
+/** Whether practice games show the evaluation; a per-device preference. */
+function readShowEval(): boolean {
+  try {
+    return localStorage.getItem(SHOW_EVAL_KEY) !== 'no';
+  } catch {
+    return true;
+  }
+}
+
+function writeShowEval(show: boolean): void {
+  try {
+    localStorage.setItem(SHOW_EVAL_KEY, show ? 'yes' : 'no');
+  } catch {
+    // Storage can be unavailable in private windows; the toggle still works for this visit.
+  }
+}
+
 function opponentOf(g: Game): string {
   return (g.userColor === 'white' ? g.black : g.white).name;
 }
@@ -304,9 +444,18 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const services = useServices()!;
   const [game, setGame] = useState(initial);
   const [phase, setPhase] = useState<Phase>({ kind: initial.end ? 'over' : 'thinking' });
-  const [refusal, setRefusal] = useState<string>();
+  const [refusal, setRefusal] = useState<{ cls: MoveClass; text: string }>();
+  /** The last refused move and the opponent's best line after it. */
+  const [refutation, setRefutation] = useState<{ uci: string; reply: string[] }>();
+  /** Step in "Show what happens": 1 is the refused move, then the reply line. */
+  const [replayStep, setReplayStep] = useState<number>();
+  /** A short note about an accepted but imperfect move. */
+  const [note, setNote] = useState<string>();
   const [hints, setHints] = useState(0);
   const [refusedHere, setRefusedHere] = useState(0);
+  /** Latest evaluation from White's side, from the coach's search. */
+  const [evalWhite, setEvalWhite] = useState<Score>();
+  const [showEval, setShowEval] = useState(() => readShowEval());
   /** Resign needs a second tap, so a stray tap does not end the game. */
   const [confirmResign, setConfirmResign] = useState(false);
   const opponent = useRef<Engine | undefined>(undefined);
@@ -365,6 +514,10 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     }
     if (yourTurn) {
       target.current = services.pool.search({ fen, depth: 14, movetime: 1500, multipv: 3 });
+      const side = pos.turn;
+      void target.current.then((t) => {
+        if (t.lines[0]) setEvalWhite(whiteScore(t.lines[0].score, side));
+      });
       setRefusedHere(0);
       setHints(0);
       savedHere.current = false;
@@ -388,40 +541,72 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const submit = async (uci: string) => {
     if (phase.kind !== 'your-move') return;
     setPhase({ kind: 'checking', uci });
+    setNote(undefined);
     const t = await target.current!;
     const best = t.lines[0]?.score ?? { kind: 'cp' as const, value: 0 };
     const after = pos.clone();
     after.play(parseUci(uci)!);
-    let played = t.lines.find((l) => l.pv[0] === uci)?.score;
-    if (!played) {
-      if (after.isCheckmate()) played = { kind: 'mate', value: 1 };
-      else if (after.isEnd()) played = { kind: 'cp', value: 0 };
-      else {
-        const r = await services.pool.search({
-          fen: makeFen(after.toSetup()),
-          depth: 12,
-          movetime: 800,
-        });
-        played = r.lines[0] ? negate(r.lines[0].score) : { kind: 'cp', value: 0 };
-      }
+    // Score of the played move and the opponent's best line after it.
+    const inLines = t.lines.find((l) => l.pv[0] === uci);
+    let played: Score;
+    let reply: string[] = [];
+    if (after.isCheckmate()) played = { kind: 'mate', value: 1 };
+    else if (after.isEnd()) played = { kind: 'cp', value: 0 };
+    else if (inLines) {
+      played = inLines.score;
+      reply = inLines.pv.slice(1);
+    } else {
+      const r = await services.pool.search({
+        fen: makeFen(after.toSetup()),
+        depth: 14,
+        movetime: 1200,
+      });
+      played = r.lines[0] ? negate(r.lines[0].score) : { kind: 'cp', value: 0 };
+      reply = r.lines[0]?.pv ?? [];
     }
+    const verdict = judgeMove(best, played);
+    const san = uciToSan(fen, uci);
+    const why = verdict.class
+      ? explainMove({
+          before: pos,
+          uci,
+          reply,
+          lines: t.lines,
+          best,
+          played,
+          verdict,
+          ply: game.moves.length,
+        })
+      : { reasons: [], tags: [] };
+
     if (refuses(game.strictness, best, played)) {
-      const drop = moveDrop(best, played);
-      const san = uciToSan(fen, uci);
-      const text = `${san} costs about ${Math.round(drop * 50)}% of your winning chances. Find a better move.`;
-      setRefusal(text);
+      const text = [`${san} is a ${verdict.class}.`, ...why.reasons, 'Find a better move.'].join(
+        ' ',
+      );
+      setRefusal({ cls: verdict.class!, text });
+      setRefutation({ uci, reply: reply.slice(0, 5) });
+      setReplayStep(undefined);
       setRefusedHere((n) => n + 1);
       setPhase({ kind: 'refused', uci, text });
+      const record = { ply: game.moves.length, san, class: verdict.class!, tags: why.tags };
+      let next = { ...game, refusals: [...(game.refusals ?? []), record] };
       // Save the position as a drill the first time a move is refused here.
       if (!savedHere.current) {
         savedHere.current = true;
         const rating = (await getRating(services.repo)).rating;
-        const drill = practiceDrill(fen, game.you, uci, drop, t.lines, rating, Date.now());
+        const drill = practiceDrill(fen, game.you, uci, verdict.drop, t.lines, rating, Date.now());
         if (drill) {
-          await services.repo.putDrills([drill]);
-          await save({ ...game, savedDrills: game.savedDrills + 1 });
+          await services.repo.putDrills([
+            {
+              ...drill,
+              tags: why.tags,
+              explanation: [...why.reasons, ...drill.explanation.slice(1)],
+            },
+          ]);
+          next = { ...next, savedDrills: next.savedDrills + 1 };
         }
       }
+      await save(next);
       setTimeout(
         () => setPhase((p) => (p.kind === 'refused' && p.uci === uci ? { kind: 'your-move' } : p)),
         REFUSED_MS,
@@ -429,6 +614,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       return;
     }
     setRefusal(undefined);
+    setRefutation(undefined);
+    setReplayStep(undefined);
+    // A move the coach lets through can still be imperfect: say so.
+    if (verdict.class)
+      setNote(
+        `Accepted, but ${san} is an ${verdict.class === 'inaccuracy' ? 'inaccuracy' : verdict.class}. ${why.reasons.join(' ')}`,
+      );
     await save({
       ...game,
       moves: [...game.moves, uci],
@@ -436,6 +628,14 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         ...game.yourMoves,
         { ply: game.moves.length, refused: refusedHere, hinted: hints > 0 },
       ],
+      ...(verdict.class
+        ? {
+            refusals: [
+              ...(game.refusals ?? []),
+              { ply: game.moves.length, san, class: verdict.class, tags: why.tags, accepted: true },
+            ],
+          }
+        : {}),
     });
   };
 
@@ -473,7 +673,15 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     };
   }, [phase.kind, fen]);
 
+  const replayLine = refutation ? [refutation.uci, ...refutation.reply] : [];
+  const replayPositions = useMemo(
+    () => (refutation ? playLine(pos, replayLine, replayLine.length) : []),
+    [refutation, fen],
+  );
+  const replaying = replayStep !== undefined && phase.kind === 'your-move';
   const shownFen = (() => {
+    if (replaying && replayPositions[replayStep])
+      return makeFen(replayPositions[replayStep]!.toSetup());
     if (phase.kind === 'checking' || phase.kind === 'refused') {
       const p = pos.clone();
       p.play(parseUci(phase.uci)!);
@@ -482,11 +690,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     return fen;
   })();
   const last =
-    phase.kind === 'checking' || phase.kind === 'refused'
-      ? uciSquares(phase.uci)
-      : game.moves.length
-        ? uciSquares(game.moves[game.moves.length - 1]!)
-        : undefined;
+    replaying && replayStep > 0
+      ? uciSquares(replayLine[replayStep - 1]!)
+      : phase.kind === 'checking' || phase.kind === 'refused'
+        ? uciSquares(phase.uci)
+        : game.moves.length
+          ? uciSquares(game.moves[game.moves.length - 1]!)
+          : undefined;
   const sans = pvToSan(game.startFen, game.moves, game.moves.length);
   const startPly =
     (Number(game.startFen.split(' ')[5] ?? 1) - 1) * 2 +
@@ -514,7 +724,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         orientation={game.you}
         lastMove={last}
         movable={
-          phase.kind === 'your-move'
+          phase.kind === 'your-move' && !replaying
             ? { color: game.you, dests: chessgroundDests(pos) as unknown as Map<string, string[]> }
             : undefined
         }
@@ -524,6 +734,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       {phase.kind === 'your-move' && (
         <p class="hint board-help">Drag a piece, or tap it and then tap where it goes.</p>
       )}
+      {showEval && evalWhite && <EvalBar score={evalWhite} label="Evaluation before your move" />}
       <TypedMove disabled={phase.kind !== 'your-move'} fen={fen} onMove={(u) => void submit(u)} />
 
       <div aria-live="polite">
@@ -531,10 +742,66 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           <p class="notice">The coach is checking {uciToSan(fen, phase.uci)}…</p>
         )}
         {refusal && (phase.kind === 'refused' || phase.kind === 'your-move') && (
-          <div class="panel panel--mistake" role="status">
+          <div class={`panel panel--${refusal.cls}`} role="status">
             <p>
-              <strong>Not good enough.</strong> {refusal}
+              <span class={`tag tag--${refusal.cls}`}>
+                {CLASS_SYMBOL[refusal.cls]} {CLASS_LABEL[refusal.cls]}
+              </span>{' '}
+              <strong>Not good enough.</strong> {refusal.text}
             </p>
+          </div>
+        )}
+        {refutation && phase.kind === 'your-move' && !replaying && replayLine.length > 1 && (
+          <p>
+            <button type="button" class="button" onClick={() => setReplayStep(1)}>
+              Show what happens
+            </button>
+          </p>
+        )}
+        {replaying && (
+          <div class="panel stepper">
+            <p class="num">
+              {(() => {
+                const sans = pvToSan(fen, replayLine, replayStep);
+                const mine = sans[0];
+                const then = sans.slice(1);
+                const at = replayPositions[replayStep]!;
+                const diff = balance(at, game.you) - balance(pos, game.you);
+                return `You play ${mine}${then.length ? `, then ${then.join(' ')}` : ''}. Material: ${
+                  diff === 0 ? 'even with now' : diff > 0 ? `${diff} up` : `${-diff} down`
+                }.${at.isCheckmate() ? ' Checkmate.' : ''}`;
+              })()}
+            </p>
+            <div class="row">
+              <button
+                type="button"
+                class="button"
+                disabled={replayStep <= 1}
+                onClick={() => setReplayStep(replayStep - 1)}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                class="button"
+                disabled={replayStep >= replayPositions.length - 1}
+                onClick={() => setReplayStep(replayStep + 1)}
+              >
+                Forward
+              </button>
+              <button
+                type="button"
+                class="button button--primary stepper__done"
+                onClick={() => setReplayStep(undefined)}
+              >
+                Back to your move
+              </button>
+            </div>
+          </div>
+        )}
+        {note && !refusal && (
+          <div class="panel panel--inaccuracy" role="status">
+            <p>{note}</p>
           </div>
         )}
       </div>
@@ -569,6 +836,17 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       )}
 
       <div class="row row--actions">
+        <button
+          type="button"
+          class="button"
+          aria-pressed={showEval}
+          onClick={() => {
+            setShowEval(!showEval);
+            writeShowEval(!showEval);
+          }}
+        >
+          {showEval ? 'Hide evaluation' : 'Show evaluation'}
+        </button>
         {phase.kind === 'your-move' && hints < hintText.length && (
           <button type="button" class="button" onClick={() => setHints((h) => h + 1)}>
             {hints === 0 ? 'Hint' : 'Another hint'}
@@ -601,6 +879,41 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         </div>
       )}
     </section>
+  );
+}
+
+/** The patterns behind this game's weak moves, most frequent first. */
+function PatternList({ game }: { game: PracticeGame }) {
+  const counts = new Map<string, number>();
+  for (const r of game.refusals ?? [])
+    for (const t of r.tags) counts.set(t, (counts.get(t) ?? 0) + 1);
+  const weak = game.refusals ?? [];
+  if (weak.length === 0) return <p>The coach found no weak moves in this game.</p>;
+  return (
+    <div class="panel">
+      <h2>What to remember</h2>
+      <ul class="plain-list">
+        {weak.map((r) => (
+          <li key={`${r.ply}-${r.san}`}>
+            <span>
+              {moveLabel(r.ply)} {r.san}
+              {CLASS_SYMBOL[r.class]}
+              {r.accepted ? ' (let through)' : ''}
+            </span>
+            <span class="hint">{CLASS_LABEL[r.class]}</span>
+          </li>
+        ))}
+      </ul>
+      {counts.size > 0 && (
+        <p class="hint">
+          Patterns:{' '}
+          {[...counts]
+            .sort((a, b) => b[1] - a[1])
+            .map(([t, n]) => `${TAG_INFO[t as keyof typeof TAG_INFO].label} (${n})`)
+            .join(', ')}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -637,6 +950,7 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
           <span>Needed a hint</span> <span>{hinted}</span>
         </li>
       </ul>
+      <PatternList game={game} />
       {game.savedDrills > 0 && (
         <p>
           {game.savedDrills} {game.savedDrills === 1 ? 'position was' : 'positions were'} saved as

@@ -5,6 +5,8 @@ interface Props {
   evals: (Score | null)[];
   /** Plies to mark, for example blunders. */
   marks: number[];
+  /** Plies to mark more quietly, for example mistakes. */
+  minorMarks?: number[];
   current: number;
   onSelect: (position: number) => void;
 }
@@ -13,7 +15,7 @@ interface Props {
  * Winning chances for White across the game. Values above the middle line
  * favor White. Tapping the graph jumps to that position.
  */
-export function EvalGraph({ evals, marks, current, onSelect }: Props) {
+export function EvalGraph({ evals, marks, minorMarks = [], current, onSelect }: Props) {
   const w = 300;
   const h = 64;
   const n = Math.max(1, evals.length - 1);
@@ -39,6 +41,15 @@ export function EvalGraph({ evals, marks, current, onSelect }: Props) {
     >
       <polygon class="eval-graph__area" points={`0,${h} ${points} ${w},${h}`} />
       <line class="eval-graph__mid" x1="0" x2={w} y1={h / 2} y2={h / 2} />
+      {minorMarks.map((p) => (
+        <circle
+          key={`m${p}`}
+          class="eval-graph__mark eval-graph__mark--minor"
+          cx={x(p + 1)}
+          cy={y(p + 1)}
+          r="2.5"
+        />
+      ))}
       {marks.map((p) => (
         <circle key={p} class="eval-graph__mark" cx={x(p + 1)} cy={y(p + 1)} r="3" />
       ))}

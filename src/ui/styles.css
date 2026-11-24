@@ -2,22 +2,22 @@
    Keep colors in the tokens; screens never use raw hex values. */
 
 :root {
-  --bg: #f8f4ec;
-  --card: #fdfbf6;
-  --raised: #f0e9dc;
+  --bg: var(--theme-bg-light, #f8f4ec);
+  --card: var(--theme-card-light, #fdfbf6);
+  --raised: var(--theme-raised-light, #f0e9dc);
   --text: #221d17;
   --text-2: #5e554a;
   --muted: #72685c;
   --hairline: rgb(34 29 23 / 0.1);
   --hairline-strong: rgb(34 29 23 / 0.22);
-  --accent: #a84b24;
+  --accent: var(--theme-accent-light, #a84b24);
   --on-accent: #ffffff;
   --good: #566426;
   --blunder: #9b1d35;
   --mistake: #855600;
   --inaccuracy: #4b5f70;
   --danger: var(--blunder);
-  --focus: #a84b24;
+  --focus: var(--accent);
   --shadow: 0 1px 2px rgb(34 29 23 / 0.06);
 
   --sq-light: #ecdcbc;
@@ -45,21 +45,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #171411;
-    --card: #1f1b17;
-    --raised: #29241f;
+    --bg: var(--theme-bg-dark, #171411);
+    --card: var(--theme-card-dark, #1f1b17);
+    --raised: var(--theme-raised-dark, #29241f);
     --text: #f0e8dc;
     --text-2: #b5ab9c;
     --muted: #958b7c;
     --hairline: rgb(240 232 220 / 0.1);
     --hairline-strong: rgb(240 232 220 / 0.22);
-    --accent: #e3926a;
+    --accent: var(--theme-accent-dark, #e3926a);
     --on-accent: #1d120c;
     --good: #aebd72;
     --blunder: #f08aa0;
     --mistake: #e2b45e;
     --inaccuracy: #9fb5c8;
-    --focus: #e3926a;
+    --focus: var(--accent);
     --shadow: none;
     --graph-bg: #0f0d0b;
     color-scheme: dark;
@@ -1164,4 +1164,58 @@ input[aria-invalid='true'] {
   border: 1px solid var(--hairline-strong);
   border-radius: var(--r-control);
   background: none;
+}
+
+.eval-graph__mark--minor {
+  fill: #e2b45e;
+}
+
+.game-picker .board {
+  margin: var(--s2) 0 var(--s3);
+}
+
+.game-picker .eval-graph {
+  margin-bottom: var(--s2);
+}
+
+.game-picker__next {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-picker .row--nav > .button {
+  flex: 1 1 calc(50% - var(--s2));
+}
+
+/* Evaluation bar: White's share on the left, from White's side. */
+
+.eval-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.eval-bar__track {
+  flex: 0 0 96px;
+  height: 10px;
+  border-radius: 5px;
+  background: #2a2520;
+  outline: 1px solid var(--hairline-strong);
+  overflow: hidden;
+}
+
+.eval-bar__white {
+  display: block;
+  height: 100%;
+  background: #f4efe6;
+}
+
+.eval-bar__text {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.stepper .row > .stepper__done {
+  flex-basis: 100%;
 }

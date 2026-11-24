@@ -5,6 +5,7 @@ import { settingsKey, type PlyReview } from '../../analysis/types';
 import { pvToSan, uciSquares, uciToSan } from '../../chess/san';
 import { Board } from '../../ui/Board';
 import { EvalGraph } from '../../ui/EvalGraph';
+import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { formatDate, formatScore } from '../../ui/format';
 import { useAsync, useRunner, useServices } from '../../ui/hooks';
 import { href } from '../router';
@@ -101,6 +102,13 @@ export function Review({
         shapes={shapes as never}
         label={`Position after ${pos === 0 ? 'no moves' : `${moveLabel(pos - 1)} ${game.san[pos - 1]}`}`}
       />
+
+      {analysis?.evals[pos] && (
+        <EvalBar
+          score={whiteScore(analysis.evals[pos]!, pos % 2 === 0 ? 'white' : 'black')}
+          label="Evaluation of this position"
+        />
+      )}
 
       <div class="row row--nav" role="group" aria-label="Move navigation">
         <button type="button" class="button" onClick={() => setPos(0)} disabled={pos === 0}>
