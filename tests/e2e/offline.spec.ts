@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { collectErrors, mockLichess, typeMove, waitForMoveTurn } from './support';
+import { collectErrors, mockLichess, typeMove } from './support';
 
 test('works in airplane mode after the first visit', async ({ page, context }) => {
   test.setTimeout(150_000);

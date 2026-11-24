@@ -1,4 +1,4 @@
-/* global process, console */
+/* global process, console, setTimeout, indexedDB */
 // Lighthouse accessibility audit of every screen at phone size, with stored
 // data so screens like the dashboard and drills have content.
 //
