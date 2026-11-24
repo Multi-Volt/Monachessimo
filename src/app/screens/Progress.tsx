@@ -76,7 +76,7 @@ export function Progress() {
               </button>
             )}
             <a class="button" href={href('games')}>
-              Open games
+              See your games
             </a>
           </div>
         )}

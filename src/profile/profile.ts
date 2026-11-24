@@ -99,7 +99,8 @@ export function summarize(profile: Weakness[], gameCount: number): string[] {
   const top = profile.filter((w) => w.ranked).slice(0, 3);
   if (top.length === 0) return [];
   const lines = top.map((w, i) => {
-    const rate = w.per100 >= 1 ? `about ${Math.round(w.per100)} times` : 'less than once';
+    const n = Math.round(w.per100);
+    const rate = w.per100 < 0.5 ? 'less than once' : n === 1 ? 'about once' : `about ${n} times`;
     const head = i === 0 ? 'Your most costly habit' : 'Next';
     return `${head}: you ${TAG_INFO[w.tag].summary}. It happened in ${w.games} of ${gameCount} games, ${rate} per 100 moves.`;
   });

@@ -61,8 +61,12 @@ jobs:
           total=$(du -sb dist | cut -f1)
           echo "dist is $total bytes"
           if [ "$total" -gt 1000000000 ]; then echo "dist is over 1 GB"; exit 1; fi
+      - name: Check size budgets
+        run: node scripts/check-budget.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Check timing budgets
+        run: npx playwright test -c playwright.perf.config.ts ci.perf.ts
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

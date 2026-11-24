@@ -3,8 +3,8 @@ import preact from '@preact/preset-vite';
 import type { Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { viteSingleFile } from 'vite-plugin-singlefile';
-import { starterPuzzles } from './scripts/starter-puzzles';
-import { engineInline } from './scripts/engine-inline';
+import { starterPuzzles } from './scripts/starter-puzzles.ts';
+import { engineInline } from './scripts/engine-inline.ts';
 
 // GitHub Pages serves a project site from /<repo>/. CI sets BASE_PATH from the
 // repository name. Cloudflare Pages and local previews use the root path.

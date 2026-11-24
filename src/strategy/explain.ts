@@ -13,10 +13,9 @@ export function describeChanges(before: Features, after: Features): string[] {
     out.push(
       `Your king's pawn shield went from ${plural(before.pawnShield, 'pawn')} to ${after.pawnShield}.`,
     );
-  if (d('openFilesNearKing') > 0)
-    out.push(
-      `${plural(d('openFilesNearKing'), 'more file')} beside your king ${d('openFilesNearKing') === 1 ? 'is' : 'are'} open.`,
-    );
+  if (d('openFilesNearKing') === 1) out.push('A file beside your king is now open.');
+  if (d('openFilesNearKing') > 1)
+    out.push(`${d('openFilesNearKing')} files beside your king are now open.`);
   const pressure = (f: Features) => f.kingAttackers - f.kingDefenders;
   if (pressure(after) - pressure(before) >= 2)
     out.push(
@@ -35,11 +34,11 @@ export function describeChanges(before: Features, after: Features): string[] {
   if (d('passedPawns') > 0) out.push(`You gained ${plural(d('passedPawns'), 'passed pawn')}.`);
   if (d('mobility') <= -6)
     out.push(
-      `Your pieces reach ${-d('mobility')} fewer squares (${after.mobility} from ${before.mobility}).`,
+      `Your pieces reach ${-d('mobility')} fewer squares, ${after.mobility} instead of ${before.mobility}.`,
     );
   if (d('mobility') >= 6)
     out.push(
-      `Your pieces reach ${d('mobility')} more squares (${after.mobility} from ${before.mobility}).`,
+      `Your pieces reach ${d('mobility')} more squares, ${after.mobility} instead of ${before.mobility}.`,
     );
   if (d('bishopPair') < 0) out.push('You gave up the bishop pair.');
   if (d('outposts') > 0) out.push(`You placed ${plural(d('outposts'), 'piece')} on an outpost.`);

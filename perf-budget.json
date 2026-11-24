@@ -1,0 +1,8 @@
+{
+  "note": "CI fails when a measurement passes its budget. Raise a budget only on purpose, with a line in docs/DECISIONS.md.",
+  "entryJsGzipKb": 90,
+  "cssGzipKb": 12,
+  "engineWasmKb": 2048,
+  "engineReadyMs": 5000,
+  "tenGamesSeconds": 180
+}

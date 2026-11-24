@@ -36,7 +36,7 @@ function InstallPanel() {
         <a href="offline/monachessimo.html" download="monachessimo.html">
           Download the offline copy
         </a>{' '}
-        <span class="hint">(one HTML file, about 3 MB)</span>
+        <span class="hint">It is one HTML file of about 3 MB.</span>
       </p>
       <p class="hint">
         {pwa.offlineReady

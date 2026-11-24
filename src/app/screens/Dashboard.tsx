@@ -31,6 +31,12 @@ export function Dashboard() {
   const d = data.value!;
   if (d.games.length === 0) return <Connect />;
 
+  // The top habit, and a line about improvement when there is one. The list
+  // below covers the rest.
+  const lines = summarize(d.weaknesses, d.analyzed.length);
+  const summary = [lines[0], ...lines.filter((l) => l.includes('less often'))].filter(
+    Boolean,
+  ) as string[];
   const ranked = d.weaknesses.filter((w) => w.ranked);
   const pending = d.weaknesses.filter((w) => !w.ranked);
   const maxImpact = Math.max(...ranked.map((w) => w.impact), 0.0001);
@@ -53,9 +59,9 @@ export function Dashboard() {
         </p>
       )}
 
-      {summarize(d.weaknesses, d.analyzed.length).length > 0 && (
+      {summary.length > 0 && (
         <div class="summary">
-          {summarize(d.weaknesses, d.analyzed.length).map((line) => (
+          {summary.map((line) => (
             <p key={line}>{line}</p>
           ))}
         </div>

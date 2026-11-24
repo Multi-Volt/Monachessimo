@@ -4,9 +4,18 @@ Monachessimo is a free chess trainer that runs in your browser. You enter a Lich
 
 Live site: https://multi-volt.github.io/Monachessimo/
 
+<p>
+  <img src="docs/screenshots/light-03-dashboard.png" width="200" alt="Dashboard ranking weaknesses with sample sizes">
+  <img src="docs/screenshots/light-07-drill.png" width="200" alt="A drill from one of your games">
+  <img src="docs/screenshots/light-06-review.png" width="200" alt="Game review with the blunder marked">
+  <img src="docs/screenshots/dark-07-drill.png" width="200" alt="A theme puzzle in the dark theme">
+</p>
+
+The screenshots use generated test games.
+
 ## Status
 
-Phases 0 to 4 of [BUILD_PLAN.md](BUILD_PLAN.md) are built: import, on-device analysis, the weakness profile, drills from your games, and theme puzzles.
+All eight phases of [BUILD_PLAN.md](BUILD_PLAN.md) are built: import, on-device analysis, the weakness profile, drills from your games, theme puzzles, offense and strategy drills, offline use, and the polish pass. Testing on real phones is still to do. See `docs/DECISIONS.md`.
 
 ## Privacy
 
@@ -28,7 +37,7 @@ npm run test:e2e     # Playwright at a 360x740 phone viewport, against the build
 
 Before the first `npm run test:e2e`, run `npx playwright install chromium`.
 
-Theme puzzles come from the Lichess puzzle database (CC0). To build the puzzle files locally, run:
+Theme puzzles come from the Lichess puzzle database, released under CC0. To build the puzzle files locally, run:
 
 ```sh
 node scripts/build-puzzle-shards.ts            # downloads 310 MB, writes public/puzzles/
@@ -46,7 +55,7 @@ BASE_PATH=/Monachessimo/ npm run build
 
 After the first visit the site works without a connection: the app, the engine and any puzzles you have opened are cached by a service worker. On Android Chrome you can install it from Settings. On iPhone and iPad, open it in Safari, tap Share, then Add to Home Screen.
 
-There is also a single-file copy, `offline/monachessimo.html` on the site (about 3 MB), with the engine and a small starter set of puzzles inside it. Browsers limit what a page opened straight from a file can do, so serve it locally:
+The site also offers a single-file copy at `offline/monachessimo.html`. It is about 3 MB and holds the engine and a small starter set of puzzles. Browsers limit what a page opened straight from a file can do, so serve it locally:
 
 ```sh
 mkdir monachessimo && cd monachessimo

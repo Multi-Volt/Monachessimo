@@ -28,7 +28,7 @@ test('works in airplane mode after the first visit', async ({ page, context }) =
   // The engine runs from the cache: a move outside the saved lines is checked live.
   await page.goto('./#/train');
   // a6 is legal in both drill positions and is not in the saved lines.
-  await page.getByLabel('Type a move').fill(goal.includes('Qh4') ? 'a6' : 'a6');
+  await page.getByLabel('Type a move').fill('a6');
   await page.getByRole('button', { name: 'Play' }).click();
   await expect(page.getByRole('status')).toContainText(/Correct\.|Not this one\./, {
     timeout: 30_000,

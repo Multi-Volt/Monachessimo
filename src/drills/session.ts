@@ -13,6 +13,9 @@ export interface SessionOptions {
 }
 
 export const SESSION_SIZE = 10;
+/** Most plan and conversion drills in one session. They come after the move drills. */
+export const MAX_PLAN = 2;
+export const MAX_CONVERSION = 1;
 
 /**
  * Picks a session: due reviews first, oldest due first, then new drills
@@ -60,7 +63,18 @@ export function buildSession(
       added++;
     }
   }
-  return picked;
+  return capSlowDrills(picked);
+}
+
+/**
+ * Keeps at most MAX_PLAN plan drills and MAX_CONVERSION conversion drills,
+ * and moves them after the move drills. Both take longer than a move drill.
+ */
+export function capSlowDrills(list: Drill[]): Drill[] {
+  const moves = list.filter((d) => d.type !== 'plan' && d.type !== 'conversion');
+  const plans = list.filter((d) => d.type === 'plan').slice(0, MAX_PLAN);
+  const conversions = list.filter((d) => d.type === 'conversion').slice(0, MAX_CONVERSION);
+  return [...moves, ...plans, ...conversions];
 }
 
 /** Position key part of a drill id, `type:key`. */

@@ -22,7 +22,7 @@ test('import from Lichess, analyze on device, review a blunder', async ({ page }
   expect(urls[0]).toContain('max=25');
   await expect(page.getByText('Finished. Analyzed 2 of 2 games.')).toBeVisible({ timeout: 90_000 });
 
-  await page.getByRole('link', { name: 'Open games' }).click();
+  await page.getByRole('link', { name: 'See your games' }).click();
   const rows = page.locator('.game-row');
   await expect(rows).toHaveCount(2);
   await expect(rows.first()).toContainText('Lost vs Opponent');

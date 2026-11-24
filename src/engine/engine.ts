@@ -59,6 +59,7 @@ export class Engine {
     transport.onLine((line) => {
       for (const l of [...this.listeners]) l(line);
     });
+    const started = performance.now();
     this.ready = (async () => {
       await this.send('uci', (l) => l === 'uciok');
       this.transport.post(`setoption name Hash value ${options.hashMb ?? 16}`);
@@ -66,6 +67,12 @@ export class Engine {
       for (const [name, value] of Object.entries(options.uci ?? {}))
         this.transport.post(`setoption name ${name} value ${value}`);
       await this.isReady();
+      // The first engine to start records how long loading took, for the perf budget.
+      if (
+        typeof performance.measure === 'function' &&
+        !performance.getEntriesByName('engine-ready').length
+      )
+        performance.measure('engine-ready', { start: started, end: performance.now() });
     })();
   }
 
