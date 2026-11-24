@@ -13,7 +13,8 @@ import { acceptable, judge } from '../../drills/answers';
 import { getRating, recordPracticeDay, saveRating, syncDrills } from '../../drills/data';
 import { updateRating } from '../../drills/rating';
 import { newReview, schedule } from '../../drills/scheduler';
-import { buildSession, dayKey, streak } from '../../drills/session';
+import { buildSession, dayKey, SESSION_SIZE, streak } from '../../drills/session';
+import { themeDrills } from '../../puzzles/loader';
 import type { Drill, Grade, ReviewState } from '../../drills/types';
 import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
@@ -37,10 +38,28 @@ export function Train({ tag }: { tag?: TagName | undefined }) {
       services.settings.analysis,
     );
     const priority = profile.weaknesses.filter((w) => w.ranked).map((w) => w.tag);
-    const session = buildSession(drills, reviews, Date.now(), {
+    const now = Date.now();
+    const rating = await getRating(services.repo);
+    const session = buildSession(drills, reviews, now, {
       ...(tag ? { tag } : {}),
       priority,
     });
+    // Fill the rest of the session with Lichess puzzles for the same weaknesses.
+    const room = SESSION_SIZE - session.length;
+    const themeTags = tag ? [tag] : priority.slice(0, 3);
+    if (room > 0 && themeTags.length) {
+      const seen = new Set([...reviews.keys(), ...drills.map((x) => x.id)]);
+      const puzzles = await themeDrills(
+        themeTags,
+        rating.rating,
+        seen,
+        Math.ceil(room / themeTags.length),
+        now,
+      );
+      const picked = puzzles.slice(0, room);
+      await services.repo.putDrills(picked);
+      session.push(...picked);
+    }
     const games = new Map(profile.games.map((g) => [g.id, g]));
     const nextDue = [...reviews.values()]
       .map((r) => r.due)
@@ -52,7 +71,7 @@ export function Train({ tag }: { tag?: TagName | undefined }) {
       games,
       total: drills.length,
       nextDue,
-      rating: await getRating(services.repo),
+      rating,
     };
   }, [services, tag, run]);
 
@@ -135,9 +154,19 @@ function Session(props: {
   const [typedError, setTypedError] = useState<string>();
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
   const [rating, setRating] = useState(props.startRating);
+  /** Moves already played in a multi-move puzzle, both sides. */
+  const [applied, setApplied] = useState<string[]>([]);
   const drill = queue[index];
 
-  const pos = useMemo(() => (drill ? fromFen(drill.fen) : undefined), [drill]);
+  const pos = useMemo(() => {
+    if (!drill) return undefined;
+    const p = fromFen(drill.fen);
+    for (const u of applied) {
+      const m = parseUci(u);
+      if (m && p.isLegal(m)) p.play(m);
+    }
+    return p;
+  }, [drill, applied]);
   const shownFen = useMemo(() => {
     if (!drill || !pos) return '';
     if (phase.kind === 'wrong' || phase.kind === 'solved' || phase.kind === 'checking') {
@@ -146,10 +175,11 @@ function Session(props: {
       if (m && p.isLegal(m)) p.play(m);
       return makeFen(p.toSetup());
     }
-    return drill.fen;
+    return makeFen(pos.toSetup());
   }, [drill, pos, phase]);
 
   useEffect(() => {
+    setApplied([]);
     setHintsUsed(0);
     setFailed(false);
     setTyped('');
@@ -184,6 +214,7 @@ function Session(props: {
 
   const submit = async (uci: string) => {
     if (phase.kind !== 'solving' && phase.kind !== 'wrong') return;
+    if (drill.solution) return submitStep(drill.solution, uci);
     let verdict = judge(drill, uci);
     setPhase({ kind: 'checking', uci });
     if (verdict === 'unknown') {
@@ -205,13 +236,37 @@ function Session(props: {
       await finish(failed ? 'fail' : hintsUsed > 0 ? 'hard' : 'good');
     } else {
       setFailed(true);
-      const san = uciToSan(drill.fen, uci);
+      const san = uciToSan(fenNow, uci);
       const reason =
         drill.source?.played === uci
           ? `${san} is the move from your game.`
           : `${san} gives away more than the best move.`;
       setPhase({ kind: 'wrong', uci, reason });
     }
+  };
+
+  /** One move of a multi-move puzzle. Only the listed move counts, or any mate on the last move. */
+  const submitStep = async (solution: string[], uci: string) => {
+    const step = applied.length;
+    const after = pos.clone();
+    after.play(parseUci(uci)!);
+    const last = step >= solution.length - 1;
+    const ok = uci === solution[step] || (last && after.isCheckmate());
+    const fenNow = makeFen(pos.toSetup());
+    if (!ok) {
+      setFailed(true);
+      setPhase({ kind: 'wrong', uci, reason: `${uciToSan(fenNow, uci)} is not the solution.` });
+      return;
+    }
+    if (last) {
+      setPhase({ kind: 'solved', uci });
+      await finish(failed ? 'fail' : hintsUsed > 0 ? 'hard' : 'good');
+      return;
+    }
+    setPhase({ kind: 'checking', uci });
+    await new Promise((r) => setTimeout(r, 350));
+    setApplied((a) => [...a, uci, solution[step + 1]!]);
+    setPhase({ kind: 'solving' });
   };
 
   const onBoardMove = (orig: string, dest: string) => {
@@ -242,28 +297,26 @@ function Session(props: {
     setPhase({ kind: 'shown' });
     await finish('fail');
   };
+  const fenNow = makeFen(pos.toSetup());
+  const nextBest = drill.solution ? drill.solution[applied.length]! : drill.line[0]!;
 
   const game = drill.source ? props.games.get(drill.source.gameId) : undefined;
   const opp = game ? (game.userColor === 'white' ? game.black : game.white) : undefined;
   const done = phase.kind === 'solved' || phase.kind === 'shown';
-  const bestSan = uciToSan(drill.fen, drill.line[0]!);
+  const bestSan = uciToSan(fenNow, nextBest);
   const lastMove =
     phase.kind === 'wrong' || phase.kind === 'solved' || phase.kind === 'checking'
       ? uciSquares(phase.uci)
-      : undefined;
+      : applied.length
+        ? uciSquares(applied[applied.length - 1]!)
+        : undefined;
   const shapes =
-    phase.kind === 'shown' || (phase.kind === 'solved' && phase.uci !== drill.line[0])
-      ? [
-          {
-            orig: uciSquares(drill.line[0]!)[0],
-            dest: uciSquares(drill.line[0]!)[1],
-            brush: 'green',
-          },
-        ]
+    phase.kind === 'shown' || (phase.kind === 'solved' && phase.uci !== nextBest)
+      ? [{ orig: uciSquares(nextBest)[0], dest: uciSquares(nextBest)[1], brush: 'green' }]
       : [];
 
   return (
-    <section class="screen screen--drill" aria-labelledby="drill-title">
+    <section class="screen screen--drill" aria-labelledby="drill-title" data-drill-id={drill.id}>
       <p class="drill__count num">
         {props.title} · {Math.min(index + 1, queue.length)} of {queue.length}
       </p>
@@ -321,7 +374,11 @@ function Session(props: {
 
       <div aria-live="polite">
         {phase.kind === 'checking' && (
-          <p class="notice">Checking {uciToSan(drill.fen, phase.uci)} with the engine…</p>
+          <p class="notice">
+            {drill.solution
+              ? `${uciToSan(fenNow, phase.uci)} is right. Your opponent replies.`
+              : `Checking ${uciToSan(fenNow, phase.uci)} with the engine…`}
+          </p>
         )}
         {phase.kind === 'wrong' && (
           <div class="panel panel--mistake" role="status">
@@ -333,17 +390,26 @@ function Session(props: {
         {phase.kind === 'solved' && (
           <div class="panel panel--good" role="status">
             <p>
-              <strong>Correct.</strong> {uciToSan(drill.fen, phase.uci)} keeps{' '}
-              {formatScore(drill.bestScore)}
-              {phase.uci !== drill.line[0] ? `. The engine's first choice was ${bestSan}.` : '.'}
+              <strong>Correct.</strong>{' '}
+              {drill.solution
+                ? `${uciToSan(fenNow, phase.uci)} completes the puzzle.`
+                : `${uciToSan(fenNow, phase.uci)} keeps ${formatScore(drill.bestScore)}${
+                    phase.uci !== nextBest ? `. The engine's first choice was ${bestSan}.` : '.'
+                  }`}
             </p>
           </div>
         )}
         {phase.kind === 'shown' && (
           <div class="panel panel--mistake" role="status">
             <p>
-              <strong>The answer is {bestSan}.</strong> Engine line:{' '}
-              {pvToSan(drill.fen, drill.line, 6).join(' ')}.
+              <strong>The answer is {bestSan}.</strong>{' '}
+              {drill.solution ? 'Solution' : 'Engine line'}:{' '}
+              {pvToSan(
+                fenNow,
+                drill.solution ? drill.solution.slice(applied.length) : drill.line,
+                8,
+              ).join(' ')}
+              .
             </p>
           </div>
         )}

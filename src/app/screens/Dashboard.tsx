@@ -49,7 +49,7 @@ export function Dashboard() {
       {busy && (
         <p class="notice">
           Analysis is {runner.status === 'paused' ? 'paused' : 'running'}. The list updates as games
-          finish. <a href={href('progress')}>See progress</a>
+          finish. <a href={href('analysis')}>See progress</a>
         </p>
       )}
 
@@ -65,7 +65,7 @@ export function Dashboard() {
         <div class="panel">
           <p>No pattern has come up five times yet. More analyzed games give a clearer picture.</p>
           {d.analyzed.length === 0 && !busy && (
-            <a class="button button--primary" href={href('progress')}>
+            <a class="button button--primary" href={href('analysis')}>
               Analyze your games
             </a>
           )}
@@ -95,11 +95,14 @@ export function Dashboard() {
         </div>
       )}
 
-      <p>
+      <div class="row">
         <a class="button" href={href('import')}>
           Import new games
         </a>
-      </p>
+        <a class="button" href={href('progress')}>
+          Your progress
+        </a>
+      </div>
     </section>
   );
 }

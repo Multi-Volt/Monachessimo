@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "band": 100,
+  "themes": {
+    "hangingPiece": {
+      "1500": { "file": "hangingPiece/1500.json", "count": 4 },
+      "2600": { "file": "hangingPiece/2600.json", "count": 4 }
+    },
+    "opening": { "1500": { "file": "opening/1500.json", "count": 4 } }
+  },
+  "puzzles": 12,
+  "bytes": 3000
+}

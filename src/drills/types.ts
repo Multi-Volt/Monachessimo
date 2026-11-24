@@ -18,6 +18,12 @@ export interface Drill {
   accepted: { uci: string; score: Score }[];
   /** Best line from the position, in UCI. */
   line: string[];
+  /**
+   * For multi-move puzzles: every move from the presented position, the
+   * player's moves at even indexes and the opponent's at odd ones. The
+   * player must play each of their moves; the last may be any mate.
+   */
+  solution?: string[];
   bestScore: Score;
   /** Hints from vague to exact. The last one names the move. */
   hints: string[];
@@ -27,6 +33,8 @@ export interface Drill {
   /** Difficulty on the puzzle rating scale. */
   rating: number;
   source?: { gameId: string; ply: number; played: string; playedSan: string };
+  /** For theme puzzles: the Lichess puzzle id and its themes. */
+  puzzle?: { id: string; theme: string };
   createdAt: number;
 }
 

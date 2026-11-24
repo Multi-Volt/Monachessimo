@@ -31,13 +31,31 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - name: Find the current puzzle database version
+        id: puzzles
+        run: |
+          modified=$(curl -sfI https://database.lichess.org/lichess_db_puzzle.csv.zst | grep -i '^last-modified:' | cut -d' ' -f2- | tr -dc 'A-Za-z0-9')
+          echo "key=lichess-puzzles-${modified}" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/monachessimo
+          key: ${{ steps.puzzles.outputs.key }}
+      - name: Download the puzzle database
+        run: |
+          f=~/.cache/monachessimo/lichess_db_puzzle.csv.zst
+          mkdir -p ~/.cache/monachessimo
+          [ -f "$f" ] || curl -sfL -A 'Monachessimo build (github.com/Multi-Volt/Monachessimo)' -o "$f" https://database.lichess.org/lichess_db_puzzle.csv.zst
+      - name: Build puzzle shards
+        run: node scripts/build-puzzle-shards.ts --input ~/.cache/monachessimo/lichess_db_puzzle.csv.zst
       - run: npx vite build
-      - name: Check shipped file sizes
-        # Cloudflare Pages rejects files over 25 MiB. Keep both hosts working.
+      - name: Check shipped sizes
+        # Cloudflare Pages rejects files over 25 MiB; GitHub Pages sites must stay under 1 GB.
         run: |
           big=$(find dist -type f -size +25M)
           if [ -n "$big" ]; then echo "Files over 25 MiB:"; echo "$big"; exit 1; fi
-          du -sh dist
+          total=$(du -sb dist | cut -f1)
+          echo "dist is $total bytes"
+          if [ "$total" -gt 1000000000 ]; then echo "dist is over 1 GB"; exit 1; fi
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v7

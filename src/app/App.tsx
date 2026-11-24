@@ -6,6 +6,7 @@ import type { TagName } from '../detectors';
 import { Connect } from './screens/Connect';
 import { Games } from './screens/Games';
 import { Progress } from './screens/Progress';
+import { Stats } from './screens/Stats';
 import { Review } from './screens/Review';
 import { Settings } from './screens/Settings';
 import { href, useRoute } from './router';
@@ -37,8 +38,11 @@ export function App() {
     case 'weakness':
       screen = <WeaknessDetail tag={arg as TagName} />;
       break;
-    case 'progress':
+    case 'analysis':
       screen = <Progress />;
+      break;
+    case 'progress':
+      screen = <Stats />;
       break;
     case 'games':
       screen = <Games />;
@@ -82,7 +86,11 @@ export function App() {
           const active =
             head === n.route ||
             (n.route === 'games' && head === 'game') ||
-            (n.route === '' && (head === 'import' || head === 'weakness' || head === 'progress'));
+            (n.route === '' &&
+              (head === 'import' ||
+                head === 'weakness' ||
+                head === 'analysis' ||
+                head === 'progress'));
           return (
             <a
               key={n.route}

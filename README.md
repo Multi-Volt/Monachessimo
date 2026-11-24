@@ -6,7 +6,7 @@ Live site: https://multi-volt.github.io/Monachessimo/
 
 ## Status
 
-Phase 0 of [BUILD_PLAN.md](BUILD_PLAN.md) is done. The live site is a placeholder page. Game import, analysis, and drills come in later phases.
+Phases 0 to 4 of [BUILD_PLAN.md](BUILD_PLAN.md) are built: import, on-device analysis, the weakness profile, drills from your games, and theme puzzles.
 
 ## Privacy
 
@@ -27,6 +27,14 @@ npm run test:e2e     # Playwright at a 360x740 phone viewport, against the build
 ```
 
 Before the first `npm run test:e2e`, run `npx playwright install chromium`.
+
+Theme puzzles come from the Lichess puzzle database (CC0). To build the puzzle files locally, run:
+
+```sh
+node scripts/build-puzzle-shards.ts            # downloads 310 MB, writes public/puzzles/
+```
+
+Without them the app works and skips theme puzzles.
 
 To build for GitHub Pages locally, set the base path to the repository name:
 

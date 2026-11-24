@@ -931,3 +931,94 @@ input[aria-invalid='true'] {
 .tally__cut {
   stroke-width: 2;
 }
+
+/* Charts: recessive grid and axes, one accent line. */
+
+.chart {
+  margin: 0 0 var(--s4);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: var(--s4);
+}
+
+.chart__title {
+  font-weight: 600;
+  margin-bottom: var(--s2);
+}
+
+.chart__plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+}
+
+.chart__grid {
+  stroke: var(--hairline);
+  stroke-width: 1;
+}
+
+.chart__axis {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart__line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart__cross {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.chart__dot {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+.chart__tip {
+  color: var(--text-2);
+  font-size: 14px;
+  margin: var(--s2) 0 0;
+}
+
+.chart__toggle {
+  margin-top: var(--s3);
+  min-height: var(--tap);
+}
+
+.chart__table,
+.trend-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart__table th,
+.chart__table td,
+.trend-table th,
+.trend-table td {
+  text-align: left;
+  padding: var(--s2) var(--s2) var(--s2) 0;
+  border-bottom: 1px solid var(--hairline);
+  font-weight: 400;
+}
+
+.trend-table thead th,
+.chart__table thead th {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.trend-table caption {
+  text-align: left;
+  margin-bottom: var(--s2);
+}

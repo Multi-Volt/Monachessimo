@@ -106,3 +106,21 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Streak.** A day counts when a session reaches its summary screen. The streak is the run of such days ending today or yesterday, drawn as tally marks.
 
 **2026-11-24. Mate decides the tags.** When `mateAllowed` or `mateMissed` fires, `pawnStructure` and `pieceActivity` are dropped. They only reflected the mating line taking pawns. `kingSafety` stays. Detector version 2.
+
+## Phase 4
+
+**2026-11-24. Puzzle database format.** Checked on database.lichess.org on 2026-11-24: 6,193,530 puzzles, updated 2026-11-11, released under CC0. The CSV now has an 11th column, `DailyDate`, after the ten the plan expected. The script checks the first eight column names and fails the build if they change. The download is 310 MB of zstd. Node 26 decompresses zstd natively, so the script needs no dependency.
+
+**2026-11-24. Shard shape.** A puzzle passes when its popularity is at least 80, it has at least 500 plays, and its rating deviation is at most 90. Ratings run from 400 to 3299 in 100-point bands. 21 Lichess themes map to 19 shard names, with bishop and knight endgames sharing one minor-piece shard. Each theme-and-band shard keeps its 400 most popular puzzles, so a puzzle can appear in several themes. Each row holds id, FEN, moves and rating. The 2026-11-11 database gives 505 shards, 165,974 puzzle entries, 16.3 MB in total, and about 30 KB per shard. The script fails if any file passes 25 MiB or the total passes 250 MB.
+
+**2026-11-24. Shards are built in CI.** CI caches the compressed database in `~/.cache/monachessimo`, keyed by its Last-Modified header, so it downloads only when Lichess publishes a new file. The output in `public/puzzles/` is not committed.
+
+**2026-11-24. The script is TypeScript run by Node directly.** Node 26 strips types natively. The script is not part of `npm run typecheck`, because that would need Node's type definitions.
+
+**2026-11-24. How sessions use puzzles.** After due reviews and new drills from your games, the rest of the 10-drill session is filled with puzzles for up to three ranked weaknesses, in the band nearest your puzzle rating. A session fetches the manifest and one shard per theme. Puzzles you have seen are stored as drills, so the scheduler brings them back like your own positions.
+
+**2026-11-24. Puzzle answers.** Each of the player's moves must match the solution, except that any checkmate counts on the last move, as the database notes say. The opponent's moves play automatically. No engine check runs for puzzles.
+
+**2026-11-24. Route names.** `#/progress` is the Progress screen from the plan (puzzle rating and weakness trends). The import and analysis status screen moved to `#/analysis`.
+
+**2026-11-24. The rating chart.** One series, so it has no legend and a title instead. It has a 2 px accent line, three gridlines, a hover or tap readout, and a "Show as table" view. Weakness trends are a table, older half against newer half, because each one is a comparison of two numbers.

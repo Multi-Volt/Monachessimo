@@ -7,7 +7,8 @@ for (const [route, heading] of [
   ['#/games', 'Your games'],
   ['#/settings', 'Settings'],
   ['#/about', 'About Monachessimo'],
-  ['#/progress', 'Import and analysis'],
+  ['#/analysis', 'Import and analysis'],
+  ['#/progress', 'Your progress'],
   ['#/train', 'Daily practice'],
 ] as const) {
   test(`${route} renders at phone width without errors`, async ({ page }) => {

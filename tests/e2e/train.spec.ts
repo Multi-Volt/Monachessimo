@@ -64,6 +64,15 @@ test('a daily session from your own games brings missed positions back', async (
   await page.reload();
   await expect(page.getByText('Daily practice · 1 of 2')).toBeVisible();
 
+  // The progress screen charts the puzzle rating and has a table view.
+  await page.goto('./#/progress');
+  await expect(page.getByRole('heading', { name: /Your progress/ })).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: /Puzzle rating from 1500 to \d+ over 4 drills/ }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Show as table' }).click();
+  await expect(page.locator('.chart__table tbody tr')).toHaveCount(4);
+
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

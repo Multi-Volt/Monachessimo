@@ -28,7 +28,7 @@ export function Connect() {
     setTouched(true);
     if (!valid || !online) return;
     void startImport(source, username.trim(), max);
-    navigate('progress');
+    navigate('analysis');
   };
 
   return (
@@ -118,7 +118,7 @@ export function Connect() {
       )}
       {importState.get().status === 'running' && (
         <p>
-          An import is running. <a href={href('progress')}>See progress</a>
+          An import is running. <a href={href('analysis')}>See progress</a>
         </p>
       )}
     </section>

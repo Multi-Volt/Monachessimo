@@ -138,7 +138,7 @@ export function Review({
         />
       ) : (
         <p class="notice">
-          This game is not analyzed yet. <a href={href('progress')}>See analysis progress</a>
+          This game is not analyzed yet. <a href={href('analysis')}>See analysis progress</a>
         </p>
       )}
 
