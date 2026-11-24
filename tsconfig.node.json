@@ -6,5 +6,12 @@
     "allowJs": true,
     "checkJs": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "eslint.config.js", "config-env.d.ts"]
+  "include": [
+    "vite.config.ts",
+    "playwright.config.ts",
+    "eslint.config.js",
+    "config-env.d.ts",
+    "scripts/starter-puzzles.ts",
+    "scripts/engine-inline.ts"
+  ]
 }

@@ -1067,3 +1067,13 @@ input[aria-invalid='true'] {
 .stepper .row > .button {
   flex: 1;
 }
+
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s2) var(--s4);
+  background: var(--raised);
+  border-bottom: 1px solid var(--hairline);
+}

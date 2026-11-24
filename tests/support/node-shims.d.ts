@@ -8,3 +8,15 @@ declare module 'node:fs' {
   export function writeFileSync(path: string | URL, data: string): void;
   export function existsSync(path: string | URL): boolean;
 }
+declare module 'node:child_process' {
+  interface Child {
+    kill(): boolean;
+    stdout: { on(e: 'data', l: (b: unknown) => void): void } | null;
+    stderr: { on(e: 'data', l: (b: unknown) => void): void } | null;
+  }
+  export function spawn(
+    cmd: string,
+    args: string[],
+    opts?: { cwd?: string; stdio?: unknown },
+  ): Child;
+}

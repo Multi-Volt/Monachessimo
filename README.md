@@ -42,6 +42,21 @@ To build for GitHub Pages locally, set the base path to the repository name:
 BASE_PATH=/Monachessimo/ npm run build
 ```
 
+## Offline use
+
+After the first visit the site works without a connection: the app, the engine and any puzzles you have opened are cached by a service worker. On Android Chrome you can install it from Settings. On iPhone and iPad, open it in Safari, tap Share, then Add to Home Screen.
+
+There is also a single-file copy, `offline/monachessimo.html` on the site (about 3 MB), with the engine and a small starter set of puzzles inside it. Browsers limit what a page opened straight from a file can do, so serve it locally:
+
+```sh
+mkdir monachessimo && cd monachessimo
+# put monachessimo.html here, then:
+python3 -m http.server 8000
+# open http://localhost:8000/monachessimo.html
+```
+
+Opening the file directly may work in some desktop browsers. On iOS, local files are best effort and may not work at all. To build the copy yourself, run `npm run build:offline`; it writes `dist-offline/index.html`.
+
 ## Deployment
 
 Every push to `main` runs `.github/workflows/ci.yml`. The workflow checks formatting, lint, types, and unit tests, builds the site, fails if any shipped file is over 25 MiB, runs the Playwright test, and then deploys `dist/` to GitHub Pages.

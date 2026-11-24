@@ -48,6 +48,11 @@ jobs:
       - name: Build puzzle shards
         run: node scripts/build-puzzle-shards.ts --input ~/.cache/monachessimo/lichess_db_puzzle.csv.zst
       - run: npx vite build
+      - name: Build the offline bundle
+        run: |
+          npx vite build --mode offline
+          mkdir -p dist/offline
+          cp dist-offline/index.html dist/offline/monachessimo.html
       - name: Check shipped sizes
         # Cloudflare Pages rejects files over 25 MiB; GitHub Pages sites must stay under 1 GB.
         run: |

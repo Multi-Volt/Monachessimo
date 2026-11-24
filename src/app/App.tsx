@@ -11,6 +11,8 @@ import { Review } from './screens/Review';
 import { Settings } from './screens/Settings';
 import { href, useRoute } from './router';
 import { useOnline } from '../ui/hooks';
+import { useStore } from '../ui/store';
+import { applyUpdate, pwaState } from '../pwa/register';
 
 const NAV = [
   { route: '', label: 'Home' },
@@ -22,6 +24,7 @@ const NAV = [
 export function App() {
   const route = useRoute();
   const online = useOnline();
+  const pwa = useStore(pwaState);
   const [head = '', arg = '', arg2] = route;
 
   let screen;
@@ -78,6 +81,14 @@ export function App() {
         </a>
         {!online && <span class="topbar__offline">Offline</span>}
       </header>
+      {pwa.needRefresh && (
+        <div class="update-banner" role="status">
+          <span>A new version of Monachessimo is ready.</span>
+          <button type="button" class="button button--primary" onClick={() => void applyUpdate()}>
+            Reload
+          </button>
+        </div>
+      )}
       <main id="main" tabIndex={-1}>
         {screen}
       </main>

@@ -23,6 +23,12 @@ const shards = new Map<string, Promise<PuzzleRow[]>>();
 
 /** The shard manifest, or undefined when this build ships no puzzles. */
 export function loadManifest(fetchImpl: typeof fetch = fetch): Promise<Manifest | undefined> {
+  if (__OFFLINE__) {
+    manifest ??= import('virtual:starter-puzzles').then((m) =>
+      m.default.manifest.puzzles ? m.default.manifest : undefined,
+    );
+    return manifest;
+  }
   manifest ??= fetchImpl(`${base()}manifest.json`)
     .then((r) => (r.ok ? (r.json() as Promise<Manifest>) : undefined))
     .catch(() => undefined);
@@ -31,6 +37,10 @@ export function loadManifest(fetchImpl: typeof fetch = fetch): Promise<Manifest 
 
 export function loadShard(file: string, fetchImpl: typeof fetch = fetch): Promise<PuzzleRow[]> {
   let p = shards.get(file);
+  if (!p && __OFFLINE__) {
+    p = import('virtual:starter-puzzles').then((m) => m.default.shards[file] ?? []);
+    shards.set(file, p);
+  }
   if (!p) {
     p = fetchImpl(`${base()}${file}`).then((r) => {
       if (!r.ok) throw new Error(`Puzzle file ${file} answered HTTP ${r.status}`);
@@ -128,7 +138,14 @@ export async function themeDrills(
   for (const theme of themes) {
     const band = nearestBand(m, theme, rating);
     if (!band) continue;
-    const rows = await loadShard(m.themes[theme]![band]!.file, fetchImpl);
+    let rows: PuzzleRow[];
+    try {
+      rows = await loadShard(m.themes[theme]![band]!.file, fetchImpl);
+    } catch {
+      // Offline without a cached copy: skip this theme.
+      shards.delete(m.themes[theme]![band]!.file);
+      continue;
+    }
     const tag = tags.find((t) => TAG_THEME[t] === theme)!;
     let n = 0;
     for (const row of rows) {

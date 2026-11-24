@@ -142,3 +142,21 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Explanations.** `src/strategy/explain.ts` writes sentences only from counted feature changes, such as pawn shield 3 to 1, or 7 fewer squares. Drills tagged with a strategy tag include these sentences after the game move and the reply.
 
 **2026-11-24. Drill report.** `docs/reports/drills.md` holds at least 20 generated examples of every type. It is built from the 50 generated games, now with synthetic clocks for a 3-minute game, and from the local puzzle shards. Run it with `REPORT=1 npx vitest run tests/unit/drill-report.node.test.ts`. The games' moves did not change when clocks were added.
+
+## Phase 6
+
+**2026-11-24. Service worker.** `vite-plugin-pwa` 2.0.0 with Workbox's `generateSW` and `registerType: 'prompt'`. It precaches the app shell, fonts, icons and the 1.8 MB engine WASM; the per-file limit is raised to 4 MB. Puzzle shards use stale-while-revalidate in a `puzzles` cache, so a shard works offline once a session has opened it. When a new version is waiting, a banner offers a reload.
+
+**2026-11-24. The engine worker starts from a blob: URL.** With the site offline, Chromium did not serve the engine worker's own script from the service worker, and the worker never started. No error event fired. The app now fetches the script itself, which goes through the service worker, and starts the worker from a Blob URL. The worker's WASM fetch then also comes from the cache. The CSP already allowed `blob:` workers.
+
+**2026-11-24. Placeholder icons.** No icons were in `assets/` yet, so `public/icons/` holds plain placeholder PNGs (192, 512 and 180 px) made in code. Replace them with the maintainer's icons. Nothing in `assets/` was touched.
+
+**2026-11-24. Offline bundle.** `npm run build:offline` uses `vite-plugin-singlefile` 2.3.4 with `base: './'` and no `public/` folder. Vite 8 cannot inline `.wasm` with `?inline`, so `scripts/engine-inline.ts` provides the loader as text and the WASM as base64 through a virtual module. Both run from Blob URLs. `scripts/starter-puzzles.ts` embeds 30 puzzles from each of five bands (800 to 2000) per theme. The file is about 3 MB. CI publishes it at `offline/monachessimo.html`.
+
+**2026-11-24. The offline file has a looser CSP.** A single HTML file needs inline script and style, data: fonts, and blob:/data: connections for the embedded engine. Connections to other sites are still limited to Lichess and Chess.com.
+
+**2026-11-24. Build-time audit warnings.** `npm audit` reports 4 moderate advisories in `glob` and `minimatch` under `workbox-build`. They run only at build time over this repository's files. The only offered fix downgrades `vite-plugin-pwa` to a version without Vite 8 support, so they stay until Workbox updates.
+
+**2026-11-24. Multithreading is not built.** The plan's optional flag needs the multi-threaded engine build and cross-origin isolation, which on GitHub Pages means `coi-serviceworker`. That adds a package and a second service worker next to Workbox's. The worker pool already uses several cores. This waits for the maintainer to decide.
+
+**2026-11-24. What was tested.** Playwright covers: the app working offline after a first visit (games, review, drills, and a live engine check), import disabled offline, and the offline bundle served by `python3 -m http.server` importing and analyzing games. Installing on a real Android phone and iPhone has not been tested.

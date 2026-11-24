@@ -3,6 +3,49 @@ import { deleteEverything } from '../../store/db';
 import { useServices } from '../../ui/hooks';
 import { DEPTH_PRESETS } from '../services';
 import { href } from '../router';
+import { useStore } from '../../ui/store';
+import { install, isIos, pwaState } from '../../pwa/register';
+
+function InstallPanel() {
+  const pwa = useStore(pwaState);
+  if (__OFFLINE__)
+    return (
+      <div class="panel">
+        <h2>Offline copy</h2>
+        <p>
+          You are using the offline copy. It keeps its own data in this browser, apart from the
+          website.
+        </p>
+      </div>
+    );
+  return (
+    <div class="panel">
+      <h2>Install and offline use</h2>
+      {pwa.installed ? (
+        <p>Monachessimo is installed on this device.</p>
+      ) : pwa.canInstall ? (
+        <button type="button" class="button button--primary" onClick={() => void install()}>
+          Install Monachessimo
+        </button>
+      ) : isIos() ? (
+        <p>In Safari, tap Share, then Add to Home Screen.</p>
+      ) : (
+        <p>Use your browser's menu to install this site as an app.</p>
+      )}
+      <p>
+        <a href="offline/monachessimo.html" download="monachessimo.html">
+          Download the offline copy
+        </a>{' '}
+        <span class="hint">(one HTML file, about 3 MB)</span>
+      </p>
+      <p class="hint">
+        {pwa.offlineReady
+          ? 'The app and the engine are saved for offline use. Puzzles you have opened are saved too.'
+          : 'After the first visit, the app and the engine work without a connection.'}
+      </p>
+    </div>
+  );
+}
 
 type Preset = keyof typeof DEPTH_PRESETS;
 
@@ -104,6 +147,8 @@ export function Settings() {
           <p class="hint">Changing depth analyzes your games again with the new setting.</p>
         </fieldset>
       </div>
+
+      <InstallPanel />
 
       <div class="panel">
         <h2>Your data</h2>
