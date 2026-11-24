@@ -88,3 +88,21 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Stored tags carry the detector version.** When `DETECTOR_VERSION` changes, the app retags every analyzed game from its saved analysis at startup. The engine does not run again.
 
 **2026-11-24. Home is the dashboard.** With no stored games, home shows the import form. Import moved to `#/import`.
+
+## Phase 3
+
+**2026-11-24. Which mistakes become drills.** Every move classed as a mistake or blunder, where the deep pass found at least one other move within tolerance. If the position has a "missed" tag (missed capture, fork, pin, skewer, mate, quiet setup or sacrifice) it is a missed-chance drill, otherwise a replay drill. Inaccuracies are left out of v1 to keep sessions short.
+
+**2026-11-24. Accepted answers.** A move counts when its winning chances are within 0.07 of the best move, or when it keeps a forced mate no more than two moves longer than the best mate. Moves outside the saved MultiPV lines are checked live on the device at depth 14 (1.5 s cap). The game move never counts.
+
+**2026-11-24. Scheduler.** SM-2 style, per drill. A fail sets the drill due in 10 minutes and adds it once more to the end of the running session. Passes go to 1 day, then 3 days, then interval times ease (start 2.5). A pass after a hint counts as "hard": it lowers the ease by 0.15 and grows the interval by 1.2 only. Ease never goes below 1.3.
+
+**2026-11-24. Puzzle rating.** Elo with K = 24, starting at 1500. A first-try solve scores 1, a solve after a hint 0.5, a miss 0. A drill's rating is the player's game rating, +100 for missed tactics, +200 for quiet setups and sacrifices, and -150 when the game move dropped 0.8 or more.
+
+**2026-11-24. Sessions.** Ten drills. Due reviews come first, oldest due first. New drills, at most six, are taken in turn from the ranked weaknesses, newest first. "Train this" restricts the session to one tag.
+
+**2026-11-24. Promotion on the board.** A pawn moved to the last rank on the board promotes to a queen. Typed moves can name any piece (e8=N or e7e8n).
+
+**2026-11-24. Streak.** A day counts when a session reaches its summary screen. The streak is the run of such days ending today or yesterday, drawn as tally marks.
+
+**2026-11-24. Mate decides the tags.** When `mateAllowed` or `mateMissed` fires, `pawnStructure` and `pieceActivity` are dropped. They only reflected the mating line taking pawns. `kingSafety` stays. Detector version 2.

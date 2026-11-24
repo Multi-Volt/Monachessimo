@@ -19,7 +19,7 @@ import type { MistakeClass } from '../analysis/mistakes';
 export { TAGS, type TagName, type MoveContext } from './types';
 
 /** Bump when a detector changes, so stored tags are recomputed. */
-export const DETECTOR_VERSION = 1;
+export const DETECTOR_VERSION = 2;
 
 export const MOVE_DETECTORS: Partial<Record<TagName, Detector>> = {
   hangingPiece,
@@ -55,9 +55,13 @@ export function tagMove(ctx: MoveContext): TagName[] {
       // A detector failing on an odd position must not stop the others.
     }
   }
+  // When a mate decides the position, pawn and activity changes are side
+  // effects of the mating line, not the lesson.
+  const mate = out.includes('mateAllowed') || out.includes('mateMissed');
+  const result = mate ? out.filter((t) => t !== 'pawnStructure' && t !== 'pieceActivity') : out;
   const eg = endgameType(ctx.before);
-  if (eg) out.push(eg);
-  return out;
+  if (eg) result.push(eg);
+  return result;
 }
 
 export interface TagRecord {

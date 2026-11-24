@@ -3,6 +3,7 @@ import type { SearchRequest, SearchResult } from '../engine/engine';
 import { searchKey } from '../engine/engine';
 import type { Game } from '../import/types';
 import type { TagRecord } from '../detectors';
+import type { Drill, ReviewState } from '../drills/types';
 import { openStore, STORE_NAMES, DB_VERSION, type DB, type StoreName } from './db';
 
 /** Data access used by the app. Each call opens its own short transaction. */
@@ -53,6 +54,22 @@ export class Repo {
   }
   async allTags(): Promise<TagRecord[]> {
     return (await this.db.getAll('tags')) as unknown as TagRecord[];
+  }
+
+  // Drills and scheduler state
+  async allDrills(): Promise<Drill[]> {
+    return (await this.db.getAll('drills')) as unknown as Drill[];
+  }
+  async putDrills(drills: Drill[]): Promise<void> {
+    const tx = this.db.transaction('drills', 'readwrite');
+    for (const d of drills) void tx.store.put(d as never);
+    await tx.done;
+  }
+  async allReviews(): Promise<ReviewState[]> {
+    return (await this.db.getAll('reviews')) as unknown as ReviewState[];
+  }
+  async putReview(r: ReviewState): Promise<void> {
+    await this.db.put('reviews', r as never);
   }
 
   // Engine cache

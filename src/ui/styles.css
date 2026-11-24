@@ -855,3 +855,79 @@ input[aria-invalid='true'] {
   justify-content: space-between;
   border-bottom: 1px solid var(--hairline);
 }
+
+/* Drill session */
+
+.drill__count {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 18px;
+  margin-bottom: var(--s1);
+}
+
+.drill__goal {
+  font-size: 22px;
+  line-height: 28px;
+  margin-bottom: var(--s1);
+}
+
+.move-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.move-input label {
+  font-weight: 500;
+}
+
+.move-input .row {
+  flex-wrap: nowrap;
+}
+
+.move-input input {
+  flex: 1;
+  min-width: 0;
+}
+
+.row--actions {
+  margin-bottom: var(--s4);
+}
+
+.row--actions > .button {
+  flex: 1 1 auto;
+}
+
+.panel--good {
+  border-left-width: 4px;
+  border-left-color: var(--good);
+}
+
+.hint-list {
+  margin: 0 0 var(--s4);
+  padding-left: var(--s5);
+  color: var(--text-2);
+}
+
+.hint-list li {
+  margin-bottom: var(--s2);
+}
+
+.streak {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin: var(--s6) 0;
+}
+
+.tally__mark,
+.tally__cut {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.tally__cut {
+  stroke-width: 2;
+}

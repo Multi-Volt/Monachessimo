@@ -320,7 +320,7 @@ export const FIXTURES: DetectorFixture[] = [
     played: 'g8f6',
     ply: 5,
     has: ['mateAllowed', 'openingError'],
-    not: ['backRank', 'mateMissed', 'pinAllowed'],
+    not: ['pawnStructure', 'pieceActivity', 'backRank', 'mateMissed', 'pinAllowed'],
   },
 
   // Quiet setups and sacrifices

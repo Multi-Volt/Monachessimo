@@ -1,5 +1,6 @@
 import { About } from './screens/About';
 import { Dashboard } from './screens/Dashboard';
+import { Train } from './screens/Train';
 import { WeaknessDetail } from './screens/WeaknessDetail';
 import type { TagName } from '../detectors';
 import { Connect } from './screens/Connect';
@@ -12,6 +13,7 @@ import { useOnline } from '../ui/hooks';
 
 const NAV = [
   { route: '', label: 'Home' },
+  { route: 'train', label: 'Train' },
   { route: 'games', label: 'Games' },
   { route: 'settings', label: 'Settings' },
 ];
@@ -28,6 +30,9 @@ export function App() {
       break;
     case 'import':
       screen = <Connect />;
+      break;
+    case 'train':
+      screen = <Train tag={arg ? (arg as TagName) : undefined} />;
       break;
     case 'weakness':
       screen = <WeaknessDetail tag={arg as TagName} />;
