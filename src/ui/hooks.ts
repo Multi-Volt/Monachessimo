@@ -10,7 +10,10 @@ export type Async<T> =
  * loader finishes for the current deps, the state is "loading", so a screen
  * never sees a result that belongs to earlier inputs.
  */
-export function useAsync<T>(load: () => Promise<T>, deps: unknown[]): Async<T> & { reload: () => void } {
+export function useAsync<T>(
+  load: () => Promise<T>,
+  deps: unknown[],
+): Async<T> & { reload: () => void } {
   const [state, setState] = useState<{ result: Async<T>; deps: unknown[] }>({
     result: { status: 'loading' },
     deps: [],
@@ -33,7 +36,8 @@ export function useAsync<T>(load: () => Promise<T>, deps: unknown[]): Async<T> &
       live = false;
     };
   }, current);
-  const fresh = state.deps.length === current.length && state.deps.every((d, i) => Object.is(d, current[i]));
+  const fresh =
+    state.deps.length === current.length && state.deps.every((d, i) => Object.is(d, current[i]));
   const result: Async<T> = fresh ? state.result : { status: 'loading' };
   return { ...result, reload: () => setTick((t) => t + 1) };
 }
