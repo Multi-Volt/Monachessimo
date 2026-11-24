@@ -20,6 +20,8 @@ const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--stri
   stdio: 'ignore',
   env: process.env,
 });
+// Stop the preview server however the script ends.
+process.on('exit', () => preview.kill());
 await new Promise((r) => setTimeout(r, 2500));
 
 // Seed data in a persistent profile, then let Lighthouse open the same
@@ -29,6 +31,17 @@ const profile = mkdtempSync(join(tmpdir(), 'monachessimo-a11y-'));
 const context = await chromium.launchPersistentContext(profile, {
   viewport: { width: 360, height: 740 },
 });
+const games = readFileSync('tests/fixtures/perf-games.ndjson', 'utf8')
+  .trim()
+  .split('\n')
+  .slice(0, 8);
+await context.route('https://lichess.org/api/games/user/**', (route) =>
+  route.fulfill({
+    status: 200,
+    headers: { 'content-type': 'application/x-ndjson', 'access-control-allow-origin': '*' },
+    body: games.join('\n') + '\n',
+  }),
+);
 const page = context.pages()[0] ?? (await context.newPage());
 await page.goto(ORIGIN);
 await page.getByLabel('Username').fill('TestPlayer');
@@ -58,10 +71,10 @@ const routes = [
   ['settings', '#/settings'],
   ['about', '#/about'],
 ];
-mkdirSync('test-results/lighthouse', { recursive: true });
+mkdirSync('a11y-results', { recursive: true });
 let failed = false;
 for (const [name, hash] of routes) {
-  const out = `test-results/lighthouse/${name}.json`;
+  const out = `a11y-results/${name}.json`;
   execFileSync(
     'npx',
     [
@@ -90,6 +103,6 @@ for (const [name, hash] of routes) {
     `${score >= MIN_SCORE ? 'ok  ' : 'FAIL'} ${name} ${score}${fails.length ? `  ${fails.join('; ')}` : ''}`,
   );
 }
-writeFileSync('test-results/lighthouse/done', '');
+writeFileSync('a11y-results/done', '');
 preview.kill();
 process.exit(failed ? 1 : 0);

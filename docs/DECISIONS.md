@@ -160,3 +160,15 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Multithreading is not built.** The plan's optional flag needs the multi-threaded engine build and cross-origin isolation, which on GitHub Pages means `coi-serviceworker`. That adds a package and a second service worker next to Workbox's. The worker pool already uses several cores. This waits for the maintainer to decide.
 
 **2026-11-24. What was tested.** Playwright covers: the app working offline after a first visit (games, review, drills, and a live engine check), import disabled offline, and the offline bundle served by `python3 -m http.server` importing and analyzing games. Installing on a real Android phone and iPhone has not been tested.
+
+## Phase 7
+
+**2026-11-24. UI pass.** Every screen was captured at 360x740 in both themes and checked against `docs/DESIGN_DIRECTION.md` and the unslop list of signs. Changes: daily sessions lead with move drills, and plan and conversion drills come after, at most two and one per session; the dashboard summary is one line plus an improvement line, not three paragraphs; "about 1 times" now reads "about once"; "Open games" became "See your games".
+
+**2026-11-24. Prose pass.** App copy and the README were checked against the unslop-prose rules: no dashes as punctuation, no parentheses as asides, plain words. Ratings in parentheses after a player's name stay, since that is chess convention. The decision log keeps parentheses where they hold file names or values.
+
+**2026-11-24. Accessibility.** `scripts/a11y-audit.mjs` seeds a Chromium profile with 8 analyzed games, then runs Lighthouse 13.6.0 through npx (not installed) on ten screens at 360x740. Every screen scored 100. Lighthouse runs its own Chromium on the seeded profile; connecting to a shared browser over the DevTools port failed with "Target closed".
+
+**2026-11-24. Performance budgets.** `perf-budget.json` sets the limits. CI fails when the entry JS passes 90 KB gzipped (61 KB now), the CSS 12 KB gzipped (7 KB), or the engine WASM 2 MB (1.8 MB). It also fails when the engine takes more than 5 s to report ready, or when 10 generated games take more than 180 s to analyze. Raise a budget only with an entry here.
+
+**2026-11-24. Not verified.** No real phone has run the app: no Android or iPhone install, no airplane-mode test on a device, no timing on a mid-range phone. The CI pipeline with puzzle shards and the offline bundle has not run on GitHub, because pushes from this machine failed authentication.

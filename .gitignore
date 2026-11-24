@@ -8,3 +8,4 @@ test-results/
 .claude/settings.local.json
 public/puzzles/
 dist-offline/
+a11y-results/

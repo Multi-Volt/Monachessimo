@@ -5,7 +5,7 @@ import { tagGame } from '../../src/detectors';
 import { acceptable, judge } from '../../src/drills/answers';
 import { drillsFromGame } from '../../src/drills/generate';
 import { newReview, schedule } from '../../src/drills/scheduler';
-import { buildSession, dayKey, eligible, streak } from '../../src/drills/session';
+import { buildSession, capSlowDrills, dayKey, eligible, streak } from '../../src/drills/session';
 import type { Drill } from '../../src/drills/types';
 import { makeGame } from '../support/games';
 import { nodePool } from '../support/node-engine';
@@ -138,5 +138,19 @@ describe('eligible', () => {
   });
   it('allows a plan drill with no move drill', () => {
     expect(eligible([plan], new Map())).toEqual([plan]);
+  });
+});
+
+describe('capSlowDrills', () => {
+  it('puts move drills first and keeps at most two plans and one conversion', () => {
+    const kinds = ['plan', 'replay', 'plan', 'conversion', 'plan', 'conversion', 'missed'] as const;
+    const list = kinds.map((type, i) => ({ ...drill(`${type}:${i}`, []), type }));
+    expect(capSlowDrills(list).map((d) => d.id)).toEqual([
+      'replay:1',
+      'missed:6',
+      'plan:0',
+      'plan:2',
+      'conversion:3',
+    ]);
   });
 });
