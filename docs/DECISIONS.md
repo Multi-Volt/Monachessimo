@@ -23,3 +23,40 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. `eval.ts` came early.** The winning-chances conversion from section 6.2 is the first unit under test, so the test setup checks real code. A mate score is converted to plus or minus 10,000 centipawns. Mate 0 counts as a win for the reporting side.
 
 **2026-11-24. Dev machine setup.** The maintainer's machine runs Fedora Kinoite, which had no Node.js. Node 26.13.1 LTS was installed from nodejs.org into `~/.local/share/node`, with links in `~/.local/bin`. The SHA-256 checksum was verified. Playwright does not officially support Fedora and uses its Ubuntu 24.04 Chromium build, which runs the tests correctly.
+
+## Phase 1
+
+**2026-11-24. Lichess game export rejects non-browser user agents.** `/api/games/user/{name}` is wrapped in `NoCrawlers` in lila's `Game.scala`, so curl and headless Chromium get an HTML 404. Real browsers pass. The endpoint, its parameters and the NDJSON shape match the official spec. CORS allows any origin (`Access-Control-Allow-Origin: *`). Tests mock this endpoint instead of calling it. The deployed app must still be checked once from a real phone with a real username.
+
+**2026-11-24. Chess.com allows browser calls.** The Published-Data API sends `Access-Control-Allow-Origin: *`. It rejects requests without a recognizable user agent, which browsers always send. Archives are listed oldest first, so the importer reverses them and fetches one month at a time with a 300 ms pause.
+
+**2026-11-24. Lichess clocks and evals.** `clocks` holds the mover's remaining time after each ply in centiseconds. `analysis[i]` is the evaluation after ply i from White's side, with `{ "mate": n }` for mates. The pipeline converts both to the side to move.
+
+**2026-11-24. Stockfish build.** `stockfish@19.0.1`, the `lite-single` build: 1.85 MB WASM plus a 28 KB loader, single-threaded, no cross-origin isolation needed. The full NNUE builds are 99 MB and break the 25 MiB per-file limit, so they are not an option. The loader reads the WASM URL from its own URL hash, which lets Vite give both files hashed names.
+
+**2026-11-24. The Node build of Stockfish shares one engine per loaded module.** Tests load a fresh copy of the module for each engine. Browser workers are separate by nature.
+
+**2026-11-24. Castling in UCI.** chessops writes castling as king-takes-rook (`e1h1`). The app converts to standard UCI (`e1g1`) everywhere it produces moves, through `src/chess/uci.ts`.
+
+**2026-11-24. Mate 0.** UCI reports `score mate 0` for a side that is already checkmated. `winningChances` treats it as a loss for the side to move. The Phase 0 version had this backwards.
+
+**2026-11-24. Analysis passes.** Fast pass: depth 12 with a 250 ms cap on every position. Deep pass: depth 18 with a 1.5 s cap and MultiPV 3, only on the player's moves whose fast-pass drop is at least 0.10. If Lichess already analyzed a game, its evals replace the fast pass and only the deep pass runs. Settings offers Quick (10/15), Standard (12/18) and Thorough (14/20).
+
+**2026-11-24. Mistake thresholds.** Inaccuracy 0.10, mistake 0.20, blunder 0.30 drop in winning chances on Lichess's -1 to 1 scale, from the deep pass. The golden tests pass with these values, so they stay for now. Tuning against more fixtures happens in Phase 2.
+
+**2026-11-24. Level filter.** A move counts as a mistake only when both passes see the loss: the depth-12 fast pass flags it and the depth-18 deep pass confirms it. A loss that only the deep search finds is not counted.
+
+**2026-11-24. Extra `analyses` store.** Per-game analysis, including partial progress for resume, has its own store. The plan's list had no place for it. All the plan's stores exist from schema version 1.
+
+**2026-11-24. Hash routing.** Routes look like `#/game/<id>`, so any static host serves every screen without rewrite rules.
+
+**2026-11-24. Timing, 50 games.** 50 generated games (3,906 plies, 78 on average, from `scripts/make-perf-games.mjs`), Standard depth, analyzed in headless Chromium through the real app (`npx playwright test -c playwright.perf.config.ts`):
+
+| Device                    | Engines | Time                                  |
+| ------------------------- | ------- | ------------------------------------- |
+| Laptop, 20 threads, Linux | 4       | 164.5 s                               |
+| Mid-range phone           |         | not measured yet: needs a real device |
+
+**2026-11-24. Visual direction.** The maintainer chose Bottega from three directions (Scriptorium, Bottega, Scoresheet). See `docs/DESIGN_DIRECTION.md`. They also approved one self-hosted typeface: Figtree from `@fontsource-variable/figtree` (OFL-1.1), 20 KB for Latin.
+
+**2026-11-24. Board squares drawn in CSS.** The olive-wood board uses a `conic-gradient` checkerboard with hard stops, in place of Chessground's brown SVG theme. Coordinates sit inside the edge squares so the board can span the full phone width.

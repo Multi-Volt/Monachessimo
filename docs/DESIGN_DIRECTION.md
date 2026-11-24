@@ -14,23 +14,23 @@ Chosen by the maintainer on 2026-11-24 from three options proposed in the unslop
 
 Surfaces stay near neutral with a warm tint. Color lives in the accent, the board and the weakness bars.
 
-| Role | Light | Dark |
-| --- | --- | --- |
-| Page background | `#f8f4ec` | `#171411` |
-| Card | `#fdfbf6` | `#1f1b17` |
-| Raised (input, active row) | `#f0e9dc` | `#29241f` |
-| Hairline | text at 10% | text at 10% |
-| Primary text | `#221d17` | `#f0e8dc` |
-| Secondary text | `#5e554a` | `#b5ab9c` |
-| Muted text | `#72685c` | `#958b7c` |
-| Accent (terracotta) | `#a84b24` | `#e3926a` |
-| Text on accent | `#ffffff` | `#1d120c` |
-| Good (olive) | `#566426` | `#aebd72` |
-| Blunder (wine) | `#9b1d35` | `#f08aa0` |
-| Mistake (ochre) | `#855600` | `#e2b45e` |
-| Inaccuracy (slate) | `#4b5f70` | `#9fb5c8` |
-| Board light square | `#ecdcbc` | same |
-| Board dark square | `#ae8a5c` | same |
+| Role                       | Light       | Dark        |
+| -------------------------- | ----------- | ----------- |
+| Page background            | `#f8f4ec`   | `#171411`   |
+| Card                       | `#fdfbf6`   | `#1f1b17`   |
+| Raised (input, active row) | `#f0e9dc`   | `#29241f`   |
+| Hairline                   | text at 10% | text at 10% |
+| Primary text               | `#221d17`   | `#f0e8dc`   |
+| Secondary text             | `#5e554a`   | `#b5ab9c`   |
+| Muted text                 | `#72685c`   | `#958b7c`   |
+| Accent (terracotta)        | `#a84b24`   | `#e3926a`   |
+| Text on accent             | `#ffffff`   | `#1d120c`   |
+| Good (olive)               | `#566426`   | `#aebd72`   |
+| Blunder (wine)             | `#9b1d35`   | `#f08aa0`   |
+| Mistake (ochre)            | `#855600`   | `#e2b45e`   |
+| Inaccuracy (slate)         | `#4b5f70`   | `#9fb5c8`   |
+| Board light square         | `#ecdcbc`   | same        |
+| Board dark square          | `#ae8a5c`   | same        |
 
 Mistake colors differ from the terracotta accent in hue, and every class also carries its symbol (`??`, `?`, `?!`) and a word, so color is never the only signal.
 
@@ -38,13 +38,13 @@ Mistake colors differ from the terracotta accent in hue, and every class also ca
 
 Figtree, self-hosted from `@fontsource-variable/figtree` (OFL-1.1). Weights 400, 500 and 600 only. Sentence case. Tabular figures for evaluations, counts and clocks.
 
-| Use | Size / line height | Weight |
-| --- | --- | --- |
-| Meta, counts | 13 / 18 | 400 |
-| Body | 16 / 24 | 400 |
-| Section heading | 18 / 24 | 600 |
-| Page title | 28 / 32 | 500 |
-| Wordmark | 18 | 600 |
+| Use             | Size / line height | Weight |
+| --------------- | ------------------ | ------ |
+| Meta, counts    | 13 / 18            | 400    |
+| Body            | 16 / 24            | 400    |
+| Section heading | 18 / 24            | 600    |
+| Page title      | 28 / 32            | 500    |
+| Wordmark        | 18                 | 600    |
 
 ## Shape and spacing
 
