@@ -194,10 +194,13 @@ async function deepReview(
 
   // Score of the played move from the mover's side.
   let playedScore: Score;
+  let playedPv: string[] = [played];
   const inLines = lines.find((l) => l.pv[0] === played);
   const terminal = terminalScore(after);
-  if (inLines) playedScore = inLines.score;
-  else if (terminal) playedScore = negate(terminal);
+  if (inLines) {
+    playedScore = inLines.score;
+    playedPv = inLines.pv;
+  } else if (terminal) playedScore = negate(terminal);
   else {
     const r = await search(
       { fen: after, depth: settings.deepDepth, movetime: settings.deepMovetime },
@@ -205,6 +208,7 @@ async function deepReview(
     );
     a.engineMs += r.ms;
     playedScore = negate(r.lines[0]?.score ?? a.evals[ply + 1]!);
+    playedPv = [played, ...(r.lines[0]?.pv ?? [])];
   }
 
   const wcBefore = winningChances(bestScore);
@@ -226,5 +230,6 @@ async function deepReview(
     class: cls,
     lines,
     playedScore,
+    playedPv,
   };
 }

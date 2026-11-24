@@ -1,3 +1,4 @@
+/* global process */
 // Generates tests/fixtures/perf-games.ndjson: 50 synthetic rated games in
 // Lichess NDJSON form, for timing the analysis pipeline. Each game is
 // Stockfish self-play at low depth, picking among the top three moves with

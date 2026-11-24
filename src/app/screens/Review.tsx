@@ -9,7 +9,13 @@ import { formatDate, formatScore } from '../../ui/format';
 import { useAsync, useRunner, useServices } from '../../ui/hooks';
 import { href } from '../router';
 
-export function Review({ gameId }: { gameId: string }) {
+export function Review({
+  gameId,
+  initialPly,
+}: {
+  gameId: string;
+  initialPly?: number | undefined;
+}) {
   const services = useServices();
   const runner = useRunner(services);
   const data = useAsync(async () => {
@@ -21,7 +27,7 @@ export function Review({ gameId }: { gameId: string }) {
     return { game, analysis, fens: replay(game.uci) };
   }, [services, gameId, runner?.currentGameId === gameId ? runner.done : 0]);
 
-  const [pos, setPos] = useState(0);
+  const [pos, setPos] = useState(initialPly ?? 0);
   const value = data.status === 'ok' ? data.value : undefined;
   const n = value ? value.game.uci.length : 0;
 

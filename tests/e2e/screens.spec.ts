@@ -3,6 +3,7 @@ import { collectErrors } from './support';
 
 for (const [route, heading] of [
   ['#/', 'Train on your own games'],
+  ['#/import', 'Train on your own games'],
   ['#/games', 'Your games'],
   ['#/settings', 'Settings'],
   ['#/about', 'About Monachessimo'],

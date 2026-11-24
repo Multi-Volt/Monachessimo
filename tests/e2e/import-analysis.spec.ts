@@ -54,7 +54,7 @@ test('re-import fetches only newer games and keeps analysis', async ({ page }) =
   await page.getByRole('button', { name: 'Import games' }).click();
   await expect(page.getByText('Finished. Analyzed 2 of 2 games.')).toBeVisible({ timeout: 90_000 });
 
-  await page.goto('./');
+  await page.goto('./#/import');
   await page.getByLabel('Username').fill('TestPlayer');
   await page.getByRole('button', { name: 'Import games' }).click();
   await expect(page.getByText('Imported 0 new games for TestPlayer')).toBeVisible();

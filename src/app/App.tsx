@@ -1,4 +1,7 @@
 import { About } from './screens/About';
+import { Dashboard } from './screens/Dashboard';
+import { WeaknessDetail } from './screens/WeaknessDetail';
+import type { TagName } from '../detectors';
 import { Connect } from './screens/Connect';
 import { Games } from './screens/Games';
 import { Progress } from './screens/Progress';
@@ -8,7 +11,7 @@ import { href, useRoute } from './router';
 import { useOnline } from '../ui/hooks';
 
 const NAV = [
-  { route: '', label: 'Import' },
+  { route: '', label: 'Home' },
   { route: 'games', label: 'Games' },
   { route: 'settings', label: 'Settings' },
 ];
@@ -16,12 +19,18 @@ const NAV = [
 export function App() {
   const route = useRoute();
   const online = useOnline();
-  const [head = '', arg = ''] = route;
+  const [head = '', arg = '', arg2] = route;
 
   let screen;
   switch (head) {
     case '':
+      screen = <Dashboard />;
+      break;
+    case 'import':
       screen = <Connect />;
+      break;
+    case 'weakness':
+      screen = <WeaknessDetail tag={arg as TagName} />;
       break;
     case 'progress':
       screen = <Progress />;
@@ -30,7 +39,7 @@ export function App() {
       screen = <Games />;
       break;
     case 'game':
-      screen = <Review gameId={arg} />;
+      screen = <Review gameId={arg} initialPly={arg2 === undefined ? undefined : Number(arg2)} />;
       break;
     case 'settings':
       screen = <Settings />;
@@ -65,7 +74,10 @@ export function App() {
       </main>
       <nav class="tabbar" aria-label="Main">
         {NAV.map((n) => {
-          const active = head === n.route || (n.route === 'games' && head === 'game');
+          const active =
+            head === n.route ||
+            (n.route === 'games' && head === 'game') ||
+            (n.route === '' && (head === 'import' || head === 'weakness' || head === 'progress'));
           return (
             <a
               key={n.route}

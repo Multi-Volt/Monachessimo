@@ -113,7 +113,7 @@ export function Connect() {
       {stored.status === 'ok' && stored.value && stored.value.count > 0 && (
         <p>
           {stored.value.count} games are stored
-          {last ? ` for ${last.username}` : ''}. <a href={href('games')}>Open your games</a>
+          {last ? ` for ${last.username}` : ''}. <a href={href()}>See your weaknesses</a>
         </p>
       )}
       {importState.get().status === 'running' && (

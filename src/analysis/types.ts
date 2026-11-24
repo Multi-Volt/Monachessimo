@@ -22,8 +22,11 @@ export const DEFAULT_SETTINGS: AnalysisSettings = {
   deepMultipv: 3,
 };
 
+/** Bump when GameAnalysis changes shape, so stored analyses are redone. */
+export const ANALYSIS_FORMAT = 2;
+
 export function settingsKey(s: AnalysisSettings): string {
-  return `f${s.fastDepth}/${s.fastMovetime}-d${s.deepDepth}/${s.deepMovetime}x${s.deepMultipv}`;
+  return `v${ANALYSIS_FORMAT}-f${s.fastDepth}/${s.fastMovetime}-d${s.deepDepth}/${s.deepMovetime}x${s.deepMultipv}`;
 }
 
 /** Deep-pass result for one of the player's moves. */
@@ -44,6 +47,8 @@ export interface PlyReview {
   lines: Line[];
   /** Score of the played move from the mover's side. */
   playedScore: Score;
+  /** The played move followed by the engine's continuation, in UCI. */
+  playedPv: string[];
 }
 
 export interface GameAnalysis {

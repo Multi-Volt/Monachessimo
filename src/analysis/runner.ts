@@ -2,6 +2,7 @@ import type { EnginePool } from '../engine/pool';
 import type { Game } from '../import/types';
 import type { Repo } from '../store/repo';
 import { analyzeGame, type Search } from './pipeline';
+import { tagGame } from '../detectors';
 import { settingsKey, type AnalysisSettings } from './types';
 
 export interface RunnerState {
@@ -109,7 +110,7 @@ export class AnalysisRunner {
         const started = performance.now();
         let fastPositions = 0;
         this.set({ currentGameId: game.id, done: 0, total: game.uci.length + 1 });
-        await analyzeGame(game, {
+        const analysis = await analyzeGame(game, {
           search,
           settings: this.settings,
           ...(resume ? { resume } : {}),
@@ -120,6 +121,7 @@ export class AnalysisRunner {
           },
           onCheckpoint: (a) => this.repo.putAnalysis(a).then(() => undefined),
         });
+        await this.repo.replaceTags(game.id, tagGame(game, analysis));
         const elapsed = performance.now() - started;
         if (fastPositions > 0) {
           const sample = (elapsed * Math.max(1, this.pool.size)) / fastPositions / 1.25;

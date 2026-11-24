@@ -770,3 +770,88 @@ input[aria-invalid='true'] {
     transition: none !important;
   }
 }
+
+/* Dashboard: the weakness bars are the second moment of the direction. */
+
+.summary {
+  margin-bottom: var(--s6);
+}
+
+.summary p {
+  color: var(--text-2);
+}
+
+.weakness-list {
+  list-style: none;
+  margin: 0 0 var(--s6);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.weakness {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  padding: var(--s5);
+}
+
+.weakness__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.weakness__title {
+  margin: 0;
+}
+
+.weakness__title a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.weakness__rate {
+  color: var(--text-2);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.weakness__bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--raised);
+  margin-bottom: var(--s3);
+  overflow: hidden;
+}
+
+.weakness__bar span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.weakness__meta {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plain-list li {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hairline);
+}

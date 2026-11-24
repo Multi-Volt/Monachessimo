@@ -60,3 +60,31 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Visual direction.** The maintainer chose Bottega from three directions (Scriptorium, Bottega, Scoresheet). See `docs/DESIGN_DIRECTION.md`. They also approved one self-hosted typeface: Figtree from `@fontsource-variable/figtree` (OFL-1.1), 20 KB for Latin.
 
 **2026-11-24. Board squares drawn in CSS.** The olive-wood board uses a `conic-gradient` checkerboard with hard stops, in place of Chessground's brown SVG theme. Coordinates sit inside the edge squares so the board can span the full phone width.
+
+## Phase 2
+
+**2026-11-24. Detector files.** The plan asked for one file per tag. Related tags share a file (`fork.ts` holds `forkMissed` and `forkAllowed`, `mate.ts` holds the three mate tags, `strategy.ts` the three feature tags, `phase.ts` the opening, time and endgame tags). Each tag is still its own exported function with its own tests.
+
+**2026-11-24. Fixture lines are saved, not recomputed.** Detector tests run on engine lines stored in `tests/fixtures/detector-lines.json` (depth 16, MultiPV 3), so they are fast and stable across engine timing. `UPDATE_FIXTURES=1` rebuilds the file and writes a report.
+
+**2026-11-24. Fixtures that came from generated games.** The six `kingSafety`, `pawnStructure` and `pieceActivity` positives and some negatives came from mining `perf-games.ndjson`. Each was checked by hand against the measured feature change written in its name. Hand-built positions cover every tactical tag.
+
+**2026-11-24. Pins need a real piece in front.** A pawn in front of a bigger piece is not counted, and the piece behind must be the king or worth at least two pawns more. Without this, almost every quiet move in the generated games "created a pin".
+
+**2026-11-24. Quiet setups pay off on the next move.** `quietSetupMissed` looks only at the player's next move in the best line (three plies), and material is measured from the starting position. Looking two moves ahead, or measuring from the position before the follow-up, tagged ordinary exchanges.
+
+**2026-11-24. Trapped pieces are checked right after the move.** A piece that is captured on the next ply would otherwise never be seen as trapped.
+
+**2026-11-24. King safety skips the uncastled center king.** If the king stays on d or e of its first rank before and after the move, `kingSafety` does not fire. Open files near an uncastled king in the opening are normal.
+
+**2026-11-24. Time trouble counts mistakes and blunders.** The plan said blunders. Mistakes are added so the tag gathers enough positions to rank.
+
+**2026-11-24. No opening book.** `openingError` is any classified mistake in the first ten moves. Leaving book needs book data, which v1 does not ship.
+
+**2026-11-24. Mistake thresholds stay at 0.10, 0.20 and 0.30.** All 62 detector fixtures and the golden games classify as expected with these values.
+
+**2026-11-24. Profile parameters.** A tag is ranked after 5 positions. Games are weighted by recency with a half-life of 20 games. The trend compares the newer half of analyzed games with the older half and needs 10 positions. Rank order is the weighted rate per 100 moves times the average drop.
+
+**2026-11-24. Stored tags carry the detector version.** When `DETECTOR_VERSION` changes, the app retags every analyzed game from its saved analysis at startup. The engine does not run again.
+
+**2026-11-24. Home is the dashboard.** With no stored games, home shows the import form. Import moved to `#/import`.

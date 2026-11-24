@@ -2,6 +2,7 @@ import type { GameAnalysis } from '../analysis/types';
 import type { SearchRequest, SearchResult } from '../engine/engine';
 import { searchKey } from '../engine/engine';
 import type { Game } from '../import/types';
+import type { TagRecord } from '../detectors';
 import { openStore, STORE_NAMES, DB_VERSION, type DB, type StoreName } from './db';
 
 /** Data access used by the app. Each call opens its own short transaction. */
@@ -40,6 +41,18 @@ export class Repo {
   }
   allAnalyses(): Promise<GameAnalysis[]> {
     return this.db.getAll('analyses');
+  }
+
+  // Tags
+  async replaceTags(gameId: string, tags: TagRecord[]): Promise<void> {
+    const tx = this.db.transaction('tags', 'readwrite');
+    const old = await tx.store.index('byGame').getAllKeys(gameId);
+    for (const k of old) void tx.store.delete(k);
+    for (const t of tags) void tx.store.put(t as never);
+    await tx.done;
+  }
+  async allTags(): Promise<TagRecord[]> {
+    return (await this.db.getAll('tags')) as unknown as TagRecord[];
   }
 
   // Engine cache

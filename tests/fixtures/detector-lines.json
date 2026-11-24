@@ -1,0 +1,4918 @@
+{
+  "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2|d8h4": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -33
+        },
+        "pv": [
+          "b8c6",
+          "d2d4",
+          "e5d4",
+          "f3d4",
+          "f8b4",
+          "c2c3",
+          "b4c5",
+          "c1e3",
+          "c5b6",
+          "d1g4",
+          "g8f6",
+          "g4g7",
+          "h8g8",
+          "g7h6",
+          "g8g6",
+          "h6h4",
+          "d7d5",
+          "b1d2",
+          "c6d4",
+          "c3d4",
+          "d5e4",
+          "e1c1",
+          "c8f5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -45
+        },
+        "pv": [
+          "g8f6",
+          "f3e5",
+          "d7d6",
+          "e5f3",
+          "f6e4",
+          "d2d4",
+          "d6d5",
+          "f1d3",
+          "f8d6",
+          "e1g1",
+          "e8g8",
+          "c2c4",
+          "c7c6",
+          "f1e1",
+          "c8g4",
+          "d3e4",
+          "d5e4",
+          "e1e4",
+          "g4h5",
+          "b1c3",
+          "b8d7",
+          "c4c5",
+          "d6c7"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -55
+        },
+        "pv": ["d7d6", "d2d4", "b8d7", "c2c4", "g7g6", "b1c3", "f8g7", "d4d5"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 855
+      },
+      "pv": ["f3h4", "d7d5", "e4d5", "g8f6", "g2g3", "f8e7", "c2c3", "f6d5", "f1c4", "d5b6"]
+    }
+  },
+  "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 2 3|d1h5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 12
+        },
+        "pv": [
+          "g1f3",
+          "b8c6",
+          "f1b5",
+          "f8d6",
+          "e1g1",
+          "e8g8",
+          "d2d3",
+          "a7a6",
+          "b5c4",
+          "b7b5",
+          "c4b3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 5
+        },
+        "pv": [
+          "f2f4",
+          "d7d5",
+          "f4e5",
+          "f6e4",
+          "g1f3",
+          "c8g4",
+          "f1e2",
+          "b8c6",
+          "d2d4",
+          "f8b4",
+          "d1d3",
+          "g4f5",
+          "d3e3",
+          "e8g8",
+          "e1g1",
+          "b4e7",
+          "f3e1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -1
+        },
+        "pv": [
+          "f1c4",
+          "b8c6",
+          "c4b3",
+          "f8c5",
+          "g1f3",
+          "d7d6",
+          "d2d3",
+          "c6a5",
+          "d3d4",
+          "e5d4",
+          "f3d4",
+          "e8g8"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 807
+      },
+      "pv": [
+        "f6h5",
+        "g1f3",
+        "f8c5",
+        "f3e5",
+        "d7d6",
+        "e5f7",
+        "e8f7",
+        "d2d3",
+        "c5b4",
+        "f1e2",
+        "h5f6",
+        "c1d2",
+        "b4c3",
+        "d2c3"
+      ]
+    }
+  },
+  "6k1/5ppp/8/8/2b5/8/5PPP/3R2K1 w - - 0 1|d1d3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["d1d8"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 607
+        },
+        "pv": [
+          "d1d4",
+          "f7f6",
+          "d4c4",
+          "g8f7",
+          "g2g4",
+          "f7f8",
+          "c4d4",
+          "f8f7",
+          "h2h4",
+          "f7e6",
+          "d4d1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 299
+        },
+        "pv": [
+          "d1c1",
+          "c4e6",
+          "h2h4",
+          "g7g6",
+          "c1c7",
+          "h7h6",
+          "g1h2",
+          "g8g7",
+          "h2g3",
+          "g7g8",
+          "g3f4",
+          "g8g7",
+          "c7c3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 541
+      },
+      "pv": ["c4d3", "f2f3", "d3a6", "g1f2", "h7h5", "f2g3", "g8h7", "g3h4", "h7h6"]
+    }
+  },
+  "rnb1kbnr/pppp1ppp/8/4p3/4P2q/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3|a2a3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 865
+        },
+        "pv": [
+          "f3h4",
+          "g8f6",
+          "g2g3",
+          "f6e4",
+          "d2d3",
+          "e4f2",
+          "e1f2",
+          "d7d5",
+          "f1e2",
+          "b8c6",
+          "h1f1",
+          "d5d4",
+          "c2c3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 241
+        },
+        "pv": [
+          "b1c3",
+          "h4e7",
+          "c3d5",
+          "e7d8",
+          "f3e5",
+          "d7d6",
+          "e5c4",
+          "g8f6",
+          "d5f6",
+          "d8f6",
+          "d2d4",
+          "b8c6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 112
+        },
+        "pv": [
+          "d2d4",
+          "h4e4",
+          "f1e2",
+          "e5d4",
+          "e1g1",
+          "b8c6",
+          "c2c3",
+          "e4g6",
+          "f1e1",
+          "f8e7",
+          "c3d4",
+          "d7d5",
+          "b1c3",
+          "g8f6",
+          "c3b5",
+          "e8g8",
+          "b5c7"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -51
+      },
+      "pv": [
+        "h4e4",
+        "f1e2",
+        "e4f5",
+        "b1c3",
+        "g8f6",
+        "d2d4",
+        "d7d6",
+        "h2h3",
+        "b8c6",
+        "g2g4",
+        "f5d7",
+        "g4g5",
+        "f6g8",
+        "c1e3",
+        "g8e7",
+        "d4d5",
+        "c6d8",
+        "f3h4"
+      ]
+    }
+  },
+  "6k1/5ppp/8/8/2B5/3r4/5PPP/6K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 540
+        },
+        "pv": [
+          "c4d3",
+          "h7h6",
+          "g1f1",
+          "g8f8",
+          "f1e2",
+          "f8e7",
+          "e2f3",
+          "e7f6",
+          "d3c2",
+          "f6e5",
+          "c2b3",
+          "f7f6",
+          "g2g3",
+          "e5f5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -325
+        },
+        "pv": ["g2g3", "d3d1", "g1g2", "g7g5", "h2h3", "g8g7", "c4a6", "d1d2", "g2f1"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -334
+        },
+        "pv": ["f2f3", "d3d1", "g1f2", "d1d6", "g2g3", "g7g5", "f2e3", "g8g7"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 286
+      },
+      "pv": [
+        "d3d1",
+        "g1g2",
+        "g8f8",
+        "h2h4",
+        "d1d2",
+        "g2f1",
+        "f8e7",
+        "c4e2",
+        "e7d6",
+        "f2f4",
+        "d2c2",
+        "e2h5",
+        "c2c7",
+        "f1f2",
+        "h7h6",
+        "h5f3"
+      ]
+    }
+  },
+  "rnbqkb1r/pppppppp/8/3n4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 3|g1f3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 656
+        },
+        "pv": ["e4d5", "c7c6", "b1c3", "c6d5", "d2d4", "e7e6", "g1f3", "b8c6", "a2a3", "f8d6"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 107
+        },
+        "pv": ["d2d4", "d5b6", "f1e2", "e7e6", "c2c4", "d7d5", "c4c5", "b6d7"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 98
+        },
+        "pv": [
+          "c2c4",
+          "d5f6",
+          "e4e5",
+          "f6g8",
+          "d2d4",
+          "d7d6",
+          "g1f3",
+          "d6e5",
+          "f3e5",
+          "b8d7",
+          "e5d3",
+          "g8f6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -87
+      },
+      "pv": [
+        "d5b6",
+        "d2d4",
+        "e7e6",
+        "f1d3",
+        "c7c5",
+        "a2a4",
+        "a7a5",
+        "d3b5",
+        "c5d4",
+        "f3d4",
+        "f8e7",
+        "d1g4",
+        "b8c6",
+        "c1e3",
+        "e8g8"
+      ]
+    }
+  },
+  "2k5/ppp2ppp/6n1/8/8/4B3/PPP2PPP/6K1 w - - 0 1|e3a7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 8
+        },
+        "pv": [
+          "b2b3",
+          "c8d7",
+          "g1f1",
+          "g6e5",
+          "f1e2",
+          "d7e6",
+          "f2f3",
+          "a7a6",
+          "c2c4",
+          "b7b5",
+          "c4b5",
+          "a6b5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 2
+        },
+        "pv": [
+          "g1f1",
+          "c8d7",
+          "f1e2",
+          "f7f6",
+          "e2d3",
+          "d7e6",
+          "b2b3",
+          "a7a6",
+          "d3e4",
+          "f6f5",
+          "e4d4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "f2f3",
+          "c8d7",
+          "g1f2",
+          "d7d6",
+          "b2b3",
+          "a7a6",
+          "f2e2",
+          "g6e5",
+          "e3c1",
+          "b7b5",
+          "f3f4",
+          "e5d7",
+          "e2d3",
+          "d6d5"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 264
+      },
+      "pv": [
+        "b7b6",
+        "g1f1",
+        "c8b7",
+        "a7b6",
+        "c7b6",
+        "f1e2",
+        "b7c6",
+        "a2a4",
+        "g6e5",
+        "b2b3",
+        "c6d5",
+        "e2e3",
+        "e5c6",
+        "e3d3",
+        "c6b4",
+        "d3d2",
+        "d5c5",
+        "c2c3",
+        "b4c6",
+        "g2g3",
+        "c5d5",
+        "d2d3",
+        "c6a5"
+      ]
+    }
+  },
+  "r3k3/pp1b1ppp/8/1N6/8/8/PPP2PPP/4K2R w - - 0 1|b5a7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 537
+        },
+        "pv": [
+          "b5c7",
+          "e8d8",
+          "c7a8",
+          "b7b6",
+          "e1d2",
+          "d7c6",
+          "h1e1",
+          "c6a8",
+          "f2f4",
+          "d8c8",
+          "g2g4",
+          "a8b7",
+          "e1e3",
+          "b7d5",
+          "f4f5",
+          "d5a2"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 190
+        },
+        "pv": [
+          "b5d4",
+          "a8c8",
+          "g2g3",
+          "c8c4",
+          "c2c3",
+          "c4a4",
+          "a2a3",
+          "a4a6",
+          "e1d2",
+          "e8d8",
+          "h1e1",
+          "a6f6",
+          "f2f4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 148
+        },
+        "pv": [
+          "b5c3",
+          "a8d8",
+          "e1d1",
+          "d7c6",
+          "d1e2",
+          "e8f8",
+          "f2f3",
+          "d8d6",
+          "h1d1",
+          "d6h6",
+          "h2h3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 450
+      },
+      "pv": ["a8a7", "a2a3", "a7a6", "e1d2", "a6d6", "d2c1", "d6f6", "f2f3", "f6h6", "h2h4", "e8d8"]
+    }
+  },
+  "6k1/ppp2ppp/4b3/8/8/5N2/PPP2PPP/2K5 b - - 0 1|e6a2": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 17
+        },
+        "pv": [
+          "e6d5",
+          "f3e1",
+          "g8f8",
+          "c1d2",
+          "f8e7",
+          "f2f3",
+          "e7d6",
+          "b2b3",
+          "d5e6",
+          "e1d3",
+          "g7g5",
+          "d3c1",
+          "e6f5",
+          "c1e2",
+          "f5g6",
+          "c2c4",
+          "f7f6",
+          "e2d4",
+          "d6e5",
+          "d4b5",
+          "c7c6",
+          "b5a7",
+          "e5f4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 13
+        },
+        "pv": [
+          "g8f8",
+          "f3d4",
+          "f8e7",
+          "c1d2",
+          "c7c5",
+          "d4b5",
+          "a7a6",
+          "b5c3",
+          "e7d6",
+          "c3e4",
+          "d6c6",
+          "a2a3",
+          "b7b5",
+          "e4g3"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 8
+        },
+        "pv": [
+          "c7c5",
+          "f3d2",
+          "g8f8",
+          "f2f3",
+          "e6d5",
+          "c2c4",
+          "d5e6",
+          "c1c2",
+          "e6f5",
+          "c2c3",
+          "f8e7",
+          "g2g4",
+          "f5e6",
+          "d2e4",
+          "b7b6",
+          "c3d3",
+          "f7f5",
+          "g4f5",
+          "e6f5",
+          "d3e3",
+          "e7e6",
+          "e3f4",
+          "h7h6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 246
+      },
+      "pv": [
+        "b2b3",
+        "g8f8",
+        "c1b2",
+        "a2b3",
+        "c2b3",
+        "f8e7",
+        "f3g5",
+        "b7b6",
+        "b2c3",
+        "a7a5",
+        "g5e4",
+        "f7f5",
+        "e4g5",
+        "h7h6",
+        "g5f3",
+        "e7e6",
+        "f3d4",
+        "e6e5",
+        "d4b5",
+        "c7c6",
+        "b5d4",
+        "c6c5",
+        "d4b5",
+        "e5d5",
+        "b5a7",
+        "g7g5",
+        "a7b5",
+        "h6h5",
+        "b5a7"
+      ]
+    }
+  },
+  "q3k3/8/8/1N6/8/8/5PPP/6K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 787
+        },
+        "pv": ["b5c7", "e8d7", "c7a8", "d7c8", "h2h3", "c8b8", "h3h4"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -719
+        },
+        "pv": [
+          "g2g3",
+          "a8c6",
+          "b5d4",
+          "c6d5",
+          "d4f3",
+          "d5f3",
+          "h2h4",
+          "f3d1",
+          "g1h2",
+          "d1e2",
+          "h2g2"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -719
+        },
+        "pv": [
+          "g2g4",
+          "a8b8",
+          "b5a3",
+          "b8b3",
+          "g1g2",
+          "b3a3",
+          "h2h4",
+          "e8f7",
+          "f2f4",
+          "a3b2",
+          "g2g3",
+          "b2d2",
+          "h4h5",
+          "d2e3",
+          "g3g2",
+          "e3f4",
+          "h5h6",
+          "f4e4",
+          "g2f2",
+          "f7g6",
+          "g4g5",
+          "e4c2",
+          "f2e3",
+          "c2c5",
+          "e3d2",
+          "c5d4",
+          "d2e2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 734
+      },
+      "pv": [
+        "e8d7",
+        "h2h4",
+        "a8a4",
+        "b5c3",
+        "a4a1",
+        "g1g2",
+        "a1c3",
+        "g3g4",
+        "c3d3",
+        "h4h5",
+        "d3d5",
+        "f2f3",
+        "d7e6",
+        "g2g3"
+      ]
+    }
+  },
+  "4k3/pp3ppp/2n1n3/8/3P4/8/PP3PPP/2B1K3 w - - 0 1|e1e2": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "d4d5",
+          "e8d7",
+          "d5c6",
+          "d7c6",
+          "e1e2",
+          "e6d4",
+          "e2d3",
+          "c6d5",
+          "c1d2",
+          "d4c6",
+          "d3e3",
+          "c6e5",
+          "d2c3",
+          "g7g6",
+          "c3e5",
+          "d5e5",
+          "e3d3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -489
+        },
+        "pv": [
+          "c1e3",
+          "c6d4",
+          "e3d4",
+          "e6d4",
+          "e1d2",
+          "d4e6",
+          "g2g3",
+          "e8e7",
+          "d2d3",
+          "e7d6",
+          "d3e4",
+          "f7f5",
+          "e4f5",
+          "e6d4",
+          "f5g5",
+          "d4c6",
+          "f2f4",
+          "d6e7",
+          "g5h5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -493
+        },
+        "pv": [
+          "e1d2",
+          "c6d4",
+          "d2d3",
+          "d4c6",
+          "c1d2",
+          "e8d7",
+          "d3e4",
+          "e6c5",
+          "e4e3",
+          "g7g6",
+          "g2g4"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 506
+      },
+      "pv": [
+        "e6d4",
+        "e2d3",
+        "d4f5",
+        "c1f4",
+        "f5e7",
+        "d3c4",
+        "e7c8",
+        "c4c5",
+        "e8d7",
+        "f4d2",
+        "c8d6",
+        "d2f4"
+      ]
+    }
+  },
+  "r7/6pk/8/7n/8/8/5PPP/4Q1K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 857
+        },
+        "pv": ["e1e4", "h7h6", "e4a8", "h5f6", "a8a6", "h6g6", "a6d3", "g6f7"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 566
+        },
+        "pv": [
+          "g2g4",
+          "h5f6",
+          "g4g5",
+          "a8e8",
+          "e1d1",
+          "e8f8",
+          "g5f6",
+          "f8f6",
+          "d1d3",
+          "h7h8",
+          "d3e4",
+          "f6h6",
+          "g1g2",
+          "h8g8",
+          "f2f4",
+          "g8h8",
+          "e4e7"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 428
+        },
+        "pv": [
+          "e1e5",
+          "g7g6",
+          "g2g4",
+          "h5g7",
+          "e5d4",
+          "a8a6",
+          "f2f4",
+          "a6c6",
+          "g1g2",
+          "c6e6",
+          "g2g3",
+          "e6a6",
+          "d4d5",
+          "a6f6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -425
+      },
+      "pv": [
+        "g7g6",
+        "e1e7",
+        "h5g7",
+        "e7h4",
+        "h7g8",
+        "h4f6",
+        "g8h7",
+        "g2g4",
+        "a8e8",
+        "g1g2",
+        "e8e4",
+        "f6f3",
+        "e4e6",
+        "h3h4",
+        "e6d6",
+        "f3f7"
+      ]
+    }
+  },
+  "3qk3/8/8/1N6/8/8/5PPP/6K1 b - - 0 1|d8a8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["d8d1"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 764
+        },
+        "pv": [
+          "d8d3",
+          "h2h4",
+          "d3b5",
+          "g2g4",
+          "e8f7",
+          "h4h5",
+          "b5e2",
+          "g1g2",
+          "e2g4",
+          "g2f1",
+          "g4d1",
+          "f1g2",
+          "d1d3",
+          "h5h6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 764
+        },
+        "pv": ["d8a5", "g2g4", "a5b5", "h2h4", "b5e2", "g1g2", "e8f7", "g4g5"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 789
+      },
+      "pv": [
+        "b5c7",
+        "e8d7",
+        "c7a8",
+        "d7c6",
+        "g1f1",
+        "c6b5",
+        "a8b6",
+        "b5b4",
+        "h2h4",
+        "b4c5",
+        "h4h5",
+        "c5b5",
+        "h5h6",
+        "b5c6",
+        "f1e1"
+      ]
+    }
+  },
+  "1n2k3/pp3ppp/4n3/8/3P4/8/PP3PPP/2B1K3 b - - 0 1|b8c6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 490
+        },
+        "pv": [
+          "e6d4",
+          "c1e3",
+          "d4c6",
+          "e1e2",
+          "b8d7",
+          "e2d3",
+          "d7e5",
+          "d3e4",
+          "e5g4",
+          "e3d4",
+          "c6d4",
+          "e4d4",
+          "g4f2",
+          "h2h3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 485
+        },
+        "pv": [
+          "b8d7",
+          "d4d5",
+          "e6c7",
+          "c1e3",
+          "a7a6",
+          "e1e2",
+          "f7f5",
+          "e2d3",
+          "c7d5",
+          "d3c4",
+          "d5f6",
+          "e3d4",
+          "g7g6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 461
+        },
+        "pv": [
+          "b8a6",
+          "d4d5",
+          "e6f8",
+          "c1e3",
+          "b7b6",
+          "e1d2",
+          "a6b4",
+          "d2c3",
+          "b4d5",
+          "c3c4",
+          "d5c7",
+          "e3d4",
+          "f7f6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -1
+      },
+      "pv": [
+        "d4d5",
+        "e8d7",
+        "d5c6",
+        "d7c6",
+        "e1d2",
+        "c6d5",
+        "d2c3",
+        "e6d4",
+        "c1e3",
+        "d4c6",
+        "f2f3",
+        "g7g6",
+        "b2b3",
+        "h7h5",
+        "e3f2",
+        "a7a6"
+      ]
+    }
+  },
+  "8/r5pk/8/7n/8/8/5PPP/4Q1K1 b - - 0 1|a7a8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -462
+        },
+        "pv": [
+          "g7g6",
+          "e1e5",
+          "a7f7",
+          "g2g3",
+          "h5f6",
+          "h2h3",
+          "f6g8",
+          "g3g4",
+          "f7e7",
+          "e5c5",
+          "h7g7",
+          "f2f3",
+          "g7f7",
+          "c5d5",
+          "f7g7",
+          "d5d4",
+          "g7h7"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -467
+        },
+        "pv": [
+          "h5f6",
+          "f2f3",
+          "g7g6",
+          "g2g4",
+          "h7g7",
+          "e1e6",
+          "g6g5",
+          "e6e5",
+          "g7f7",
+          "e5g5",
+          "a7a1",
+          "g1g2",
+          "a1a2",
+          "g2h3"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -485
+        },
+        "pv": [
+          "a7f7",
+          "e1e8",
+          "f7f5",
+          "g2g4",
+          "h5f6",
+          "e8a4",
+          "f5e5",
+          "a4f4",
+          "e5e4",
+          "f4f5",
+          "h7g8",
+          "f2f3",
+          "e4e8",
+          "f5b1",
+          "e8f8"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 885
+      },
+      "pv": ["e1e4", "h7h6", "e4a8", "h5f6", "a8a2", "f6g4", "a2a6", "h6h5"]
+    }
+  },
+  "4k3/8/8/4q3/8/8/5PPP/R4K2 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 837
+        },
+        "pv": ["a1e1", "e5e7", "e1e7", "e8e7", "f1e2", "e7d7", "h2h4", "d7e7", "g2g3"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -4
+        },
+        "pv": [
+          "a1d1",
+          "e5h2",
+          "d1e1",
+          "e8d8",
+          "f2f3",
+          "h2h1",
+          "f1f2",
+          "h1h4",
+          "f2f1",
+          "h4c4",
+          "f1g1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -32
+        },
+        "pv": ["a1a2", "e5h2", "a2e2", "e8d7", "f2f3", "h2h1", "f1f2", "h1h4", "f2g1"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 817
+      },
+      "pv": [
+        "e5a1",
+        "f1e2",
+        "e8d7",
+        "h3h4",
+        "a1e5",
+        "e2f1",
+        "d7e6",
+        "g2g3",
+        "e5d5",
+        "h4h5",
+        "d5h5",
+        "f1g2",
+        "e6e5",
+        "f2f3"
+      ]
+    }
+  },
+  "4k3/3r4/8/8/8/8/4BPPP/6K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 753
+        },
+        "pv": [
+          "e2b5",
+          "e8e7",
+          "b5d7",
+          "e7d6",
+          "f2f3",
+          "d6d5",
+          "d7f5",
+          "d5c4",
+          "f5e6",
+          "c4d3",
+          "g1f2",
+          "d3c2"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 196
+        },
+        "pv": ["f2f3", "e8f7", "g1f2", "f7f6", "g2g4", "d7d2", "h2h4", "f6e5"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 191
+        },
+        "pv": [
+          "g2g4",
+          "d7d2",
+          "e2a6",
+          "e8d7",
+          "g1g2",
+          "d2d6",
+          "a6f1",
+          "d7e6",
+          "h2h4",
+          "e6e5",
+          "g2g3",
+          "d6d1",
+          "f2f4",
+          "e5f6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -192
+      },
+      "pv": [
+        "d7d2",
+        "e2c4",
+        "e8e7",
+        "g1g2",
+        "e7f6",
+        "h2h4",
+        "d2d4",
+        "c4f1",
+        "d4d1",
+        "f1e2",
+        "d1a1",
+        "e2d3",
+        "a1a3",
+        "d3e4",
+        "f6e5"
+      ]
+    }
+  },
+  "4k3/3q4/8/8/P7/8/4BPPP/6K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 742
+        },
+        "pv": ["e2b5", "e8d8", "b5d7", "d8c7", "d7f5", "c7d6", "a4a5", "d6c5", "a5a6"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -97
+        },
+        "pv": [
+          "a4a5",
+          "d7d2",
+          "e2b5",
+          "e8d8",
+          "a5a6",
+          "d2c1",
+          "b5f1",
+          "d8e7",
+          "g2g3",
+          "e7d6",
+          "h2h4",
+          "c1a1",
+          "h4h5",
+          "a1c1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -246
+        },
+        "pv": [
+          "e2f3",
+          "d7a4",
+          "g2g3",
+          "a4a1",
+          "g1g2",
+          "e8e7",
+          "h2h4",
+          "a1b1",
+          "f3g4",
+          "b1c1",
+          "g4f3",
+          "c1h6",
+          "g2g1",
+          "h6e6",
+          "g1g2",
+          "e6f6",
+          "f3e2",
+          "f6c6",
+          "e2f3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 148
+      },
+      "pv": [
+        "d7d5",
+        "h2h4",
+        "d5e4",
+        "e2h5",
+        "e8e7",
+        "a4a5",
+        "e4e1",
+        "g1g2",
+        "e1a5",
+        "h5f3",
+        "a5d2",
+        "g2g1",
+        "d2e1",
+        "g1g2",
+        "e1a5",
+        "g2g1",
+        "a5b4",
+        "g1g2",
+        "b4c4",
+        "f3a8"
+      ]
+    }
+  },
+  "4k3/8/8/8/8/2q5/5PPP/R4K2 b - - 0 1|c3e5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 810
+        },
+        "pv": [
+          "c3a1",
+          "f1e2",
+          "e8f7",
+          "e2f3",
+          "a1g7",
+          "h2h4",
+          "f7e6",
+          "g2g3",
+          "e6e5",
+          "h4h5",
+          "g7h7",
+          "f3g2",
+          "h7h5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 25
+        },
+        "pv": ["e8d7", "a1d1", "d7c6", "f1g1", "c3c4", "g2g3", "c4b3"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 17
+        },
+        "pv": [
+          "c3d4",
+          "a1e1",
+          "e8d7",
+          "g2g3",
+          "d7d6",
+          "h2h4",
+          "d4d5",
+          "f1g1",
+          "d6c5",
+          "e1a1",
+          "c5c4",
+          "a1a7",
+          "c4d3",
+          "a7e7",
+          "d3d2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 814
+      },
+      "pv": [
+        "a1e1",
+        "e5e1",
+        "f1e1",
+        "e8f7",
+        "h2h4",
+        "f7e6",
+        "e1e2",
+        "e6d5",
+        "f2f3",
+        "d5c5",
+        "h4h5",
+        "c5d4",
+        "h5h6",
+        "d4e5",
+        "e2e3",
+        "e5f6"
+      ]
+    }
+  },
+  "4k3/r7/8/8/8/8/4BPPP/6K1 b - - 0 1|a7d7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -152
+        },
+        "pv": ["a7a2", "e2f1", "e8e7", "g2g3", "e7d6", "g1g2", "d6e5", "f1c4", "a2a4", "c4f7"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -157
+        },
+        "pv": [
+          "a7a1",
+          "e2f1",
+          "e8e7",
+          "g2g3",
+          "e7f6",
+          "g1g2",
+          "f6e5",
+          "h2h4",
+          "e5e4",
+          "f1b5",
+          "a1c1",
+          "b5e8",
+          "e4f5",
+          "e8f7",
+          "c1c7",
+          "f7b3"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -157
+        },
+        "pv": [
+          "e8e7",
+          "g2g3",
+          "a7a2",
+          "e2c4",
+          "a2a4",
+          "c4d3",
+          "a4a3",
+          "d3h7",
+          "e7f6",
+          "g1g2",
+          "a3a7",
+          "h7d3",
+          "a7a3",
+          "d3f1",
+          "f6e5",
+          "h2h4",
+          "e5e4",
+          "f1b5"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 840
+      },
+      "pv": [
+        "e2b5",
+        "e8f7",
+        "b5d7",
+        "f7f6",
+        "f2f3",
+        "f6g5",
+        "h2h4",
+        "g5h4",
+        "g1f2",
+        "h4h5",
+        "d7f5",
+        "h5g5",
+        "f2e3",
+        "g5h5",
+        "g2g4",
+        "h5h4"
+      ]
+    }
+  },
+  "4k3/8/2q5/8/P7/8/4BPPP/6K1 b - - 0 1|c6d7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 321
+        },
+        "pv": [
+          "c6c1",
+          "e2f1",
+          "c1a1",
+          "g2g3",
+          "a1a4",
+          "f1e2",
+          "a4e4",
+          "e2b5",
+          "e8e7",
+          "h2h3",
+          "e4b1",
+          "b5f1",
+          "b1a1",
+          "g1g2",
+          "a1d1",
+          "g2g1",
+          "d1e1"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 321
+        },
+        "pv": [
+          "c6a4",
+          "g2g3",
+          "a4e4",
+          "e2b5",
+          "e8e7",
+          "b5f1",
+          "e4e1",
+          "g1g2",
+          "e7f6",
+          "h2h3",
+          "e1e4",
+          "g2g1",
+          "f6e7",
+          "h3h4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 266
+        },
+        "pv": ["c6e4", "e2b5", "e8e7", "g2g3", "e7f6", "a4a5"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 748
+      },
+      "pv": [
+        "e2b5",
+        "e8e7",
+        "b5d7",
+        "e7d6",
+        "d7b5",
+        "d6c5",
+        "f2f3",
+        "c5b4",
+        "g1f1",
+        "b4a5",
+        "f1e2",
+        "a5b4",
+        "e2e1",
+        "b4a5",
+        "f3f4",
+        "a5b4"
+      ]
+    }
+  },
+  "8/8/2k4r/4ppp1/8/8/5PPP/R5K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 674
+        },
+        "pv": [
+          "a1a6",
+          "c6d7",
+          "a6h6",
+          "d7e7",
+          "h6a6",
+          "e5e4",
+          "g1f1",
+          "g5g4",
+          "a6a5",
+          "e7e6",
+          "a5c5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 10
+        },
+        "pv": [
+          "h2h3",
+          "c6d5",
+          "a1a5",
+          "d5d4",
+          "a5a4",
+          "d4d5",
+          "a4a8",
+          "f5f4",
+          "a8g8",
+          "h6h5",
+          "f2f3",
+          "e5e4",
+          "g1f1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 9
+        },
+        "pv": ["a1a5", "h6e6", "f2f3", "c6d7", "g1f2", "d7d6", "a5a2", "d6d7", "a2d2", "e6d6"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 0
+      },
+      "pv": ["c6d5", "a1a5", "d5d4", "a5a4", "d4d3", "a4a5"]
+    }
+  },
+  "6q1/8/4k3/8/8/8/4BPPP/6K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 828
+        },
+        "pv": [
+          "e2c4",
+          "e6f6",
+          "c4g8",
+          "f6g5",
+          "g8e6",
+          "g5h4",
+          "e6c4",
+          "h4g5",
+          "f2f3",
+          "g5h4",
+          "g1f2",
+          "h4h5",
+          "f2g3",
+          "h5g5"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -387
+        },
+        "pv": [
+          "h2h3",
+          "g8h7",
+          "g2g3",
+          "h7e4",
+          "e2a6",
+          "e6f6",
+          "h3h4",
+          "f6e5",
+          "a6f1",
+          "e4e1",
+          "h4h5",
+          "e1d1",
+          "h5h6",
+          "d1h5",
+          "f2f4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -387
+        },
+        "pv": [
+          "g2g3",
+          "g8a8",
+          "e2d3",
+          "a8a4",
+          "h2h3",
+          "a4d1",
+          "d3f1",
+          "e6e5",
+          "g1g2",
+          "d1d5",
+          "g2g1",
+          "d5e4",
+          "f1g2",
+          "e4e1",
+          "g2f1"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 377
+      },
+      "pv": [
+        "e6f6",
+        "e2g4",
+        "g8d5",
+        "g2g3",
+        "f6e5",
+        "h3h4",
+        "d5e4",
+        "g4h3",
+        "e4e1",
+        "h3f1",
+        "e1b1",
+        "h4h5",
+        "e5e4",
+        "h5h6",
+        "e4f3"
+      ]
+    }
+  },
+  "r5k1/5ppp/2q5/8/8/3B1P2/6PP/3Q3K w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -282
+        },
+        "pv": [
+          "d3e4",
+          "c6a4",
+          "d1a4",
+          "a8a4",
+          "h2h4",
+          "g7g6",
+          "g2g3",
+          "g8g7",
+          "h1g2",
+          "a4d4",
+          "g2h3",
+          "h7h6",
+          "e4b7",
+          "g7f6",
+          "f3f4",
+          "f6e6",
+          "h3g4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -433
+        },
+        "pv": [
+          "d3f1",
+          "c6f6",
+          "g2g3",
+          "a8d8",
+          "d1e2",
+          "f6c3",
+          "h1g1",
+          "c3c5",
+          "g1g2",
+          "g7g6",
+          "h2h4",
+          "c5c1",
+          "e2e7",
+          "d8d2",
+          "g2g1",
+          "c1c3",
+          "h4h5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -440
+        },
+        "pv": [
+          "g2g3",
+          "a8b8",
+          "d3e4",
+          "c6c7",
+          "d1d3",
+          "g7g6",
+          "e4d5",
+          "c7c1",
+          "h1g2",
+          "b8b2",
+          "g2h3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 457
+      },
+      "pv": ["c6c7", "d1e1", "g7g6", "d3f1", "a8a3", "e1e8", "g8g7", "e8e1", "c7c5", "h3h4", "a3a2"]
+    }
+  },
+  "8/2k5/7r/4ppp1/8/8/5PPP/R5K1 b - - 0 1|c7c6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 4
+        },
+        "pv": [
+          "h6c6",
+          "g2g3",
+          "c7d6",
+          "g1g2",
+          "g5g4",
+          "a1a8",
+          "d6e6",
+          "a8g8",
+          "c6c2",
+          "g8h8",
+          "e6d5",
+          "h8f8",
+          "d5e4",
+          "f8g8",
+          "c2e2"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 4
+        },
+        "pv": [
+          "h6d6",
+          "g2g3",
+          "c7d7",
+          "g1g2",
+          "d7e6",
+          "a1a8",
+          "e6f7",
+          "a8a4",
+          "g5g4",
+          "a4a7",
+          "f7g6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 3
+        },
+        "pv": [
+          "h6b6",
+          "a1a7",
+          "c7d6",
+          "g2g3",
+          "g5g4",
+          "a7h7",
+          "d6d5",
+          "g1g2",
+          "b6f6",
+          "h7d7",
+          "d5e6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 682
+      },
+      "pv": [
+        "a1a6",
+        "c6d5",
+        "a6h6",
+        "g5g4",
+        "g1f1",
+        "e5e4",
+        "h6a6",
+        "d5d4",
+        "a6a8",
+        "f5f4",
+        "a8d8",
+        "d4c3"
+      ]
+    }
+  },
+  "6q1/3k4/8/8/8/8/4BPPP/6K1 b - - 0 1|d7e6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 508
+        },
+        "pv": [
+          "g8e6",
+          "e2f1",
+          "d7d6",
+          "h2h4",
+          "e6e4",
+          "h4h5",
+          "d6e7",
+          "h5h6",
+          "e4h7",
+          "f1b5",
+          "h7h6",
+          "b5f1",
+          "h6d2",
+          "g2g3",
+          "e7d6",
+          "f1h3",
+          "d2e1",
+          "g1g2"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 501
+        },
+        "pv": [
+          "g8h7",
+          "e2g4",
+          "d7e7",
+          "g4e2",
+          "h7b1",
+          "e2f1",
+          "b1e4",
+          "f1b5",
+          "e7d6",
+          "b5f1",
+          "e4e1",
+          "h2h4",
+          "e1e4",
+          "h4h5",
+          "d6e7",
+          "g2g3",
+          "e4c2",
+          "f1g2"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 493
+        },
+        "pv": [
+          "d7d6",
+          "g2g3",
+          "g8d5",
+          "e2f1",
+          "d5e4",
+          "h2h3",
+          "d6e5",
+          "g1h2",
+          "e5d4",
+          "g3g4",
+          "e4f3",
+          "h2g1",
+          "d4c3",
+          "f1g2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 852
+      },
+      "pv": [
+        "e2c4",
+        "e6f6",
+        "c4g8",
+        "f6g5",
+        "g8e6",
+        "g5h4",
+        "f2f3",
+        "h4h5",
+        "g1f2",
+        "h5g6",
+        "e6f5",
+        "g6g5",
+        "h2h4",
+        "g5f4",
+        "f5e6"
+      ]
+    }
+  },
+  "8/8/2k5/4ppp1/8/7r/5PPP/R5K1 b - - 0 1|h3h6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 5
+        },
+        "pv": [
+          "h3d3",
+          "f2f3",
+          "c6d5",
+          "a1a2",
+          "e5e4",
+          "f3e4",
+          "f5e4",
+          "g1f2",
+          "d5d4",
+          "a2b2",
+          "d3c3",
+          "f2e2",
+          "d4e5",
+          "b2b4",
+          "c3a3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "h3c3",
+          "g2g4",
+          "f5f4",
+          "g1g2",
+          "c6d5",
+          "a1a7",
+          "d5e6",
+          "a7g7",
+          "e6f6",
+          "g7d7",
+          "c3c6",
+          "g2f3",
+          "f6e6",
+          "d7g7",
+          "c6c3",
+          "f3g2"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "h3b3",
+          "g2g4",
+          "f5g4",
+          "a1a4",
+          "b3b1",
+          "g1g2",
+          "c6d5",
+          "a4g4",
+          "d5e6",
+          "g4g5",
+          "b1b5",
+          "g5h5",
+          "b5b8"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 658
+      },
+      "pv": ["a1a6", "c6d5", "a6h6", "g5g4", "h6f6", "d5e4", "g1f1", "e4d4", "f6f5"]
+    }
+  },
+  "3qk3/8/8/4N3/8/8/5PPP/4R1K1 w - - 0 1|g2g3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 788
+        },
+        "pv": [
+          "e5c6",
+          "e8d7",
+          "e1d1",
+          "d7c6",
+          "d1d8",
+          "c6b6",
+          "d8d6",
+          "b6b7",
+          "g2g3",
+          "b7c7",
+          "g1g2",
+          "c7d6"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 315
+        },
+        "pv": [
+          "g2g3",
+          "d8d5",
+          "e5f3",
+          "e8f7",
+          "g1g2",
+          "f7f6",
+          "h2h3",
+          "f6g7",
+          "e1e5",
+          "d5c6",
+          "g3g4",
+          "g7h6",
+          "h3h4",
+          "h6g7",
+          "h4h5",
+          "g7h7",
+          "e5f5",
+          "c6e4",
+          "g2g3",
+          "e4c6",
+          "f5f4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 309
+        },
+        "pv": ["h2h3", "d8d5", "g1h2", "e8f8", "e5g4", "d5d2", "e1e4", "d2d1", "e4f4", "f8g8"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -306
+      },
+      "pv": ["d8d5", "e1e3", "d5d1", "g1g2", "e8f8", "e5f3", "d1c1", "e3e5", "f8g8", "h2h3", "c1c4"]
+    }
+  },
+  "8/6pk/8/8/2q1N3/8/5PPP/1B4K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 799
+        },
+        "pv": [
+          "e4d2",
+          "h7h6",
+          "d2c4",
+          "h6g5",
+          "f2f3",
+          "g5h4",
+          "g1f2",
+          "h4g5",
+          "f2g3",
+          "g5h5",
+          "h2h3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 759
+        },
+        "pv": [
+          "e4d6",
+          "h7h6",
+          "d6c4",
+          "h6h5",
+          "f2f3",
+          "h5g5",
+          "g1f2",
+          "g5h6",
+          "b1e4",
+          "h6g5",
+          "f2g3",
+          "g5f6",
+          "h2h4",
+          "g7g6",
+          "e4g6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": ["e4g3", "h7h6", "b1e4", "h6g5", "h2h3", "g5h6", "e4f3", "c4c3", "g3f1"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 497
+      },
+      "pv": [
+        "c4c1",
+        "g1h2",
+        "c1b1",
+        "f2f3",
+        "b1c2",
+        "h3h4",
+        "h7g6",
+        "h2h3",
+        "g6f5",
+        "h3g3",
+        "c2e2",
+        "e4d6",
+        "f5g6",
+        "d6b7",
+        "e2d2",
+        "g3h2",
+        "g6f6",
+        "h2g3"
+      ]
+    }
+  },
+  "3q1k2/8/8/4N3/8/8/5PPP/4R1K1 b - - 0 1|f8e8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -298
+        },
+        "pv": [
+          "f8g7",
+          "g2g3",
+          "d8d5",
+          "h2h3",
+          "d5b7",
+          "h3h4",
+          "b7c8",
+          "e1e3",
+          "c8h3",
+          "e5f3",
+          "h3c8",
+          "e3e5",
+          "c8c3",
+          "g1g2",
+          "c3c6",
+          "e5f5",
+          "c6c2",
+          "f5f4",
+          "c2c6",
+          "g2h2",
+          "c6c1",
+          "f3e5",
+          "c1f1"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -300
+        },
+        "pv": [
+          "d8d2",
+          "e5f3",
+          "d2a2",
+          "g2g3",
+          "f8g7",
+          "h2h4",
+          "g7h6",
+          "f3g5",
+          "h6g7",
+          "e1e3",
+          "a2c2",
+          "g1g2",
+          "c2c1",
+          "g5f3",
+          "c1c6",
+          "g2g1",
+          "g7h7",
+          "f3g5",
+          "h7g7"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -330
+        },
+        "pv": ["d8d6", "g2g3", "f8g7", "e5f3", "d6c6", "e1e3", "c6c2", "h2h4", "g7h7", "g1g2"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 810
+      },
+      "pv": [
+        "e5c6",
+        "e8d7",
+        "c6d8",
+        "d7d8",
+        "e1d1",
+        "d8c7",
+        "d1d6",
+        "c7b7",
+        "f2f3",
+        "b7c8",
+        "d6d1",
+        "c8c7",
+        "g1f1"
+      ]
+    }
+  },
+  "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["d1d8"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 678
+        },
+        "pv": [
+          "g2g4",
+          "g8f8",
+          "g4g5",
+          "f8e8",
+          "g5g6",
+          "f7g6",
+          "f2f4",
+          "e8f7",
+          "g1f2",
+          "f7f6",
+          "f2f3",
+          "f6f5",
+          "d1d5",
+          "f5e6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 658
+        },
+        "pv": [
+          "g1f1",
+          "f7f6",
+          "g2g4",
+          "g7g6",
+          "f2f4",
+          "g8g7",
+          "h2h4",
+          "g7h6",
+          "f1e2",
+          "h6g7",
+          "f4f5",
+          "g7g8",
+          "f5g6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -619
+      },
+      "pv": ["g8f8", "d1e1", "h7h6", "g2g4", "f8g8", "g1f1", "g8f8", "e1d1"]
+    }
+  },
+  "4q1k1/5ppp/8/8/8/8/5PPP/4Q1K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["e1e8"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 3
+        },
+        "pv": ["e1d2", "e8c8", "h2h4", "h7h6", "d2d4", "g8h7", "d4d5"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 2
+        },
+        "pv": [
+          "e1d1",
+          "h7h6",
+          "d1d2",
+          "e8e4",
+          "h2h4",
+          "g7g6",
+          "h4h5",
+          "g6h5",
+          "f2f3",
+          "e4e7",
+          "d2h6"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 1110
+      },
+      "pv": [
+        "e8e1",
+        "g1h2",
+        "e1f2",
+        "h3h4",
+        "h7h5",
+        "h2h3",
+        "g8f8",
+        "g2g4",
+        "h5g4",
+        "h3g4",
+        "f8e8",
+        "g4g5",
+        "f2g2",
+        "g5f4"
+      ]
+    }
+  },
+  "4q1k1/5ppp/8/8/8/8/5PPP/4Q1K1 b - - 0 1|h7h6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["e8e1"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "g8f8",
+          "e1b4",
+          "f8g8",
+          "h2h4",
+          "h7h5",
+          "b4f4",
+          "e8d8",
+          "g1h2",
+          "g8h7",
+          "f4f5",
+          "h7g8"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": ["e8d8", "h2h4", "g7g6", "e1e5", "d8d1", "g1h2", "d1d2", "e5b8", "g8g7"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 1101
+      },
+      "pv": [
+        "e1e8",
+        "g8h7",
+        "e8f7",
+        "h6h5",
+        "h2h4",
+        "h7h8",
+        "g1f1",
+        "g7g5",
+        "f1e1",
+        "g5g4",
+        "f7f6",
+        "h8g8",
+        "f6a1",
+        "g8f8"
+      ]
+    }
+  },
+  "6k1/5pp1/7p/q7/8/8/5PPP/4Q1K1 w - - 0 1|e1e5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 827
+        },
+        "pv": [
+          "e1a5",
+          "f7f6",
+          "g2g3",
+          "g8f7",
+          "a5a2",
+          "f7f8",
+          "g1f1",
+          "g7g6",
+          "a2a8",
+          "f8g7",
+          "g3g4",
+          "g7f7",
+          "h2h4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 5
+        },
+        "pv": ["e1e8", "g8h7", "g2g4", "a5d5", "e8e2", "h7h8", "e2e1", "d5f3", "e1b4", "h8h7"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": ["e1d1", "g8h7", "d1b1", "h7g8", "b1d1"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 988
+      },
+      "pv": [
+        "a5e5",
+        "g1f1",
+        "e5h2",
+        "f2f4",
+        "g8h7",
+        "f1e2",
+        "h7g6",
+        "e2d3",
+        "h2f4",
+        "g2g4",
+        "f4f3",
+        "d3c4",
+        "f3g4",
+        "c4c3"
+      ]
+    }
+  },
+  "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4|d2d3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 1
+        },
+        "pv": ["h5f7"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -187
+        },
+        "pv": [
+          "h5h4",
+          "c6d4",
+          "c4b3",
+          "d7d5",
+          "e4d5",
+          "f8e7",
+          "g1f3",
+          "f6d5",
+          "h4g3",
+          "d4b3",
+          "a2b3"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -257
+        },
+        "pv": [
+          "h5g5",
+          "f6e4",
+          "g5d8",
+          "e8d8",
+          "c4f7",
+          "c6d4",
+          "d2d3",
+          "d4c2",
+          "e1d1",
+          "e4d6",
+          "c1g5",
+          "f8e7",
+          "g5e7",
+          "d8e7",
+          "d1c2",
+          "d6f7",
+          "g1f3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 860
+      },
+      "pv": ["f6h5", "g1f3", "f8e7", "c4b3", "e8f8", "b1c3", "h5f6"]
+    }
+  },
+  "r5k1/5ppp/8/8/8/8/5PPP/4R1K1 b - - 0 1|a8a2": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 5
+        },
+        "pv": [
+          "f7f6",
+          "e1b1",
+          "h7h5",
+          "h2h4",
+          "g8h7",
+          "f2f3",
+          "h7g8",
+          "b1b7",
+          "a8a1",
+          "g1f2",
+          "g8h7"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 2
+        },
+        "pv": ["a8d8", "f2f4", "f7f5", "e1b1", "h7h5", "g1f2", "g8h7", "b1b7"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 2
+        },
+        "pv": ["a8b8", "g2g3", "f7f6", "e1e7", "h7h5", "g1g2", "g7g6"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "mate",
+        "value": 1
+      },
+      "pv": ["e1e8"]
+    }
+  },
+  "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2|g2g4": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -61
+        },
+        "pv": [
+          "e2e3",
+          "b8c6",
+          "b1c3",
+          "g8f6",
+          "d2d4",
+          "d7d5",
+          "f1b5",
+          "f8d6",
+          "g1e2",
+          "e8g8",
+          "e1g1",
+          "e5e4",
+          "f3e4",
+          "f6e4",
+          "c3e4",
+          "d5e4",
+          "c1d2"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -61
+        },
+        "pv": [
+          "b1c3",
+          "g8f6",
+          "d2d4",
+          "e5d4",
+          "d1d4",
+          "b8c6",
+          "d4a4",
+          "a8b8",
+          "c1d2",
+          "a7a6",
+          "a4h4",
+          "b7b5",
+          "e2e4",
+          "b5b4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -65
+        },
+        "pv": [
+          "e2e4",
+          "g8f6",
+          "d2d4",
+          "e5d4",
+          "d1d4",
+          "b8c6",
+          "d4e3",
+          "f8e7",
+          "c2c4",
+          "e8g8",
+          "g1e2",
+          "c6e5",
+          "e2f4",
+          "f8e8",
+          "b1c3",
+          "b7b6",
+          "e3e2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "mate",
+        "value": 1
+      },
+      "pv": ["d8h4"]
+    }
+  },
+  "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3|g8f6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 28
+        },
+        "pv": [
+          "g7g6",
+          "h5f3",
+          "g8f6",
+          "g1e2",
+          "f8g7",
+          "d2d3",
+          "e8g8",
+          "c4b3",
+          "d7d6",
+          "b1c3",
+          "c6d4",
+          "e2d4",
+          "e5d4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 8
+        },
+        "pv": [
+          "d8e7",
+          "h5d1",
+          "f7f5",
+          "d2d3",
+          "g8f6",
+          "b1c3",
+          "c6a5",
+          "e4f5",
+          "c7c6",
+          "g1f3",
+          "d7d5",
+          "e1g1",
+          "c8f5",
+          "c4b3",
+          "e7e6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -13
+        },
+        "pv": ["d8f6", "b1c3", "f8c5", "f2f4", "g7g6", "h5g5", "f6g5", "f4g5", "c6d4", "c3d5"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "mate",
+        "value": 1
+      },
+      "pv": ["h5f7"]
+    }
+  },
+  "4k3/ppp1pppp/2n5/1B6/3P4/8/PPP2PPP/6K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 413
+        },
+        "pv": [
+          "d4d5",
+          "h7h6",
+          "d5c6",
+          "b7b6",
+          "b5d3",
+          "e8f8",
+          "d3e2",
+          "f8g8",
+          "f2f3",
+          "g8f8",
+          "e2f1",
+          "f8g8",
+          "f1b5",
+          "g8f8",
+          "b5e2",
+          "e7e6"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 160
+        },
+        "pv": [
+          "g1f1",
+          "e8d8",
+          "b5c6",
+          "b7c6",
+          "f1e2",
+          "d8d7",
+          "e2d3",
+          "d7d6",
+          "d3c4",
+          "h7h6",
+          "b2b4",
+          "g7g5",
+          "g2g4",
+          "e7e6",
+          "c2c3",
+          "f7f5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 126
+        },
+        "pv": [
+          "b5c6",
+          "b7c6",
+          "g1f1",
+          "e8d7",
+          "b2b4",
+          "d7e6",
+          "f1e2",
+          "e6d5",
+          "e2d3",
+          "g7g5",
+          "c2c3",
+          "f7f6",
+          "c3c4",
+          "d5e6",
+          "d3e4",
+          "h7h5",
+          "e4d3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -96
+      },
+      "pv": [
+        "e7e6",
+        "b5c6",
+        "b7c6",
+        "g1f1",
+        "e8e7",
+        "f1e2",
+        "e7d6",
+        "b2b4",
+        "g7g5",
+        "e2d3",
+        "d6d5",
+        "c2c4",
+        "d5d6",
+        "f2f4",
+        "g5f4",
+        "d3e4",
+        "f4f3",
+        "g2f3"
+      ]
+    }
+  },
+  "6k1/ppp2ppp/8/3p4/1b6/2N5/PPP1PPPP/4K3 b - - 0 1|h7h6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 397
+        },
+        "pv": [
+          "d5d4",
+          "a2a4",
+          "d4c3",
+          "b2b3",
+          "g8f8",
+          "e1f1",
+          "f8e8",
+          "f1e1",
+          "e8d8",
+          "h2h3",
+          "d8d7"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 161
+        },
+        "pv": [
+          "g8f8",
+          "e1d1",
+          "b4c3",
+          "b2c3",
+          "f8e7",
+          "d1d2",
+          "e7d6",
+          "d2d3",
+          "d6c5",
+          "h2h3",
+          "h7h5",
+          "g2g3",
+          "f7f5",
+          "f2f3",
+          "b7b5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 111
+        },
+        "pv": [
+          "b4c3",
+          "b2c3",
+          "g8f8",
+          "e1d2",
+          "b7b5",
+          "d2d3",
+          "f8e7",
+          "d3d4",
+          "e7d6",
+          "g2g4",
+          "g7g5",
+          "e2e4",
+          "c7c5",
+          "d4d3",
+          "d6e5",
+          "e4d5",
+          "e5d5",
+          "c3c4",
+          "b5c4",
+          "d3c3",
+          "f7f6",
+          "f2f3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -109
+      },
+      "pv": [
+        "e1d1",
+        "b4c3",
+        "b2c3",
+        "g8f8",
+        "d1d2",
+        "f8e7",
+        "c3c4",
+        "d5c4",
+        "d2c3",
+        "b7b5",
+        "c3b4",
+        "a7a6",
+        "b4c5",
+        "f7f5"
+      ]
+    }
+  },
+  "r3k3/ppp3pp/3p4/4n3/8/8/PPP2PPP/1N2R1K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 497
+        },
+        "pv": [
+          "f2f4",
+          "e8d7",
+          "f4e5",
+          "a8e8",
+          "b1d2",
+          "e8e5",
+          "e1e5",
+          "d6e5",
+          "d2f1",
+          "d7d6",
+          "f1e3",
+          "d6c5",
+          "c2c3",
+          "c5d6",
+          "g1f2",
+          "d6e7",
+          "b2b3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -2
+        },
+        "pv": [
+          "e1e3",
+          "e8d7",
+          "b1c3",
+          "a8e8",
+          "g1f1",
+          "e5c4",
+          "e3e8",
+          "d7e8",
+          "c3d1",
+          "c7c6",
+          "f1e2",
+          "d6d5",
+          "f2f4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -7
+        },
+        "pv": ["e1e4", "e8d7", "b1c3", "c7c6", "e4h4", "a8h8", "c3e2", "b7b5", "b2b3"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 9
+      },
+      "pv": [
+        "e8d7",
+        "e1e4",
+        "b7b5",
+        "b1c3",
+        "c7c6",
+        "e4h4",
+        "a8h8",
+        "a2a4",
+        "a7a6",
+        "c3e2",
+        "d6d5",
+        "h4h5",
+        "d7d6",
+        "a4b5",
+        "a6b5",
+        "b2b3",
+        "e5d7"
+      ]
+    }
+  },
+  "2rr2k1/5ppp/q7/8/8/3Q4/5PPP/3R2K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 2
+        },
+        "pv": ["d3d8", "c8d8", "d1d8"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -777
+        },
+        "pv": [
+          "d3b1",
+          "d8d1",
+          "b1d1",
+          "a6a3",
+          "g2g3",
+          "c8c1",
+          "d1c1",
+          "a3c1",
+          "g1g2",
+          "c1c2",
+          "h2h3"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -811
+        },
+        "pv": ["d3f3", "d8d1", "f3d1", "a6h6", "g2g3", "c8c1", "d1c1", "h6c1", "g1g2", "c1b2"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 1268
+      },
+      "pv": [
+        "d8d3",
+        "d1f1",
+        "g8f8",
+        "f2f4",
+        "g7g6",
+        "g1h2",
+        "c8e8",
+        "h2g1",
+        "a6d6",
+        "g1h1",
+        "d6d5",
+        "h1h2",
+        "h7h6",
+        "f1b1"
+      ]
+    }
+  },
+  "6k1/5ppp/8/2q5/8/7n/6PP/3R3K b - - 0 1|h7h6": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 2
+        },
+        "pv": ["c5g1", "d1g1", "h3f2"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 4
+        },
+        "pv": ["h3f2", "h1g1", "f2h3", "g1h1", "c5g1", "d1g1", "h3f2"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 739
+        },
+        "pv": ["g8f8", "g2h3", "c5f5", "h1g1", "f5h3", "g1f2"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -715
+      },
+      "pv": [
+        "g2h3",
+        "c5f2",
+        "d1g1",
+        "f2f3",
+        "g1g2",
+        "f3f1",
+        "g2g1",
+        "f1h3",
+        "g1g2",
+        "g8f8",
+        "h1g1",
+        "h3e3",
+        "g1f1",
+        "f8e7",
+        "g2e2"
+      ]
+    }
+  },
+  "3r3k/6pp/7N/8/2Q5/8/5PPP/6K1 w - - 0 1|h2h3": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 2
+        },
+        "pv": ["c4g8", "d8g8", "h6f7"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": 4
+        },
+        "pv": ["h6f7", "h8g8", "f7h6", "g8h8", "c4g8", "d8g8", "h6f7"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 803
+        },
+        "pv": [
+          "g1f1",
+          "g7h6",
+          "c4f7",
+          "d8g8",
+          "f7f6",
+          "g8g7",
+          "f6h6",
+          "h8g8",
+          "h6f4",
+          "g7g6",
+          "f4b8",
+          "g8g7",
+          "b8b7",
+          "g7f6",
+          "f1e2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -703
+      },
+      "pv": [
+        "g7h6",
+        "c4f7",
+        "d8g8",
+        "f7f6",
+        "g8g7",
+        "f6e5",
+        "h6h5",
+        "e5h5",
+        "g7e7",
+        "h5g5",
+        "e7e1",
+        "g1h2",
+        "e1e8",
+        "g5f6",
+        "h8g8"
+      ]
+    }
+  },
+  "r1bq1rk1/p3bppp/2p1pN2/8/1PB5/P2QP3/1B3PPP/R4RK1 b - - 0 16|g8h8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -87
+        },
+        "pv": [
+          "e7f6",
+          "b2f6",
+          "d8f6",
+          "d3d6",
+          "a7a5",
+          "d6c6",
+          "a8b8",
+          "c6c7",
+          "c8b7",
+          "c7a5",
+          "b7g2",
+          "g1g2",
+          "f6g6",
+          "g2f3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -408
+        },
+        "pv": [
+          "g7f6",
+          "d3e4",
+          "a7a5",
+          "f1d1",
+          "d8c7",
+          "e4g4",
+          "g8h8",
+          "c4d3",
+          "c8a6",
+          "d3c2",
+          "f8g8",
+          "g4h4",
+          "g8g7",
+          "b2f6",
+          "e7f6",
+          "h4f6",
+          "c6c5",
+          "b4c5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "mate",
+          "value": -1
+        },
+        "pv": ["g8h8", "d3h7"]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "mate",
+        "value": 1
+      },
+      "pv": ["d3h7"]
+    }
+  },
+  "r4rk1/2pbbq2/3pp3/1p1n1pPn/p2P1P2/P1P3N1/1PBQ2PB/K3R2R b - - 4 24|h5f4": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 174
+        },
+        "pv": [
+          "h5g3",
+          "h2g3",
+          "g8g7",
+          "e1g1",
+          "f8h8",
+          "g3h4",
+          "h8h5",
+          "d2f2",
+          "a8h8",
+          "g2g4",
+          "f5g4",
+          "g1g4",
+          "e7d8",
+          "c2b1",
+          "f7f8"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -55
+        },
+        "pv": [
+          "d5f4",
+          "g3h5",
+          "f4h5",
+          "g2g4",
+          "f5g4",
+          "g5g6",
+          "f7f6",
+          "h2e5",
+          "f6g5",
+          "d2g5",
+          "e7g5",
+          "h1h5",
+          "d6e5",
+          "h5g5",
+          "d7c6",
+          "c2b1"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -72
+        },
+        "pv": [
+          "h5f4",
+          "g3f5",
+          "e7g5",
+          "h2f4",
+          "g5f4",
+          "f5h6",
+          "f4h6",
+          "d2h6",
+          "f7g7",
+          "c2h7",
+          "g8h8",
+          "h6h3",
+          "f8f6",
+          "e1e4",
+          "d5f4",
+          "e4f4",
+          "f6f4",
+          "h7e4",
+          "h8g8",
+          "e4a8",
+          "g8f8",
+          "g2g4",
+          "g7g4",
+          "h3h8",
+          "f8e7"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 41
+      },
+      "pv": [
+        "g3f5",
+        "e7g5",
+        "h2f4",
+        "g5f4",
+        "f5h6",
+        "f4h6",
+        "d2h6",
+        "f7g7",
+        "c2h7",
+        "g8h8",
+        "h6h3",
+        "f8f2",
+        "h7f5",
+        "h8g8",
+        "f5e6",
+        "d7e6",
+        "h3e6",
+        "g7f7",
+        "e6g4",
+        "f7g7",
+        "g4e4"
+      ]
+    }
+  },
+  "r1b1k2r/pp3ppp/4p3/2q5/6Q1/3BR3/P1P2PPP/R5K1 b kq - 2 15|e8f8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -1
+        },
+        "pv": [
+          "e8g8",
+          "e3g3",
+          "c5e5",
+          "a1d1",
+          "g7g6",
+          "h2h4",
+          "f8d8",
+          "g3e3",
+          "d8d4",
+          "e3e5",
+          "d4g4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -13
+        },
+        "pv": [
+          "g7g6",
+          "a1b1",
+          "e8g8",
+          "g4h4",
+          "e6e5",
+          "h4g3",
+          "f8e8",
+          "h2h4",
+          "c8d7",
+          "h4h5",
+          "e5e4",
+          "h5g6",
+          "h7g6",
+          "d3e4",
+          "d7c6",
+          "e4g6",
+          "e8e3",
+          "f2e3",
+          "f7g6",
+          "g3g6",
+          "g8h8"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -116
+        },
+        "pv": [
+          "e8f8",
+          "a1b1",
+          "c5e7",
+          "h2h4",
+          "b7b6",
+          "h4h5",
+          "h7h6",
+          "a2a4",
+          "c8b7",
+          "a4a5",
+          "e7g5",
+          "g4b4",
+          "g5e7",
+          "b4f4",
+          "e7g5",
+          "f4h2",
+          "f8g8",
+          "b1b5",
+          "g5d8",
+          "h2g3"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 126
+      },
+      "pv": [
+        "a1b1",
+        "c5c7",
+        "h2h4",
+        "h7h5",
+        "g4f3",
+        "a8b8",
+        "b1b5",
+        "c8d7",
+        "b5h5",
+        "h8h5",
+        "f3h5",
+        "f7f5",
+        "h5h7"
+      ]
+    }
+  },
+  "2r1k2r/pp3ppp/2q1p3/8/1Q6/3R3P/P1P2PP1/R5K1 b - - 2 21|c6c5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -148
+        },
+        "pv": [
+          "c8d8",
+          "a1b1",
+          "d8d3",
+          "c2d3",
+          "h8f8",
+          "b4f4",
+          "e8d7",
+          "f4d4",
+          "d7e7",
+          "d4g7",
+          "f8d8"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -153
+        },
+        "pv": [
+          "h7h5",
+          "a1d1",
+          "h8h6",
+          "b4d2",
+          "c6c7",
+          "d3d7",
+          "c7b6",
+          "d7d6",
+          "b6c7",
+          "d2g5",
+          "h6g6",
+          "g5h5",
+          "a7a6",
+          "c2c4",
+          "b7b6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -162
+        },
+        "pv": [
+          "c6b6",
+          "b4g4",
+          "e8f8",
+          "d3d7",
+          "f8g8",
+          "g4f3",
+          "c8f8",
+          "d7b7",
+          "b6a5",
+          "c2c4",
+          "h7h5",
+          "f3e3",
+          "a5a6",
+          "b7c7",
+          "h8h6",
+          "e3a7"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 240
+      },
+      "pv": [
+        "b4b7",
+        "c8c7",
+        "b7b8",
+        "c7c8",
+        "b8f4",
+        "c5c7",
+        "f4g4",
+        "e8f8",
+        "a1d1",
+        "h7h5",
+        "g4f3",
+        "c7e7",
+        "d3d7",
+        "e7f6",
+        "f3b7",
+        "c8e8",
+        "b7a7",
+        "g7g6",
+        "a7e3"
+      ]
+    }
+  },
+  "3b2k1/5pp1/7p/8/Pp1B4/1P5P/2b1NPP1/6K1 w - - 7 31|d4c5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 129
+        },
+        "pv": ["e2c1", "f7f5", "d4e3", "c2e4", "g1f1", "e4b7", "c1d3", "b7a6", "f1e2"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "d4c5",
+          "c2b3",
+          "c5b4",
+          "b3a4",
+          "b4c3",
+          "d8h4",
+          "g2g3",
+          "h4e7",
+          "c3b2",
+          "a4d7",
+          "b2a1",
+          "d7e8"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -2
+        },
+        "pv": [
+          "e2f4",
+          "c2b3",
+          "d4c5",
+          "b3a4",
+          "c5b4",
+          "d8g5",
+          "g2g3",
+          "g5f4",
+          "g3f4",
+          "a4b3",
+          "b4d2",
+          "b3e6",
+          "h3h4"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -4
+      },
+      "pv": [
+        "c2b3",
+        "c5b4",
+        "b3a4",
+        "b4c3",
+        "g8h8",
+        "c3a1",
+        "d8g5",
+        "g1h1",
+        "h6h5",
+        "e2g1",
+        "g5h4",
+        "g2g3"
+      ]
+    }
+  },
+  "rnbqkb1r/pppp1ppp/8/4p3/2PPn3/5P2/PP2P1PP/RNBQKBNR w KQkq - 0 4|d4e5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 466
+        },
+        "pv": [
+          "f3e4",
+          "e5d4",
+          "g1f3",
+          "b8c6",
+          "e2e3",
+          "f8b4",
+          "c1d2",
+          "f7f5",
+          "d2b4",
+          "c6b4",
+          "f3d4",
+          "d8h4",
+          "e1d2",
+          "f5e4",
+          "g2g3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -11
+        },
+        "pv": [
+          "g2g3",
+          "f8b4",
+          "b1d2",
+          "b4d2",
+          "c1d2",
+          "e4d2",
+          "d1d2",
+          "e5d4",
+          "d2d4",
+          "e8g8",
+          "e1c1",
+          "d7d6",
+          "e2e4",
+          "a7a5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -105
+        },
+        "pv": [
+          "g1h3",
+          "f8b4",
+          "b1d2",
+          "b4d2",
+          "c1d2",
+          "e4d2",
+          "d1d2",
+          "d8h4",
+          "g2g3",
+          "h4d4",
+          "d2d4",
+          "e5d4",
+          "e1f2",
+          "d7d6",
+          "h3f4",
+          "a7a5",
+          "a1c1",
+          "c7c5",
+          "f4d5",
+          "e8d8"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 337
+      },
+      "pv": [
+        "f8b4",
+        "b1c3",
+        "e4c3",
+        "b2c3",
+        "b4c3",
+        "c1d2",
+        "c3e5",
+        "e2e3",
+        "d8h4",
+        "g2g3",
+        "e5g3",
+        "h2g3",
+        "h4h1",
+        "e1f2",
+        "h1h6",
+        "d2c3",
+        "d7d6",
+        "g1e2",
+        "b8c6"
+      ]
+    }
+  },
+  "r1b2rk1/1p4pp/p1q1pp2/P2pn3/5BP1/3B4/1PP3KP/R3Q1R1 w - - 0 18|d3h7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": ["f4e5", "f6e5", "e1e5", "d5d4", "d3e4", "c6c4", "e4d3"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -481
+        },
+        "pv": [
+          "a1c1",
+          "e5g6",
+          "f4g3",
+          "e6e5",
+          "c2c4",
+          "f6f5",
+          "g1f1",
+          "d5d4",
+          "g2g1",
+          "e5e4",
+          "g4f5",
+          "c8f5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": -488
+        },
+        "pv": [
+          "f4d2",
+          "e5d3",
+          "c2d3",
+          "e6e5",
+          "d3d4",
+          "e5d4",
+          "h2h3",
+          "c8d7",
+          "e1f2",
+          "d4d3",
+          "f2d4",
+          "c6b5",
+          "g1e1"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 597
+      },
+      "pv": [
+        "g8h7",
+        "f4e5",
+        "f6e5",
+        "g1f1",
+        "c6c2",
+        "g2h3",
+        "c2d3",
+        "h3g2",
+        "d3f1",
+        "e1f1",
+        "f8f1",
+        "a1f1",
+        "c8d7",
+        "h2h4",
+        "d7b5",
+        "h4h5",
+        "b5f1",
+        "g2f1",
+        "a8f8",
+        "f1e2"
+      ]
+    }
+  },
+  "2k1r2r/ppqn2p1/2p1pn2/3p3p/1bPP4/P2bBB1P/1P1NN1P1/2R1QRK1 b - - 0 19|b4f8": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 258
+        },
+        "pv": [
+          "b4d2",
+          "e1d2",
+          "d5c4",
+          "f1e1",
+          "e6e5",
+          "e2c3",
+          "e5d4",
+          "e3d4",
+          "c7d6",
+          "d4f2",
+          "d7e5",
+          "d2g5",
+          "b7b6",
+          "c1d1",
+          "e5f3",
+          "g2f3",
+          "c8b7",
+          "g5g7",
+          "b7a6"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 229
+        },
+        "pv": [
+          "b4d6",
+          "b2b4",
+          "e6e5",
+          "c4c5",
+          "d6e7",
+          "c1c3",
+          "e5e4",
+          "e2f4",
+          "d7c5",
+          "f3e2",
+          "c5a4",
+          "c3b3",
+          "d3e2",
+          "e1e2",
+          "e7d6",
+          "f4g6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 126
+        },
+        "pv": [
+          "b4f8",
+          "b2b4",
+          "f8d6",
+          "b4b5",
+          "c6c5",
+          "d4c5",
+          "d6c5",
+          "e3c5",
+          "c7c5",
+          "e1f2",
+          "c8b8",
+          "c4d5",
+          "c5f2",
+          "f1f2",
+          "e6e5"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -107
+      },
+      "pv": [
+        "b2b4",
+        "f8d6",
+        "c1c3",
+        "d5c4",
+        "d2c4",
+        "d3c4",
+        "c3c4",
+        "e6e5",
+        "e2c3",
+        "e5d4",
+        "c4d4",
+        "g7g5",
+        "e1d2",
+        "d6h2",
+        "g1h1",
+        "e8e7"
+      ]
+    }
+  },
+  "2kr1b1r/p2q1npp/2N1bp2/8/2pPp3/1P2P3/PBPNQ1PP/2K1RR2 w - - 1 19|c6a5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 578
+        },
+        "pv": [
+          "c6d8",
+          "c8d8",
+          "d2e4",
+          "f8b4",
+          "e4c5",
+          "d7c6",
+          "e3e4",
+          "b4c5",
+          "d4c5",
+          "d8c8",
+          "e1d1",
+          "f7e5",
+          "e2e3",
+          "e5d3",
+          "c1b1",
+          "d3b2",
+          "b1b2",
+          "e6g4"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 526
+        },
+        "pv": [
+          "d4d5",
+          "d7d5",
+          "c6d8",
+          "c8d8",
+          "d2c4",
+          "d8c7",
+          "c1b1",
+          "d5b5",
+          "c4d2",
+          "b5e2",
+          "e1e2",
+          "e6g4",
+          "e2f2",
+          "f8c5",
+          "d2c4"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 435
+        },
+        "pv": [
+          "c6a5",
+          "c4b3",
+          "e2a6",
+          "c8b8",
+          "a5c6",
+          "b8a8",
+          "c6d8",
+          "f7d8",
+          "a2b3",
+          "d8c6",
+          "d2e4",
+          "c6b4",
+          "a6a4",
+          "d7a4",
+          "b3a4",
+          "f8e7"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -406
+      },
+      "pv": ["c8b8", "a5c4", "d7c6", "c1b1", "d8c8", "h2h4", "h7h5", "e1c1", "b8a8", "f1f2"]
+    }
+  },
+  "4k3/8/4K3/4P3/8/8/8/8 w - - 0 1|e6d5": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 636
+        },
+        "pv": [
+          "e6d6",
+          "e8f7",
+          "e5e6",
+          "f7f6",
+          "e6e7",
+          "f6f5",
+          "e7e8q",
+          "f5f4",
+          "d6c5",
+          "f4g3",
+          "e8e3",
+          "g3g4",
+          "e3e4",
+          "g4g3",
+          "c5d5",
+          "g3f2",
+          "d5c4",
+          "f2g3"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 613
+        },
+        "pv": [
+          "e6f6",
+          "e8d7",
+          "f6f7",
+          "d7c7",
+          "e5e6",
+          "c7d6",
+          "f7f6",
+          "d6c6",
+          "e6e7",
+          "c6d7",
+          "f6f7",
+          "d7c7",
+          "e7e8q",
+          "c7b6"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "e6f5",
+          "e8e7",
+          "e5e6",
+          "e7e8",
+          "f5e4",
+          "e8d8",
+          "e4d4",
+          "d8e8",
+          "d4e5",
+          "e8e7",
+          "e5d5",
+          "e7e8",
+          "d5e4"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -1
+      },
+      "pv": [
+        "e8d7",
+        "d5e4",
+        "d7e6",
+        "e4f4",
+        "e6e7",
+        "f4f5",
+        "e7f7",
+        "e5e6",
+        "f7e7",
+        "f5e5",
+        "e7e8",
+        "e5f6",
+        "e8f8",
+        "e6e7",
+        "f8e8",
+        "f6g5",
+        "e8e7",
+        "g5f5"
+      ]
+    }
+  },
+  "8/8/8/P3k3/8/8/8/K7 w - - 0 1|a1b2": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 668
+        },
+        "pv": ["a5a6", "e5d6", "a6a7", "d6d5", "a7a8q", "d5e5", "a1b1", "e5f4", "b1c2", "f4g5"]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "a1a2",
+          "e5d6",
+          "a2b3",
+          "d6c5",
+          "b3c3",
+          "c5b5",
+          "c3d4",
+          "b5a5",
+          "d4c5",
+          "a5a6",
+          "c5c6",
+          "a6a5"
+        ]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "a1b2",
+          "e5d6",
+          "b2b3",
+          "d6c5",
+          "b3c3",
+          "c5b5",
+          "c3d4",
+          "b5a5",
+          "d4c5",
+          "a5a6",
+          "c5b4",
+          "a6b7",
+          "b4c5"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": -6
+      },
+      "pv": [
+        "e5d5",
+        "a5a6",
+        "d5c6",
+        "a6a7",
+        "c6b7",
+        "b2c2",
+        "b7a7",
+        "c2c3",
+        "a7a6",
+        "c3d2",
+        "a6b5",
+        "d2e2",
+        "b5b6",
+        "e2f3"
+      ]
+    }
+  },
+  "k7/8/8/8/3K3p/8/8/8 b - - 0 1|a8b7": {
+    "lines": [
+      {
+        "multipv": 1,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 607
+        },
+        "pv": [
+          "h4h3",
+          "d4e4",
+          "h3h2",
+          "e4f3",
+          "h2h1q",
+          "f3e3",
+          "h1d5",
+          "e3f4",
+          "a8b7",
+          "f4e3",
+          "d5e5",
+          "e3d2",
+          "e5d4",
+          "d2c2",
+          "d4e4",
+          "c2b2",
+          "e4d3",
+          "b2a1"
+        ]
+      },
+      {
+        "multipv": 2,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": ["a8b8", "d4e3", "b8b7", "e3f3", "b7c6", "f3g4", "c6c5", "g4h3", "c5c4", "h3g4"]
+      },
+      {
+        "multipv": 3,
+        "depth": 16,
+        "score": {
+          "kind": "cp",
+          "value": 0
+        },
+        "pv": [
+          "a8a7",
+          "d4e4",
+          "h4h3",
+          "e4f3",
+          "h3h2",
+          "f3g2",
+          "h2h1q",
+          "g2h1",
+          "a7b6",
+          "h1g2",
+          "b6b7",
+          "g2h3",
+          "b7c6",
+          "h3h2"
+        ]
+      }
+    ],
+    "playedLine": {
+      "multipv": 1,
+      "depth": 16,
+      "score": {
+        "kind": "cp",
+        "value": 0
+      },
+      "pv": [
+        "d4e3",
+        "b7c6",
+        "e3f4",
+        "c6d5",
+        "f4g4",
+        "d5e4",
+        "g4h4",
+        "e4f4",
+        "h4h5",
+        "f4f5",
+        "h5h6",
+        "f5f6",
+        "h6h7",
+        "f6f7",
+        "h7h8",
+        "f7e8"
+      ]
+    }
+  }
+}

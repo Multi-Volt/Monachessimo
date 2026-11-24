@@ -5,9 +5,8 @@ import {
   type AnalysisSettings,
   type GameAnalysis,
 } from '../../src/analysis/types';
-import { sanToUci } from '../../src/import/normalize';
-import type { Game, Side } from '../../src/import/types';
 import { nodePool } from '../support/node-engine';
+import { makeGame } from '../support/games';
 
 // Depths are pinned low so the golden results are stable and the suite is fast.
 const SETTINGS: AnalysisSettings = {
@@ -17,25 +16,6 @@ const SETTINGS: AnalysisSettings = {
   deepDepth: 12,
   deepMovetime: 5000,
 };
-
-export function makeGame(san: string[], userColor: Side, extra: Partial<Game> = {}): Game {
-  return {
-    id: `test:${san.join('')}`,
-    source: 'lichess',
-    sourceId: 'x',
-    url: '',
-    owner: 'me',
-    userColor,
-    white: { name: 'W' },
-    black: { name: 'B' },
-    speed: 'blitz',
-    result: '1/2-1/2',
-    playedAt: 0,
-    san,
-    uci: sanToUci(san)!,
-    ...extra,
-  };
-}
 
 const pool = nodePool(2);
 afterAll(() => pool.terminate());

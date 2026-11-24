@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, type AnalysisSettings } from '../analysis/types';
 import { EnginePool, defaultPoolSize } from '../engine/pool';
 import { workerTransport } from '../engine/worker';
 import { Repo } from '../store/repo';
+import { retagIfNeeded } from '../profile/data';
 
 export interface AppSettings {
   workers: number;
@@ -46,6 +47,7 @@ export function getServices(): Promise<Services> {
       workers: defaultPoolSize(),
       analysis: DEFAULT_SETTINGS,
     });
+    await retagIfNeeded(repo, settings.analysis);
     const pool = new EnginePool(workerTransport, settings.workers);
     const runner = new AnalysisRunner(repo, pool, settings.analysis);
     const s: Services = {
