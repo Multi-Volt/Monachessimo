@@ -1099,3 +1099,8 @@ input[aria-invalid='true'] {
 .move-type[open] summary {
   margin-bottom: var(--s2);
 }
+
+.drill__goal-detail {
+  color: var(--text-2);
+  font-weight: 500;
+}

@@ -1,14 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, mockLichess, typeMove, waitForMoveTurn } from './support';
+import { collectErrors, mockLichess, playUntilDone, typeMove, waitForMoveTurn } from './support';
 
 const T0 = new Date('2026-11-24T09:00:00Z').getTime();
 
-/** Safe answers for the two blunder positions in the mocked games. */
+/** Plays each step of the drill with the engine's move until it ends. */
 async function answerCorrectly(page: Page) {
-  const goal = (await page.locator('.drill__goal').innerText()).trim();
-  const move = goal.includes('Qh4') ? 'Nc6' : 'g6';
-  await typeMove(page, move);
-  await expect(page.getByRole('status')).toContainText('Correct.');
+  const result = await playUntilDone(page);
+  expect(result).toMatch(/Well played\.|Good effort\./);
 }
 
 test('a daily session from your own games brings missed positions back', async ({ page }) => {
@@ -33,7 +31,7 @@ test('a daily session from your own games brings missed positions back', async (
   await page.getByRole('button', { name: 'Hint' }).click();
   await expect(page.locator('.hint-list li')).toHaveCount(1);
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByRole('status')).toContainText('The answer is');
+  await expect(page.getByRole('status')).toContainText('The move here was');
   await expect(page.getByRole('heading', { name: 'Why' })).toBeVisible();
   await page.getByRole('button', { name: 'Next drill' }).click();
 

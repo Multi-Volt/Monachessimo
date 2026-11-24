@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 /** Records page errors and console errors, including CSP violations. */
 export function collectErrors(page: Page): string[] {
@@ -67,4 +67,27 @@ export async function typeMove(page: Page, move: string): Promise<void> {
 /** Waits until the board accepts a move again (after a wrong move or an engine reply). */
 export async function waitForMoveTurn(page: Page): Promise<void> {
   await page.getByText('Type a move instead').waitFor();
+}
+
+/**
+ * Plays the engine's move at every step of the current drill until it ends.
+ * The drill screen exposes the current step's engine move as data-best.
+ */
+export async function playUntilDone(page: Page): Promise<string> {
+  const section = page.locator('[data-drill-id]');
+  const status = page.getByRole('status');
+  // A result from the previous drill may still be on screen for a moment.
+  await expect(page.getByText(/Well played\.|Good effort\./)).toHaveCount(0, { timeout: 10_000 });
+  for (let i = 0; i < 12; i++) {
+    const text = (await status.allInnerTexts()).join(' ');
+    if (/Well played\.|Good effort\./.test(text)) return text;
+    await expect(section).toHaveAttribute('data-best', /.+/, { timeout: 30_000 });
+    const best = (await section.getAttribute('data-best'))!;
+    await typeMove(page, best);
+    await expect(section)
+      .not.toHaveAttribute('data-best', best, { timeout: 30_000 })
+      .catch(() => {});
+    await page.waitForTimeout(400);
+  }
+  return (await status.allInnerTexts()).join(' ');
 }

@@ -33,7 +33,10 @@ export function Board(props: BoardProps) {
     // Chessground clears the highlight only when lastMove is present and undefined.
     lastMove: props.lastMove as Key[] | undefined as Key[],
     coordinates: true,
-    viewOnly: !props.movable,
+    // Never view-only: Chessground binds touch and mouse handlers only when
+    // the board is created, so a board that later becomes movable must start
+    // interactive. With no movable color, nothing can be moved.
+    viewOnly: false,
     animation: {
       enabled: !matchMedia('(prefers-reduced-motion: reduce)').matches,
       duration: 180,
@@ -42,7 +45,7 @@ export function Board(props: BoardProps) {
       free: false,
       ...(props.movable
         ? { color: props.movable.color, dests: props.movable.dests as Map<Key, Key[]> }
-        : { dests: new Map() }),
+        : { color: undefined as unknown as 'white', dests: new Map() }),
       showDests: true,
       events: { after: (o, d) => onMove.current?.(o, d) },
     },
@@ -53,11 +56,26 @@ export function Board(props: BoardProps) {
   useEffect(() => {
     if (!el.current) return;
     api.current = Chessground(el.current, config());
-    return () => api.current?.destroy();
+    // Chessground caches where the board sits on the page and refreshes that
+    // only on scroll and resize. When content above the board changes height
+    // (a longer question on the next drill), the board moves and taps land
+    // on the wrong squares. Refresh the cache at the start of every touch or
+    // click, before Chessground reads it.
+    const refresh = () => api.current?.state.dom.bounds.clear();
+    const wrap = el.current;
+    wrap.addEventListener('touchstart', refresh, { capture: true, passive: true });
+    wrap.addEventListener('mousedown', refresh, { capture: true, passive: true });
+    return () => {
+      wrap.removeEventListener('touchstart', refresh, { capture: true });
+      wrap.removeEventListener('mousedown', refresh, { capture: true });
+      api.current?.destroy();
+    };
   }, []);
 
   useEffect(() => {
     api.current?.set(config());
+    // The layout may have changed around the board since the last render.
+    api.current?.state.dom.bounds.clear();
   });
 
   return (

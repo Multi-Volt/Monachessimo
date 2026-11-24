@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, mockLichess } from './support';
+import { collectErrors, mockLichess, playUntilDone } from './support';
 
 /** Centre of a square on the drill board, for either orientation. */
 async function squareCenter(page: Page, sq: string, orientation: 'white' | 'black') {
@@ -53,7 +53,9 @@ test('drills are played on the board by tapping or dragging', async ({ page }) =
   const goal = (await page.locator('.drill__goal').innerText()).trim();
   if (goal.includes('Qh4')) await drag(page, 'b8', 'c6', 'black');
   else await drag(page, 'g7', 'g6', 'black');
-  await expect(page.getByRole('status')).toContainText('Correct.', { timeout: 20_000 });
+  // Then finish the sequence; the drill ends only when its goal is met.
+  const result = await playUntilDone(page);
+  expect(result).toMatch(/Well played\.|Good effort\./);
   expect(errors).toEqual([]);
 });
 
