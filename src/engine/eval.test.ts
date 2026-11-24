@@ -22,7 +22,7 @@ describe('winningChances', () => {
     expect(winningChances({ kind: 'mate', value: -1 })).toBeLessThan(-0.999);
   });
 
-  it('treats mate 0 as a win for the reporting side', () => {
-    expect(winningChances({ kind: 'mate', value: 0 })).toBeGreaterThan(0.999);
+  it('treats mate 0 as a loss for the side to move, which is checkmated', () => {
+    expect(winningChances({ kind: 'mate', value: 0 })).toBeLessThan(-0.999);
   });
 });
