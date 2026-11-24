@@ -15,7 +15,9 @@ The screenshots use generated test games.
 
 ## Status
 
-All eight phases of [BUILD_PLAN.md](BUILD_PLAN.md) are built: import, on-device analysis, the weakness profile, drills from your games, theme puzzles, offense and strategy drills, offline use, and the polish pass. Testing on real phones is still to do. See `docs/DECISIONS.md`.
+The app is feature-complete for a first release: import, on-device analysis, the weakness profile, drills from your games, theme puzzles, offense and strategy drills, offline use, and the polish pass. Testing on real phones is still to do. See `docs/DECISIONS.md`.
+
+To contribute, read [AGENTS.md](AGENTS.md).
 
 ## Privacy
 
@@ -75,9 +77,3 @@ The repository's Pages source must be set to GitHub Actions under Settings, Page
 ## License
 
 Monachessimo is free software under the GNU General Public License, version 3 or later. See [LICENSE](LICENSE). Third-party code and credits are listed in [THIRD_PARTY.md](THIRD_PARTY.md).
-
-## Credits
-
-The interface is reviewed with [unslop](https://github.com/heydamir/unslop) by Damir Sokolovsky (@heydamir), used under CC BY 4.0.
-
-Project text is edited with the [unslop prose skill](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md) by Lauren Tan, used under the MIT License.

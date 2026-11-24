@@ -33,10 +33,3 @@ This file lists every dependency, its license, and its source. Update it wheneve
 | prettier                                                               | MIT        | https://github.com/prettier/prettier                     |
 | eslint-config-prettier                                                 | MIT        | https://github.com/prettier/eslint-config-prettier       |
 | Lighthouse, run through npx by `scripts/a11y-audit.mjs`, not installed | Apache-2.0 | https://github.com/GoogleChrome/lighthouse               |
-
-## Agent skills used to build the project
-
-| Skill                                                    | Author                       | License   | Source                                             |
-| -------------------------------------------------------- | ---------------------------- | --------- | -------------------------------------------------- |
-| unslop (UI design)                                       | Damir Sokolovsky (@heydamir) | CC BY 4.0 | https://github.com/heydamir/unslop                 |
-| unslop-prose, vendored in `.claude/skills/unslop-prose/` | Lauren Tan                   | MIT       | https://github.com/cursor/plugins/tree/main/pstack |

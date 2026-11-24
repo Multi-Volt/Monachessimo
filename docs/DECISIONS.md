@@ -16,10 +16,6 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 
 **2026-11-24. The e2e test runs against the base-path build.** Playwright serves `vite preview` at the same `BASE_PATH` that CI deploys, so broken asset paths fail in CI instead of on the live site.
 
-**2026-11-24. The UI skill installed with the plan's first command.** `claude plugin install unslop --marketplace heydamir/unslop` added the `heydamir` marketplace and installed `unslop@heydamir` at user scope. The skill's name is `unslop:unslop`. Its license, CC BY 4.0, matches the plan.
-
-**2026-11-24. The prose skill's license is in `pstack/`.** The `cursor/plugins` repository has no root license. `pstack/LICENSE` is MIT, copyright 2026 Lauren Tan, which permits copying. The skill is vendored from commit `ca782ed8` with its license file. The only change is the frontmatter name, `unslop` to `unslop-prose`. It is a user-only slash command (`disable-model-invocation: true`), so the agent cannot call it on its own. In this phase the agent applied its rules by hand to all text.
-
 **2026-11-24. `eval.ts` came early.** The winning-chances conversion from section 6.2 is the first unit under test, so the test setup checks real code. A mate score is converted to plus or minus 10,000 centipawns. Mate 0 counts as a win for the reporting side.
 
 **2026-11-24. Dev machine setup.** The maintainer's machine runs Fedora Kinoite, which had no Node.js. Node 26.13.1 LTS was installed from nodejs.org into `~/.local/share/node`, with links in `~/.local/bin`. The SHA-256 checksum was verified. Playwright does not officially support Fedora and uses its Ubuntu 24.04 Chromium build, which runs the tests correctly.
@@ -163,9 +159,9 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 
 ## Phase 7
 
-**2026-11-24. UI pass.** Every screen was captured at 360x740 in both themes and checked against `docs/DESIGN_DIRECTION.md` and the unslop list of signs. Changes: daily sessions lead with move drills, and plan and conversion drills come after, at most two and one per session; the dashboard summary is one line plus an improvement line, not three paragraphs; "about 1 times" now reads "about once"; "Open games" became "See your games".
+**2026-11-24. UI pass.** Every screen was captured at 360x740 in both themes and checked against `docs/DESIGN_DIRECTION.md`. Changes: daily sessions lead with move drills, and plan and conversion drills come after, at most two and one per session; the dashboard summary is one line plus an improvement line, not three paragraphs; "about 1 times" now reads "about once"; "Open games" became "See your games".
 
-**2026-11-24. Prose pass.** App copy and the README were checked against the unslop-prose rules: no dashes as punctuation, no parentheses as asides, plain words. Ratings in parentheses after a player's name stay, since that is chess convention. The decision log keeps parentheses where they hold file names or values.
+**2026-11-24. Prose pass.** App copy and the README were checked against the copy rules in `AGENTS.md`: no dashes as punctuation, no parentheses as asides, plain words. Ratings in parentheses after a player's name stay, since that is chess convention. The decision log keeps parentheses where they hold file names or values.
 
 **2026-11-24. Accessibility.** `scripts/a11y-audit.mjs` seeds a Chromium profile with 8 analyzed games, then runs Lighthouse 13.6.0 through npx (not installed) on ten screens at 360x740. Every screen scored 100. Lighthouse runs its own Chromium on the seeded profile; connecting to a shared browser over the DevTools port failed with "Target closed".
 

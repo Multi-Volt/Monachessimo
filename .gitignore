@@ -5,7 +5,11 @@ playwright-report/
 test-results/
 *.local
 .DS_Store
-.claude/settings.local.json
 public/puzzles/
 dist-offline/
 a11y-results/
+
+# Local agent material, not part of the project
+.claude/
+CLAUDE.md
+BUILD_PLAN.md

@@ -1,6 +1,6 @@
 # Design direction
 
-Chosen by the maintainer on 2026-11-24 from three options proposed in the unslop UI pass (heydamir/unslop, CC BY 4.0). The other options were Scriptorium (parchment and rubric red) and Scoresheet (graphite and felt green).
+Chosen by the maintainer on 2026-11-24 from three proposed options. The other options were Scriptorium (parchment and rubric red) and Scoresheet (graphite and felt green).
 
 ## Direction: Bottega
 

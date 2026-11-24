@@ -38,10 +38,6 @@ export function About() {
           <a href="https://database.lichess.org/#puzzles">Lichess puzzle database</a>. CC0.
         </li>
         <li>
-          Interface reviewed with <a href="https://github.com/heydamir/unslop">unslop</a> by Damir
-          Sokolovsky (@heydamir). CC BY 4.0.
-        </li>
-        <li>
           <a href="https://preactjs.com">Preact</a> (MIT) and{' '}
           <a href="https://github.com/jakearchibald/idb">idb</a> (ISC).
         </li>
