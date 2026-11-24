@@ -55,3 +55,16 @@ export async function mockLichess(page: Page, games: unknown[] = lichessGames): 
   });
   return urls;
 }
+
+/** Plays a move through the "Type a move instead" box, opening it if needed. */
+export async function typeMove(page: Page, move: string): Promise<void> {
+  const input = page.getByLabel('Type a move', { exact: true });
+  if (!(await input.isVisible())) await page.getByText('Type a move instead').click();
+  await input.fill(move);
+  await page.getByRole('button', { name: 'Play' }).click();
+}
+
+/** Waits until the board accepts a move again (after a wrong move or an engine reply). */
+export async function waitForMoveTurn(page: Page): Promise<void> {
+  await page.getByText('Type a move instead').waitFor();
+}

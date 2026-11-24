@@ -15,6 +15,16 @@ export function PlanDrill({ drill, onDone }: { drill: Drill; onDone: (g: Grade) 
     (a, b) => (acceptable(b.score, a.score) && !acceptable(a.score, b.score) ? b : a),
     choices[0]!,
   );
+  // Only the candidate moves can be played on the board.
+  const candidateDests = new Map<string, string[]>();
+  for (const c of choices) {
+    const from = c.uci.slice(0, 2);
+    candidateDests.set(from, [
+      ...(candidateDests.get(from) ?? []),
+      c.uci.slice(2, 4),
+      ...castleRookSquare(c.uci),
+    ]);
+  }
   const pick = (uci: string) => {
     if (picked) return;
     setPicked(uci);
@@ -26,11 +36,18 @@ export function PlanDrill({ drill, onDone }: { drill: Drill; onDone: (g: Grade) 
       <Board
         fen={drill.fen}
         orientation={drill.side}
-        label={`Plan position, ${drill.side} to move`}
+        movable={picked ? undefined : { color: drill.side, dests: candidateDests }}
+        onMove={(orig, dest) => {
+          const c = choices.find(
+            (x) => x.uci.slice(0, 4) === orig + dest || castleMatches(x.uci, orig, dest),
+          );
+          if (c) pick(c.uci);
+        }}
+        label={`Plan position, ${drill.side} to move. Play a candidate move on the board or pick it below.`}
       />
       {!picked ? (
         <fieldset class="field plan">
-          <legend>Which move would you play?</legend>
+          <legend>Which move would you play? Play it on the board or pick it here.</legend>
           <div class="plan__choices">
             {choices.map((c) => (
               <button
@@ -73,4 +90,14 @@ export function PlanDrill({ drill, onDone }: { drill: Drill; onDone: (g: Grade) 
       )}
     </>
   );
+}
+
+/** Chessground may report castling as the king taking its own rook. */
+function castleRookSquare(uci: string): string[] {
+  const rook: Record<string, string> = { e1g1: 'h1', e1c1: 'a1', e8g8: 'h8', e8c8: 'a8' };
+  return rook[uci] ? [rook[uci]] : [];
+}
+
+function castleMatches(uci: string, orig: string, dest: string): boolean {
+  return uci.slice(0, 2) === orig && castleRookSquare(uci)[0] === dest;
 }

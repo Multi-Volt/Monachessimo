@@ -1077,3 +1077,25 @@ input[aria-invalid='true'] {
   background: var(--raised);
   border-bottom: 1px solid var(--hairline);
 }
+
+/* The board is the main way to move; typing is the accessible alternative. */
+
+.board-help {
+  margin-top: calc(-1 * var(--s2));
+}
+
+.move-type {
+  margin-bottom: var(--s4);
+}
+
+.move-type summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.move-type[open] summary {
+  margin-bottom: var(--s2);
+}

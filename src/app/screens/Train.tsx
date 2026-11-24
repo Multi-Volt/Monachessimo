@@ -125,6 +125,9 @@ export function Train({ tag }: { tag?: TagName | undefined }) {
   );
 }
 
+/** How long a wrong move stays on the board before the piece goes back. */
+const WRONG_MS = 900;
+
 /** A correct answer in a time drill that took longer than this counts as "hard". */
 const SLOW_MS = 30_000;
 
@@ -226,6 +229,8 @@ function Session(props: {
   /** Position in the solution line while stepping through it, after the drill. */
   const [lineStep, setLineStep] = useState<number>();
   const [startedAt, setStartedAt] = useState(Date.now());
+  /** Why the last move was wrong, shown while the player tries again. */
+  const [tryAgain, setTryAgain] = useState<string>();
   const [elapsed, setElapsed] = useState(0);
   const drill = queue[index];
 
@@ -267,6 +272,7 @@ function Session(props: {
   }, [drill, startedAt]);
 
   useEffect(() => {
+    setTryAgain(undefined);
     setApplied([]);
     setSpecialDone(false);
     setLineStep(undefined);
@@ -305,7 +311,7 @@ function Session(props: {
   };
 
   const submit = async (uci: string) => {
-    if (phase.kind !== 'solving' && phase.kind !== 'wrong') return;
+    if (phase.kind !== 'solving') return;
     if (drill.solution) return submitStep(drill.solution, uci);
     let verdict = judge(drill, uci);
     setPhase({ kind: 'checking', uci });
@@ -334,8 +340,18 @@ function Session(props: {
         drill.source?.played === uci
           ? `${san} is the move from your game.`
           : `${san} gives away more than the best move.`;
-      setPhase({ kind: 'wrong', uci, reason });
+      showWrong(uci, reason);
     }
+  };
+
+  /** Shows a wrong move on the board for a moment, then puts the piece back. */
+  const showWrong = (uci: string, reason: string) => {
+    setPhase({ kind: 'wrong', uci, reason });
+    setTryAgain(reason);
+    setTimeout(
+      () => setPhase((p) => (p.kind === 'wrong' && p.uci === uci ? { kind: 'solving' } : p)),
+      WRONG_MS,
+    );
   };
 
   /** One move of a multi-move puzzle. Only the listed move counts, or any mate on the last move. */
@@ -348,7 +364,7 @@ function Session(props: {
     const fenNow = makeFen(pos.toSetup());
     if (!ok) {
       setFailed(true);
-      setPhase({ kind: 'wrong', uci, reason: `${uciToSan(fenNow, uci)} is not the solution.` });
+      showWrong(uci, `${uciToSan(fenNow, uci)} is not the solution.`);
       return;
     }
     if (last) {
@@ -454,35 +470,41 @@ function Session(props: {
             label={
               lineStep !== undefined
                 ? `Engine line, after ${lineStep} of ${fullLine.length} moves`
-                : `Drill position, ${drill.side} to move. Use the move box below to answer.`
+                : `Drill position, ${drill.side} to move. Drag or tap a piece to move it, or type a move below.`
             }
           />
 
+          {lineStep === undefined && !done && (
+            <p class="hint board-help">Drag a piece, or tap it and then tap where it goes.</p>
+          )}
           {phase.kind === 'solving' && (
-            <form class="move-input" onSubmit={onTyped}>
-              <label for="typed-move">Type a move</label>
-              <div class="row">
-                <input
-                  id="typed-move"
-                  type="text"
-                  autoComplete="off"
-                  autoCapitalize="none"
-                  spellcheck={false}
-                  placeholder="Nf3 or g1f3"
-                  value={typed}
-                  onInput={(e) => setTyped(e.currentTarget.value)}
-                  aria-describedby={typedError ? 'typed-error' : undefined}
-                />
-                <button type="submit" class="button">
-                  Play
-                </button>
-              </div>
-              {typedError && (
-                <p id="typed-error" class="error-text" role="alert">
-                  {typedError}
-                </p>
-              )}
-            </form>
+            <details class="move-type">
+              <summary>Type a move instead</summary>
+              <form class="move-input" onSubmit={onTyped}>
+                <label for="typed-move">Type a move</label>
+                <div class="row">
+                  <input
+                    id="typed-move"
+                    type="text"
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    spellcheck={false}
+                    placeholder="Nf3 or g1f3"
+                    value={typed}
+                    onInput={(e) => setTyped(e.currentTarget.value)}
+                    aria-describedby={typedError ? 'typed-error' : undefined}
+                  />
+                  <button type="submit" class="button">
+                    Play
+                  </button>
+                </div>
+                {typedError && (
+                  <p id="typed-error" class="error-text" role="alert">
+                    {typedError}
+                  </p>
+                )}
+              </form>
+            </details>
           )}
 
           <div aria-live="polite">
@@ -493,10 +515,10 @@ function Session(props: {
                   : `Checking ${uciToSan(fenNow, phase.uci)} with the engine…`}
               </p>
             )}
-            {phase.kind === 'wrong' && (
+            {tryAgain && (phase.kind === 'wrong' || phase.kind === 'solving') && (
               <div class="panel panel--mistake" role="status">
                 <p>
-                  <strong>Not this one.</strong> {phase.reason}
+                  <strong>Not this one.</strong> {tryAgain} Try another move.
                 </p>
               </div>
             )}
@@ -537,15 +559,6 @@ function Session(props: {
           )}
 
           <div class="row row--actions">
-            {!done && phase.kind === 'wrong' && (
-              <button
-                type="button"
-                class="button button--primary"
-                onClick={() => setPhase({ kind: 'solving' })}
-              >
-                Retry
-              </button>
-            )}
             {!done && hintsUsed < drill.hints.length - 1 && (
               <button
                 type="button"

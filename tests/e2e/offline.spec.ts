@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { collectErrors, mockLichess } from './support';
+import { collectErrors, mockLichess, typeMove, waitForMoveTurn } from './support';
 
 test('works in airplane mode after the first visit', async ({ page, context }) => {
   test.setTimeout(150_000);
@@ -28,8 +28,7 @@ test('works in airplane mode after the first visit', async ({ page, context }) =
   // The engine runs from the cache: a move outside the saved lines is checked live.
   await page.goto('./#/train');
   // a6 is legal in both drill positions and is not in the saved lines.
-  await page.getByLabel('Type a move').fill('a6');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, 'a6');
   await expect(page.getByRole('status')).toContainText(/Correct\.|Not this one\./, {
     timeout: 30_000,
   });

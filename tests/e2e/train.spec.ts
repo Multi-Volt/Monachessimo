@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, mockLichess } from './support';
+import { collectErrors, mockLichess, typeMove, waitForMoveTurn } from './support';
 
 const T0 = new Date('2026-11-24T09:00:00Z').getTime();
 
@@ -7,8 +7,7 @@ const T0 = new Date('2026-11-24T09:00:00Z').getTime();
 async function answerCorrectly(page: Page) {
   const goal = (await page.locator('.drill__goal').innerText()).trim();
   const move = goal.includes('Qh4') ? 'Nc6' : 'g6';
-  await page.getByLabel('Type a move').fill(move);
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, move);
   await expect(page.getByRole('status')).toContainText('Correct.');
 }
 
@@ -28,10 +27,9 @@ test('a daily session from your own games brings missed positions back', async (
   // First drill: play the game move again, take a hint, then give up.
   const goal = (await page.locator('.drill__goal').innerText()).trim();
   const gameMove = goal.match(/You played \d+\.+ (\S+)\./)![1]!;
-  await page.getByLabel('Type a move').fill(gameMove);
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, gameMove);
   await expect(page.getByRole('status')).toContainText(`${gameMove} is the move from your game.`);
-  await page.getByRole('button', { name: 'Retry' }).click();
+  await waitForMoveTurn(page);
   await page.getByRole('button', { name: 'Hint' }).click();
   await expect(page.locator('.hint-list li')).toHaveCount(1);
   await page.getByRole('button', { name: 'Show answer' }).click();
@@ -87,7 +85,6 @@ test('typed moves are checked for legality', async ({ page }) => {
   await page.getByRole('button', { name: 'Import games' }).click();
   await expect(page.getByText('Finished. Analyzed 2 of 2 games.')).toBeVisible({ timeout: 90_000 });
   await page.goto('./#/train');
-  await page.getByLabel('Type a move').fill('Ke5');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, 'Ke5');
   await expect(page.getByRole('alert')).toContainText('Ke5 is not a legal move here.');
 });

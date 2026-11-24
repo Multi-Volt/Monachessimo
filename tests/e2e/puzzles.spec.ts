@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { collectErrors, mockLichess, player } from './support';
+import { collectErrors, mockLichess, player, typeMove, waitForMoveTurn } from './support';
 
 // Six games where TestPlayer hangs the queen, so hangingPiece and openingError rank.
 const games = Array.from({ length: 6 }, (_, i) => ({
@@ -64,17 +64,14 @@ test('theme puzzles load only the shards the session needs', async ({ page }) =>
   await expect(page.getByText('White to move')).toBeVisible();
 
   // A wrong first move is rejected without an engine check.
-  await page.getByLabel('Type a move').fill('Qxg7');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, 'Qxg7');
   await expect(page.getByRole('status')).toContainText('Qxg7 is not the solution.');
-  await page.getByRole('button', { name: 'Retry' }).click();
+  await waitForMoveTurn(page);
 
-  await page.getByLabel('Type a move').fill('Be6+');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, 'Be6+');
   // The opponent's reply Kd8 is played for them, then it is White's move again.
-  await expect(page.getByLabel('Type a move')).toBeVisible();
-  await page.getByLabel('Type a move').fill('f7f8');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await waitForMoveTurn(page);
+  await typeMove(page, 'f7f8');
   await expect(page.getByRole('status')).toContainText('Qf8# completes the puzzle.');
   await expect(page.getByText('This is Lichess puzzle 00sHx, rated 1760.')).toBeVisible();
   expect(requested).toHaveLength(3);

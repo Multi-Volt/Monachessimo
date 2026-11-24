@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, mockLichess, player } from './support';
+import { collectErrors, mockLichess, player, typeMove, waitForMoveTurn } from './support';
 
 test('conversion practice plays against a weakened engine', async ({ page }) => {
   test.setTimeout(150_000);
@@ -33,10 +33,9 @@ test('conversion practice plays against a weakened engine', async ({ page }) => 
   await expect(page.getByText(/Move 1 of 30 · evaluation \+\d/)).toBeVisible();
 
   // Any legal developing move; the engine answers and it is our move again.
-  await page.getByLabel('Type a move').fill('d4');
-  await page.getByRole('button', { name: 'Play' }).click();
+  await typeMove(page, 'd4');
   await expect(page.getByText(/Move 2 of 30/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByLabel('Type a move')).toBeVisible();
+  await waitForMoveTurn(page);
   await page.getByRole('button', { name: 'Stop here' }).click();
   await expect(page.getByRole('status')).toContainText('You stopped the game here.');
   await expect(page.getByRole('heading', { name: 'Why' })).toBeVisible();

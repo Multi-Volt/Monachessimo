@@ -122,6 +122,9 @@ export function ConversionDrill({ drill, onDone }: { drill: Drill; onDone: (g: G
         onMove={onMove}
         label={`Conversion game, ${pos.turn} to move`}
       />
+      {state.kind === 'your-move' && (
+        <p class="hint board-help">Drag a piece, or tap it and then tap where it goes.</p>
+      )}
       <TypedMove disabled={state.kind !== 'your-move'} fen={fen} onMove={(u) => void play(u)} />
       {state.kind === 'your-move' && moves > 0 && (
         <p>
@@ -159,43 +162,46 @@ export function TypedMove(props: {
   const [error, setError] = useState<string>();
   if (props.disabled) return null;
   return (
-    <form
-      class="move-input"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const pos = fromFen(props.fen);
-        const t = text.trim();
-        const m = parseSan(pos, t) ?? parseUci(t.toLowerCase());
-        if (!m || !pos.isLegal(m)) {
-          setError(`${t || 'That'} is not a legal move here. Use SAN like Nf3 or UCI like g1f3.`);
-          return;
-        }
-        setError(undefined);
-        setText('');
-        props.onMove(standardUci(pos, m));
-      }}
-    >
-      <label for="typed-move">Type a move</label>
-      <div class="row">
-        <input
-          id="typed-move"
-          type="text"
-          autoComplete="off"
-          autoCapitalize="none"
-          spellcheck={false}
-          placeholder="Nf3 or g1f3"
-          value={text}
-          onInput={(e) => setText(e.currentTarget.value)}
-        />
-        <button type="submit" class="button">
-          Play
-        </button>
-      </div>
-      {error && (
-        <p class="error-text" role="alert">
-          {error}
-        </p>
-      )}
-    </form>
+    <details class="move-type">
+      <summary>Type a move instead</summary>
+      <form
+        class="move-input"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const pos = fromFen(props.fen);
+          const t = text.trim();
+          const m = parseSan(pos, t) ?? parseUci(t.toLowerCase());
+          if (!m || !pos.isLegal(m)) {
+            setError(`${t || 'That'} is not a legal move here. Use SAN like Nf3 or UCI like g1f3.`);
+            return;
+          }
+          setError(undefined);
+          setText('');
+          props.onMove(standardUci(pos, m));
+        }}
+      >
+        <label for="typed-move">Type a move</label>
+        <div class="row">
+          <input
+            id="typed-move"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellcheck={false}
+            placeholder="Nf3 or g1f3"
+            value={text}
+            onInput={(e) => setText(e.currentTarget.value)}
+          />
+          <button type="submit" class="button">
+            Play
+          </button>
+        </div>
+        {error && (
+          <p class="error-text" role="alert">
+            {error}
+          </p>
+        )}
+      </form>
+    </details>
   );
 }
