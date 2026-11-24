@@ -99,3 +99,31 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   await expect(status).toContainText('Qf6 is a mistake.', { timeout: 30_000 });
   expect(errors).toEqual([]);
 });
+
+test('start links from review and drills open the game', async ({ page }) => {
+  test.setTimeout(150_000);
+  await mockLichess(page);
+  await page.goto('./');
+  await page.getByLabel('Username').fill('TestPlayer');
+  await page.getByRole('button', { name: 'Import games' }).click();
+  await expect(page.getByText('Finished. Analyzed 2 of 2 games.')).toBeVisible({ timeout: 90_000 });
+
+  // From game review.
+  await page.goto('./#/games');
+  await page.locator('.game-row').first().click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByRole('link', { name: 'Practice from here' }).click();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(
+    page.getByRole('heading', { name: /Your move|Your opponent is thinking/ }),
+  ).toBeVisible();
+
+  // From a finished drill, with a game already running.
+  await page.goto('./#/train');
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  await page.getByRole('link', { name: 'Play it out' }).click();
+  await expect(page.getByLabel('The drill position you came from')).toBeChecked();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('from a drill position')).toBeVisible();
+});
