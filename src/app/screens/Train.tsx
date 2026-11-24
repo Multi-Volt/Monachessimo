@@ -17,6 +17,9 @@ import { buildSession, dayKey, SESSION_SIZE, streak } from '../../drills/session
 import { themeDrills } from '../../puzzles/loader';
 import type { Drill, Grade, ReviewState } from '../../drills/types';
 import { TAG_INFO } from '../../profile/labels';
+import { PlanDrill } from '../drills/PlanDrill';
+import { ConversionDrill } from '../drills/ConversionDrill';
+import { balance, playLine } from '../../detectors/board';
 import { Board } from '../../ui/Board';
 import { formatDate, formatScore } from '../../ui/format';
 import { useAsync, useServices } from '../../ui/hooks';
@@ -122,6 +125,68 @@ export function Train({ tag }: { tag?: TagName | undefined }) {
   );
 }
 
+/** A correct answer in a time drill that took longer than this counts as "hard". */
+const SLOW_MS = 30_000;
+
+function LineStepper(props: {
+  drill: Drill;
+  positions: ReturnType<typeof playLine>;
+  step: number | undefined;
+  onStep: (n: number | undefined) => void;
+  total: number;
+}) {
+  const { drill, step, positions } = props;
+  const line = drill.solution ?? drill.line;
+  const sans = pvToSan(drill.fen, line, props.total);
+  const start = fromFen(drill.fen);
+  const at = step !== undefined ? positions[step] : undefined;
+  const diff = at ? balance(at, drill.side) - balance(start, drill.side) : 0;
+  const label =
+    drill.type === 'sacrifice' ? 'Does it work? Step through the line' : 'Step through the line';
+  if (step === undefined)
+    return (
+      <p>
+        <button type="button" class="button" onClick={() => props.onStep(0)}>
+          {label}
+        </button>
+      </p>
+    );
+  return (
+    <div class="panel stepper">
+      <p class="num">
+        {step === 0 ? 'Start position.' : `After ${sans.slice(0, step).join(' ')}.`} Material:{' '}
+        {diff === 0
+          ? 'even with the start'
+          : diff > 0
+            ? `${diff} up on the start`
+            : `${-diff} down on the start`}
+        .{at?.isCheckmate() ? ' Checkmate.' : ''}
+      </p>
+      <div class="row">
+        <button
+          type="button"
+          class="button"
+          disabled={step === 0}
+          onClick={() => props.onStep(step - 1)}
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          class="button"
+          disabled={step >= Math.min(sans.length, positions.length - 1)}
+          onClick={() => props.onStep(step + 1)}
+        >
+          Forward
+        </button>
+        <button type="button" class="button" onClick={() => props.onStep(undefined)}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function formatDue(t: number): string {
   const min = Math.round((t - Date.now()) / 60000);
   if (min < 60) return `in ${Math.max(1, min)} minutes`;
@@ -156,6 +221,12 @@ function Session(props: {
   const [rating, setRating] = useState(props.startRating);
   /** Moves already played in a multi-move puzzle, both sides. */
   const [applied, setApplied] = useState<string[]>([]);
+  /** Set when a plan or conversion drill has ended. */
+  const [specialDone, setSpecialDone] = useState(false);
+  /** Position in the solution line while stepping through it, after the drill. */
+  const [lineStep, setLineStep] = useState<number>();
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [elapsed, setElapsed] = useState(0);
   const drill = queue[index];
 
   const pos = useMemo(() => {
@@ -167,8 +238,18 @@ function Session(props: {
     }
     return p;
   }, [drill, applied]);
+  const fullLine = drill ? (drill.solution ?? drill.line) : [];
+  const stepPositions = useMemo(
+    () =>
+      drill && lineStep !== undefined
+        ? playLine(fromFen(drill.fen), fullLine, fullLine.length)
+        : [],
+    [drill, lineStep !== undefined],
+  );
   const shownFen = useMemo(() => {
     if (!drill || !pos) return '';
+    if (lineStep !== undefined && stepPositions[lineStep])
+      return makeFen(stepPositions[lineStep]!.toSetup());
     if (phase.kind === 'wrong' || phase.kind === 'solved' || phase.kind === 'checking') {
       const p = pos.clone();
       const m = parseUci(phase.uci);
@@ -176,10 +257,21 @@ function Session(props: {
       return makeFen(p.toSetup());
     }
     return makeFen(pos.toSetup());
-  }, [drill, pos, phase]);
+  }, [drill, pos, phase, lineStep, stepPositions]);
+
+  // A visible timer for time-awareness drills.
+  useEffect(() => {
+    if (drill?.type !== 'time') return;
+    const t = setInterval(() => setElapsed(Math.round((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [drill, startedAt]);
 
   useEffect(() => {
     setApplied([]);
+    setSpecialDone(false);
+    setLineStep(undefined);
+    setStartedAt(Date.now());
+    setElapsed(0);
     setHintsUsed(0);
     setFailed(false);
     setTyped('');
@@ -233,7 +325,8 @@ function Session(props: {
     }
     if (verdict === 'correct') {
       setPhase({ kind: 'solved', uci });
-      await finish(failed ? 'fail' : hintsUsed > 0 ? 'hard' : 'good');
+      const slow = drill.type === 'time' && Date.now() - startedAt > SLOW_MS;
+      await finish(failed ? 'fail' : hintsUsed > 0 || slow ? 'hard' : 'good');
     } else {
       setFailed(true);
       const san = uciToSan(fenNow, uci);
@@ -302,7 +395,12 @@ function Session(props: {
 
   const game = drill.source ? props.games.get(drill.source.gameId) : undefined;
   const opp = game ? (game.userColor === 'white' ? game.black : game.white) : undefined;
-  const done = phase.kind === 'solved' || phase.kind === 'shown';
+  const special = !!drill.choices || drill.type === 'conversion';
+  const done = special ? specialDone : phase.kind === 'solved' || phase.kind === 'shown';
+  const onSpecialDone = (g: Grade) => {
+    setSpecialDone(true);
+    void finish(g);
+  };
   const bestSan = uciToSan(fenNow, nextBest);
   const lastMove =
     phase.kind === 'wrong' || phase.kind === 'solved' || phase.kind === 'checking'
@@ -327,132 +425,161 @@ function Session(props: {
         {drill.side === 'white' ? 'White' : 'Black'} to move
         {game && opp ? ` · from your game vs ${opp.name}, ${formatDate(game.playedAt)}` : ''}
       </p>
-
-      <Board
-        fen={shownFen}
-        orientation={drill.side}
-        lastMove={lastMove}
-        shapes={shapes as never}
-        movable={
-          phase.kind === 'solving'
-            ? {
-                color: drill.side,
-                dests: chessgroundDests(pos) as unknown as Map<string, string[]>,
-              }
-            : undefined
-        }
-        onMove={onBoardMove}
-        label={`Drill position, ${drill.side} to move. Use the move box below to answer.`}
-      />
-
-      {phase.kind === 'solving' && (
-        <form class="move-input" onSubmit={onTyped}>
-          <label for="typed-move">Type a move</label>
-          <div class="row">
-            <input
-              id="typed-move"
-              type="text"
-              autoComplete="off"
-              autoCapitalize="none"
-              spellcheck={false}
-              placeholder="Nf3 or g1f3"
-              value={typed}
-              onInput={(e) => setTyped(e.currentTarget.value)}
-              aria-describedby={typedError ? 'typed-error' : undefined}
-            />
-            <button type="submit" class="button">
-              Play
-            </button>
-          </div>
-          {typedError && (
-            <p id="typed-error" class="error-text" role="alert">
-              {typedError}
-            </p>
-          )}
-        </form>
+      {drill.type === 'time' && !done && (
+        <p class="notice num" role="timer" aria-live="off">
+          Time on this drill: {elapsed} s. Aim for under {SLOW_MS / 1000} s.
+        </p>
       )}
 
-      <div aria-live="polite">
-        {phase.kind === 'checking' && (
-          <p class="notice">
-            {drill.solution
-              ? `${uciToSan(fenNow, phase.uci)} is right. Your opponent replies.`
-              : `Checking ${uciToSan(fenNow, phase.uci)} with the engine…`}
-          </p>
-        )}
-        {phase.kind === 'wrong' && (
-          <div class="panel panel--mistake" role="status">
-            <p>
-              <strong>Not this one.</strong> {phase.reason}
-            </p>
-          </div>
-        )}
-        {phase.kind === 'solved' && (
-          <div class="panel panel--good" role="status">
-            <p>
-              <strong>Correct.</strong>{' '}
-              {drill.solution
-                ? `${uciToSan(fenNow, phase.uci)} completes the puzzle.`
-                : `${uciToSan(fenNow, phase.uci)} keeps ${formatScore(drill.bestScore)}${
-                    phase.uci !== nextBest ? `. The engine's first choice was ${bestSan}.` : '.'
-                  }`}
-            </p>
-          </div>
-        )}
-        {phase.kind === 'shown' && (
-          <div class="panel panel--mistake" role="status">
-            <p>
-              <strong>The answer is {bestSan}.</strong>{' '}
-              {drill.solution ? 'Solution' : 'Engine line'}:{' '}
-              {pvToSan(
-                fenNow,
-                drill.solution ? drill.solution.slice(applied.length) : drill.line,
-                8,
-              ).join(' ')}
-              .
-            </p>
-          </div>
-        )}
-      </div>
+      {drill.choices ? (
+        <PlanDrill key={`${drill.id}@${index}`} drill={drill} onDone={onSpecialDone} />
+      ) : drill.type === 'conversion' ? (
+        <ConversionDrill key={`${drill.id}@${index}`} drill={drill} onDone={onSpecialDone} />
+      ) : (
+        <>
+          <Board
+            fen={shownFen}
+            orientation={drill.side}
+            lastMove={lastMove}
+            shapes={shapes as never}
+            movable={
+              phase.kind === 'solving'
+                ? {
+                    color: drill.side,
+                    dests: chessgroundDests(pos) as unknown as Map<string, string[]>,
+                  }
+                : undefined
+            }
+            onMove={onBoardMove}
+            label={
+              lineStep !== undefined
+                ? `Engine line, after ${lineStep} of ${fullLine.length} moves`
+                : `Drill position, ${drill.side} to move. Use the move box below to answer.`
+            }
+          />
 
-      {!done && hintsUsed > 0 && (
-        <ol class="hint-list">
-          {drill.hints.slice(0, hintsUsed).map((h) => (
-            <li key={h}>{h}</li>
-          ))}
-        </ol>
+          {phase.kind === 'solving' && (
+            <form class="move-input" onSubmit={onTyped}>
+              <label for="typed-move">Type a move</label>
+              <div class="row">
+                <input
+                  id="typed-move"
+                  type="text"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellcheck={false}
+                  placeholder="Nf3 or g1f3"
+                  value={typed}
+                  onInput={(e) => setTyped(e.currentTarget.value)}
+                  aria-describedby={typedError ? 'typed-error' : undefined}
+                />
+                <button type="submit" class="button">
+                  Play
+                </button>
+              </div>
+              {typedError && (
+                <p id="typed-error" class="error-text" role="alert">
+                  {typedError}
+                </p>
+              )}
+            </form>
+          )}
+
+          <div aria-live="polite">
+            {phase.kind === 'checking' && (
+              <p class="notice">
+                {drill.solution
+                  ? `${uciToSan(fenNow, phase.uci)} is right. Your opponent replies.`
+                  : `Checking ${uciToSan(fenNow, phase.uci)} with the engine…`}
+              </p>
+            )}
+            {phase.kind === 'wrong' && (
+              <div class="panel panel--mistake" role="status">
+                <p>
+                  <strong>Not this one.</strong> {phase.reason}
+                </p>
+              </div>
+            )}
+            {phase.kind === 'solved' && (
+              <div class="panel panel--good" role="status">
+                <p>
+                  <strong>Correct.</strong>{' '}
+                  {drill.solution
+                    ? `${uciToSan(fenNow, phase.uci)} completes the puzzle.`
+                    : `${uciToSan(fenNow, phase.uci)} keeps ${formatScore(drill.bestScore)}${
+                        phase.uci !== nextBest ? `. The engine's first choice was ${bestSan}.` : '.'
+                      }`}
+                </p>
+              </div>
+            )}
+            {phase.kind === 'shown' && (
+              <div class="panel panel--mistake" role="status">
+                <p>
+                  <strong>The answer is {bestSan}.</strong>{' '}
+                  {drill.solution ? 'Solution' : 'Engine line'}:{' '}
+                  {pvToSan(
+                    fenNow,
+                    drill.solution ? drill.solution.slice(applied.length) : drill.line,
+                    8,
+                  ).join(' ')}
+                  .
+                </p>
+              </div>
+            )}
+          </div>
+
+          {!done && hintsUsed > 0 && (
+            <ol class="hint-list">
+              {drill.hints.slice(0, hintsUsed).map((h) => (
+                <li key={h}>{h}</li>
+              ))}
+            </ol>
+          )}
+
+          <div class="row row--actions">
+            {!done && phase.kind === 'wrong' && (
+              <button
+                type="button"
+                class="button button--primary"
+                onClick={() => setPhase({ kind: 'solving' })}
+              >
+                Retry
+              </button>
+            )}
+            {!done && hintsUsed < drill.hints.length - 1 && (
+              <button
+                type="button"
+                class="button"
+                onClick={() => setHintsUsed((h) => h + 1)}
+                disabled={phase.kind === 'checking'}
+              >
+                {hintsUsed === 0 ? 'Hint' : 'Another hint'}
+              </button>
+            )}
+            {!done && (
+              <button
+                type="button"
+                class="button"
+                onClick={() => void showAnswer()}
+                disabled={phase.kind === 'checking'}
+              >
+                Show answer
+              </button>
+            )}
+          </div>
+          {done && fullLine.length > 1 && (
+            <LineStepper
+              drill={drill}
+              positions={stepPositions}
+              step={lineStep}
+              onStep={setLineStep}
+              total={fullLine.length}
+            />
+          )}
+        </>
       )}
 
       <div class="row row--actions">
-        {!done && phase.kind === 'wrong' && (
-          <button
-            type="button"
-            class="button button--primary"
-            onClick={() => setPhase({ kind: 'solving' })}
-          >
-            Retry
-          </button>
-        )}
-        {!done && hintsUsed < drill.hints.length - 1 && (
-          <button
-            type="button"
-            class="button"
-            onClick={() => setHintsUsed((h) => h + 1)}
-            disabled={phase.kind === 'checking'}
-          >
-            {hintsUsed === 0 ? 'Hint' : 'Another hint'}
-          </button>
-        )}
-        {!done && (
-          <button
-            type="button"
-            class="button"
-            onClick={() => void showAnswer()}
-            disabled={phase.kind === 'checking'}
-          >
-            Show answer
-          </button>
-        )}
         {done && (
           <button
             type="button"

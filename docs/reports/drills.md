@@ -1,0 +1,1189 @@
+# Generated drill examples
+
+Built by `REPORT=1 npx vitest run tests/unit/drill-report.node.test.ts` from the 50 games in `tests/fixtures/perf-games.ndjson` (Stockfish 19 lite, depth 10 then 14) and the local puzzle shards. Every sentence in an explanation comes from engine output or a counted board feature.
+
+| Type       | From games | Total |
+| ---------- | ---------- | ----- |
+| replay     | 52         | 52    |
+| missed     | 24         | 24    |
+| setup      | 3          | 27    |
+| sacrifice  | 1          | 25    |
+| theme      | 0          | 48    |
+| plan       | 78         | 78    |
+| conversion | 26         | 26    |
+| time       | 22         | 22    |
+
+## replay
+
+- **You played 21... Qc5. Find a better move.** `2r1k2r/pp3ppp/2q1p3/8/1Q6/3R3P/P1P2PP1/R5K1 b - - 2 21`
+  - Answer: Rd8 Rxd8+ Kxd8 Qd4+ Ke7 Qxg7
+  - Hints: Avoid creating weak pawns. / Move a rook. / Move the rook on c8. / The answer is Rd8.
+  - In the game you played Qc5, and the engine's answer was Qxb7. Your evaluation went from −0.6 to −2.2.
+  - Rd8 keeps −0.6. Engine line: Rd8 Rxd8+ Kxd8 Qd4+ Ke7 Qxg7.
+  - After Qc5 and Qxb7: You have 1 new isolated pawn. Your pieces reach 7 more squares (28 from 21).
+  - The game move was classed as a mistake.
+  - Tags: pawnStructure
+- **You played 22... Qxc2. Find a better move.** `2r1k2r/pp3ppp/4p3/2q5/7Q/3R3P/P1P2PP1/R5K1 b - - 4 22`
+  - Answer: g5 Qh5 h6 Rad1 Kf8 Rd7
+  - Also accepted: h5, h6
+  - Hints: Before you move, check what your opponent can do next. / Move a pawn. / Move the pawn on g7. / The answer is g5.
+  - In the game you played Qxc2, and the engine's answer was Rad1. Your evaluation went from −0.5 to −1.9.
+  - g5 keeps −0.5. Engine line: g5 Qh5 h6 Rad1 Kf8 Rd7.
+  - The game move was classed as a mistake.
+- **You played 26... Qb6. Find a better move.** `2r1kr2/ppqR2pp/4pp2/8/8/7P/P2Q1PP1/3R2K1 b - - 3 26`
+  - Answer: Qc6 Rxg7 Rf7 Rg8+ Rf8 Rxf8+
+  - Hints: Your opponent threatens mate. Stop it. / Move a queen. / Move the queen on c7. / The answer is Qc6.
+  - In the game you played Qb6, and the engine's answer was Re7+. Your evaluation went from −3.7 to −M2.
+  - Qc6 keeps −3.7. Engine line: Qc6 Rxg7 Rf7 Rg8+ Rf8 Rxf8+.
+  - The game move was classed as a blunder.
+  - Tags: mateAllowed
+- **You played 26. Rc1. Find a better move.** `2r2bk1/5pp1/7p/8/Pp1Nb3/1P2B2P/5PP1/4R1K1 w - - 1 26`
+  - Answer: Bxh6 Bd5 Be3 Rc3 a5 Bb7
+  - Hints: Moving one piece can open a line for another. / Move a bishop. / Move the bishop on e3. / The answer is Bxh6.
+  - In the game you played Rc1, and the engine's answer was Rxc1+. Your evaluation went from +1.6 to +0.1.
+  - Bxh6 keeps +1.6. Engine line: Bxh6 Bd5 Be3 Rc3 a5 Bb7.
+  - After Rc1 and Rxc1+: Around your king: 2 attackers against 1 defender, up from 1 against 2. Your pieces reach 6 fewer squares (12 from 18).
+  - The game move was classed as a mistake.
+  - Tags: discoveredAttack, pieceActivity
+- **You played 12... Ng6. Find a better move.** `2rqkb1r/1b1pnppp/p1n1p3/4P3/1P6/3Q1NP1/1PP1NPBP/R1B2RK1 b k - 0 12`
+  - Answer: Nxb4 Qb3 Nxc2 Qxb7 Nxa1 Nfd4
+  - Hints: Moving one piece can open a line for another. / Move a knight. / Move the knight on c6. / The answer is Nxb4.
+  - In the game you played Ng6, and the engine's answer was c3. Your evaluation went from +0.4 to −1.0.
+  - Nxb4 keeps +0.4. Engine line: Nxb4 Qb3 Nxc2 Qxb7 Nxa1 Nfd4.
+  - The game move was classed as a mistake.
+  - Tags: discoveredAttack
+- **You played 13... gxf5. Find a better move.** `rnbq1rk1/2p1b2p/1p1pp1p1/5P1n/p2P3P/2P2NB1/PPBQ1PP1/R3KN1R b KQ - 0 13`
+  - Answer: exf5 Bf4 Nd7 Bh6 Re8 O-O-O
+  - Hints: Keep the pawns and pieces around your king in place. / Move a pawn. / Move the pawn on e6. / The answer is exf5.
+  - In the game you played gxf5, and the engine's answer was Bh2. Your evaluation went from 0.0 to −1.2.
+  - exf5 keeps 0.0. Engine line: exf5 Bf4 Nd7 Bh6 Re8 O-O-O.
+  - After gxf5 and Bh2: Your king's pawn shield went from 2 pawns to 1. You have 1 new isolated pawn.
+  - The game move was classed as a mistake.
+  - Tags: kingSafety, pawnStructure
+- **You played 33... Kf8. Find a better move.** `r3b1k1/2p3r1/3pP3/1p6/p4P2/P1P5/KP6/4R2R b - - 0 33`
+  - Answer: Bc6 Rh6 Rf8 Rh4 Rf6 e7
+  - Also accepted: Bg6
+  - Hints: Before you move, check what your opponent can do next. / Move a bishop. / Move the bishop on e8. / The answer is Bc6.
+  - In the game you played Kf8, and the engine's answer was f5. Your evaluation went from +4.0 to +0.5.
+  - Bc6 keeps +4.0. Engine line: Bc6 Rh6 Rf8 Rh4 Rf6 e7.
+  - The game move was classed as a blunder.
+- **You played 6. Bf4. Find a better move.** `rnbqk2r/pp3ppp/4pn2/2bp4/4P3/2NB4/PPP2PPP/R1BQK1NR w KQkq - 0 6`
+  - Answer: e5 Nfd7 Qg4 Bf8 Nf3 Nc6
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a pawn. / Move the pawn on e4. / The answer is e5.
+  - In the game you played Bf4, and the engine's answer was Qb6. Your evaluation went from +0.5 to −1.0.
+  - e5 keeps +0.5. Engine line: e5 Nfd7 Qg4 Bf8 Nf3 Nc6.
+  - The game move was classed as a mistake.
+  - Tags: trappedPiece, openingError
+- **You played 18. Bxh7+. Find a better move.** `r1b2rk1/1p4pp/p1q1pp2/P2pn3/5BP1/3B4/1PP3KP/R3Q1R1 w - - 0 18`
+  - Answer: Bxe5 fxe5 Qxe5 d4+ Be4 Qc4
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a bishop. / Move the bishop on f4. / The answer is Bxe5.
+  - In the game you played Bxh7+, and the engine's answer was Kxh7. Your evaluation went from 0.0 to −6.1.
+  - Bxe5 keeps 0.0. Engine line: Bxe5 fxe5 Qxe5 d4+ Be4 Qc4.
+  - After Bxh7+ and Kxh7: Your pieces reach 9 fewer squares (29 from 38). You gave up the bishop pair.
+  - The game move was classed as a blunder.
+  - Tags: hangingPiece, pieceActivity
+- **You played 9... Bg4. Find a better move.** `r1bqkb1r/pp3p1p/2n2p2/3p4/3p4/5NP1/PP2PP1P/RN1QKB1R b KQkq - 1 9`
+  - Answer: Qb6 Nbd2 Qxb2 Rb1 Qxa2 Ra1
+  - Hints: Before you move, check what your opponent can do next. / Move a queen. / Move the queen on d8. / The answer is Qb6.
+  - In the game you played Bg4, and the engine's answer was Bg2. Your evaluation went from +1.8 to +0.4.
+  - Qb6 keeps +1.8. Engine line: Qb6 Nbd2 Qxb2 Rb1 Qxa2 Ra1.
+  - The game move was classed as a mistake.
+  - Tags: openingError
+- **You played 13... bxc6. Find a better move.** `r3k2r/pp3p1p/1qN2p2/3p4/6b1/6P1/PP1KPbBP/RN1Q3R b kq - 1 13`
+  - Answer: Qe3+ Kc2 Bf5+ Qd3 Qxe2+ Kc1
+  - Hints: Before you move, check what your opponent can do next. / Move a queen. / Move the queen on b6. / The answer is Qe3+.
+  - In the game you played bxc6, and the engine's answer was Qc2. Your evaluation went from +17.4 to +5.8.
+  - Qe3+ keeps +17.4. Engine line: Qe3+ Kc2 Bf5+ Qd3 Qxe2+ Kc1.
+  - The game move was classed as a mistake.
+  - Tags: conversionFailure
+- **You played 30. Qxg5. Find a better move.** `4rk2/8/7p/p1ppQ1q1/P7/N1P4P/6P1/R5K1 w - - 0 30`
+  - Answer: Rf1+ Kg8 Qxe8+ Kh7 Rf7+ Qg7
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a rook. / Move the rook on a1. / The answer is Rf1+.
+  - In the game you played Qxg5, and the engine's answer was hxg5. Your evaluation went from +11.2 to +5.1.
+  - Rf1+ keeps +11.2. Engine line: Rf1+ Kg8 Qxe8+ Kh7 Rf7+ Qg7.
+  - After Qxg5 and hxg5: Your pieces reach 20 fewer squares (10 from 30). You control 2 fewer center squares.
+  - The game move was classed as a mistake.
+  - Tags: hangingPiece, pieceActivity, conversionFailure
+- **You played 8... Qb6. Find a better move.** `rn2kb1r/pp3ppp/5n2/1qppN3/3PP3/N1P5/PP3PPP/R1BQK2R b KQkq - 2 8`
+  - Answer: Qa6 Qb3 Bd6 Nb5 O-O Nxd6
+  - Hints: Before you move, check what your opponent can do next. / Move a queen. / Move the queen on b5. / The answer is Qa6.
+  - In the game you played Qb6, and the engine's answer was exd5. Your evaluation went from −1.9 to −4.0.
+  - Qa6 keeps −1.9. Engine line: Qa6 Qb3 Bd6 Nb5 O-O Nxd6.
+  - The game move was classed as a blunder.
+  - Tags: openingError
+- **You played 9. Bb2. Find a better move.** `r1bqk1nr/pp3ppp/4pb2/2p5/2Pn4/PP1P1N2/4BPPP/RNBQK2R w KQkq - 0 9`
+  - Answer: Ra2 Ne7 b4 Nec6 b5 Nxf3+
+  - Also accepted: Nxd4
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a rook. / Move the rook on a1. / The answer is Ra2.
+  - In the game you played Bb2, and the engine's answer was Nxf3+. Your evaluation went from −0.2 to −7.6.
+  - Ra2 keeps −0.2. Engine line: Ra2 Ne7 b4 Nec6 b5 Nxf3+.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, pinAllowed, discoveredAttack, openingError
+- **You played 22... Qe4. Find a better move.** `1r1r1k2/ppp2Bpp/4P3/4q3/8/7Q/PP3PPP/R5K1 b - - 2 22`
+  - Answer: Rd2 Qxh7 Ke7 Rc1 c6 Rf1
+  - Also accepted: h6, h6
+  - Hints: Keep the pawns and pieces around your king in place. / Move a rook. / Move the rook on d8. / The answer is Rd2.
+  - In the game you played Qe4, and the engine's answer was Qc3. Your evaluation went from +1.0 to −0.1.
+  - Rd2 keeps +1.0. Engine line: Rd2 Qxh7 Ke7 Rc1 c6 Rf1.
+  - After Qe4 and Qc3: Around your king: 3 attackers against 1 defender, up from 2 against 2.
+  - The game move was classed as a mistake.
+  - Tags: kingSafety
+- **You played 26... h6. Find a better move.** `1r1r1k2/ppp2Bpp/4P3/7Q/8/3q1P2/PP4PP/6RK b - - 6 26`
+  - Answer: Rd6 h3 Qd4 Re1 Ke7 Qxh7
+  - Also accepted: Qd4
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a rook. / Move the rook on d8. / The answer is Rd6.
+  - In the game you played h6, and the engine's answer was e7+. Your evaluation went from −0.1 to −3.6.
+  - Rd6 keeps −0.1. Engine line: Rd6 h3 Qd4 Re1 Ke7 Qxh7.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, forkAllowed
+- **You played 17. b4. Find a better move.** `2rrb1k1/pp2bppp/2n1pn2/q7/3P1BP1/P1NB1N1P/1P2QP2/2R2RK1 w - - 3 17`
+  - Answer: Rfd1 a6 Bb1 Bf8 Qd3 Ne7
+  - Also accepted: Bd2, g5
+  - Hints: Avoid creating weak pawns. / Move a rook. / Move the rook on f1. / The answer is Rfd1.
+  - In the game you played b4, and the engine's answer was Qxa3. Your evaluation went from +0.5 to −1.3.
+  - Rfd1 keeps +0.5. Engine line: Rfd1 a6 Bb1 Bf8 Qd3 Ne7.
+  - After b4 and Qxa3: You have 1 new isolated pawn.
+  - The game move was classed as a blunder.
+  - Tags: pawnStructure
+- **You played 20. Rfb1. Find a better move.** `2rrb1k1/pp2bppp/2n1pn2/1N6/1P1P1BP1/1q1B1N1P/4QP2/R4RK1 w - - 4 20`
+  - Answer: Nxa7 Nxa7 Rxa7 Nd5 Bd2 Nxb4
+  - Also accepted: Bc7
+  - Hints: Before you move, check what your opponent can do next. / Move a knight. / Move the knight on b5. / The answer is Nxa7.
+  - In the game you played Rfb1, and the engine's answer was Qd5. Your evaluation went from −0.4 to −2.0.
+  - Nxa7 keeps −0.4. Engine line: Nxa7 Nxa7 Rxa7 Nd5 Bd2 Nxb4.
+  - The game move was classed as a mistake.
+- **You played 13... Qxd4. Find a better move.** `r2q1rk1/pp3ppp/4pnb1/2b5/2PB4/1P3N1P/P2NBPP1/R2Q1RK1 b - - 0 13`
+  - Answer: Bxd4 Nxd4 Qxd4 Qc1 a5 a3
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a bishop. / Move the bishop on c5. / The answer is Bxd4.
+  - In the game you played Qxd4, and the engine's answer was Nxd4. Your evaluation went from −0.1 to −5.8.
+  - Bxd4 keeps −0.1. Engine line: Bxd4 Nxd4 Qxd4 Qc1 a5 a3.
+  - After Qxd4 and Nxd4: Your pieces reach 6 fewer squares (26 from 32).
+  - The game move was classed as a blunder.
+  - Tags: hangingPiece, pieceActivity
+- **You played 16... Ne7. Find a better move.** `r1br2k1/1pq2pp1/4p2p/p1bn4/2P5/P2B1N2/1PQB1PPP/R2R2K1 b - - 0 16`
+  - Answer: Nf6 b4 axb4 axb4 Rxa1 Rxa1
+  - Hints: Moving one piece can open a line for another. / Move a knight. / Move the knight on d5. / The answer is Nf6.
+  - In the game you played Ne7, and the engine's answer was Bf4. Your evaluation went from −0.1 to −1.3.
+  - Nf6 keeps −0.1. Engine line: Nf6 b4 axb4 axb4 Rxa1 Rxa1.
+  - The game move was classed as a mistake.
+  - Tags: discoveredAttack
+- **You played 19... Bf8. Find a better move.** `2k1r2r/ppqn2p1/2p1pn2/3p3p/1bPP4/P2bBB1P/1P1NN1P1/2R1QRK1 b - - 0 19`
+  - Answer: Bxd2 Qxd2 Bxc4 b3 Bxb3 Bf4
+  - Hints: Keep your pieces active. / Move a bishop. / Move the bishop on b4. / The answer is Bxd2.
+  - In the game you played Bf8, and the engine's answer was b4. Your evaluation went from +2.3 to +0.7.
+  - Bxd2 keeps +2.3. Engine line: Bxd2 Qxd2 Bxc4 b3 Bxb3 Bf4.
+  - After Bf8 and b4: Your pieces reach 8 fewer squares (34 from 42).
+  - The game move was classed as a mistake.
+  - Tags: pieceActivity
+- **You played 29... Qb6. Find a better move.** `2k1r3/ppqn4/5n2/3pb2p/6p1/P3R2P/1P1NB1P1/3Q1R1K b - - 1 29`
+  - Answer: d4 Rd3 Nc5 Rf5 Nxd3 Bxd3
+  - Hints: Before you move, check what your opponent can do next. / Move a pawn. / Move the pawn on d5. / The answer is d4.
+  - In the game you played Qb6, and the engine's answer was Rb3. Your evaluation went from +1.8 to +0.3.
+  - d4 keeps +1.8. Engine line: d4 Rd3 Nc5 Rf5 Nxd3 Bxd3.
+  - The game move was classed as a mistake.
+- **You played 34... Bc7. Find a better move.** `2k2r2/pp1n4/2q2n2/3pb2p/1P4p1/P3R2P/3NQ1P1/3B1R1K b - - 4 34`
+  - Answer: Bb8 Rf5 Bc7 Nf1 Kb8 Re6
+  - Also accepted: Re8
+  - Hints: Before you move, check what your opponent can do next. / Move a bishop. / Move the bishop on e5. / The answer is Bb8.
+  - In the game you played Bc7, and the engine's answer was Re6. Your evaluation went from −0.5 to −1.6.
+  - Bb8 keeps −0.5. Engine line: Bb8 Rf5 Bc7 Nf1 Kb8 Re6.
+  - The game move was classed as a mistake.
+- **You played 35... Ne4. Find a better move.** `2k2r2/ppbn4/2q1Rn2/3p3p/1P4p1/P6P/3NQ1P1/3B1R1K b - - 6 35`
+  - Answer: Qc3 Qe3 Be5 Qxc3+ Bxc3 Nb3
+  - Also accepted: Bd6
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a queen. / Move the queen on c6. / The answer is Qc3.
+  - In the game you played Ne4, and the engine's answer was Rxf8+. Your evaluation went from −1.7 to −4.8.
+  - Qc3 keeps −1.7. Engine line: Qc3 Qe3 Be5 Qxc3+ Bxc3 Nb3.
+  - After Ne4 and Rxf8+: Around your king: 1 attacker against 3 defenders, up from 0 against 5. You placed 1 piece on an outpost.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, kingSafety
+- **You played 20... a5. Find a better move.** `r1b1kb1r/pppq2pp/2np1p2/4nP2/4PNPP/1PP1B3/P2QB3/2KR3R b kq - 0 20`
+  - Answer: b6 g5 Bb7 Ne6 Nd8 Nf4
+  - Also accepted: Qf7
+  - Hints: Before you move, check what your opponent can do next. / Move a pawn. / Move the pawn on b7. / The answer is b6.
+  - In the game you played a5, and the engine's answer was g5. Your evaluation went from +2.6 to 0.0.
+  - b6 keeps +2.6. Engine line: b6 g5 Bb7 Ne6 Nd8 Nf4.
+  - The game move was classed as a blunder.
+
+## missed
+
+- **Find the move that wins material.** `rn1q1rk1/p3bppp/1p2p3/1Npn4/Q2P1B2/4PN2/PP3PPP/2RR2K1 w - - 1 14`
+  - Answer: dxc5 Qe8 cxb6 Nxb6 Qb3 Na6
+  - Hints: Look for a line through one piece onto a bigger one behind it. / Move a pawn. / Move the pawn on d4. / The answer is dxc5.
+  - In the game you played Ne5, and the engine's answer was Qe8. Your evaluation went from +3.7 to +0.9.
+  - dxc5 keeps +3.7. Engine line: dxc5 Qe8 cxb6 Nxb6 Qb3 Na6.
+  - The game move was classed as a blunder.
+  - Tags: pinMissed, pinAllowed, discoveredAttack
+- **Find the move that wins material.** `r2q2k1/4brpp/p3Qp2/1p1p4/3P1B2/8/PP3PPP/2RR2K1 w - - 2 21`
+  - Answer: Rc7 Qf8 Rdc1 Rd8 h4 g5
+  - Hints: Look for a line through one piece onto a bigger one behind it. / Move a rook. / Move the rook on c1. / The answer is Rc7.
+  - In the game you played g3, and the engine's answer was Bf8. Your evaluation went from +4.0 to +2.1.
+  - Rc7 keeps +4.0. Engine line: Rc7 Qf8 Rdc1 Rd8 h4 g5.
+  - The game move was classed as a mistake.
+  - Tags: pinMissed, conversionFailure
+- **Find the move that wins material.** `r1bq1rk1/p3bppp/2p1pN2/8/1PB5/P2QP3/1B3PPP/R4RK1 b - - 0 16`
+  - Answer: Bxf6 Bxf6 Qxf6 Qd6 Bb7 Rfd1
+  - Hints: Look for a line through one piece onto a bigger one behind it. / Move a bishop. / Move the bishop on e7. / The answer is Bxf6.
+  - In the game you played Kh8, and the engine's answer was Qxh7#. Your evaluation went from −1.3 to −M1.
+  - Bxf6 keeps −1.3. Engine line: Bxf6 Bxf6 Qxf6 Qd6 Bb7 Rfd1.
+  - After Kh8 and Qxh7#: Your king's pawn shield went from 3 pawns to 1. 1 more file beside your king is open. Around your king: 2 attackers against 1 defender, up from 2 against 3.
+  - The game move was classed as a blunder.
+  - Tags: pinMissed, mateAllowed, kingSafety
+- **Find the move that wins material.** `4kb1r/rp3ppp/4p3/2p5/4P3/8/PPP2PPP/R1BqR1K1 w k - 0 15`
+  - Answer: Rxd1 Be7 Be3 b5 a3 O-O
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a rook. / Move the rook on e1. / The answer is Rxd1.
+  - In the game you played Bf4, and the engine's answer was Qxc2. Your evaluation went from +1.5 to −6.5.
+  - Rxd1 keeps +1.5. Engine line: Rxd1 Be7 Be3 b5 a3 O-O.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture
+- **Find the move that wins material.** `rn2k2r/pp3ppp/q2N1n2/2pP4/8/N1P1pP2/PP4PP/R1BQ1RK1 b kq - 0 13`
+  - Answer: Qxd6 Bxe3 O-O c4 a6 Qd2
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a queen. / Move the queen on a6. / The answer is Qxd6.
+  - In the game you played Kf8, and the engine's answer was Ndc4. Your evaluation went from −3.1 to −8.3.
+  - Qxd6 keeps −3.1. Engine line: Qxd6 Bxe3 O-O c4 a6 Qd2.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture
+- **Find the move that wins material.** `r1b1k2r/p4ppp/1p2p3/2p1n3/2P5/PPqP4/4BPPP/RN2K2R w KQkq - 0 16`
+  - Answer: Nxc3 Bb7 f4 Ng6 O-O Nh4
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a knight. / Move the knight on b1. / The answer is Nxc3.
+  - In the game you played Nd2, and the engine's answer was Qxa1+. Your evaluation went from −0.3 to −27.9.
+  - Nxc3 keeps −0.3. Engine line: Nxc3 Bb7 f4 Ng6 O-O Nh4.
+  - The game move was classed as a blunder.
+  - Tags: hangingPiece, missedCapture, skewerAllowed
+- **Find the move that wins material.** `r2r2k1/pppn1Bpp/8/4P3/5q2/1Q3b2/PP3PPP/R3R1K1 b - - 0 18`
+  - Answer: Qxf7 e6 Qf5 e7+ Bd5 exd8=R+
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a queen. / Move the queen on f4. / The answer is Qxf7.
+  - In the game you played Kf8, and the engine's answer was e6. Your evaluation went from +2.4 to −4.5.
+  - Qxf7 keeps +2.4. Engine line: Qxf7 e6 Qf5 e7+ Bd5 exd8=R+.
+  - After Kf8 and e6: Your king's pawn shield went from 2 pawns to 1. 1 more file beside your king is open.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, trappedPiece, kingSafety
+- **Find the move that wins material.** `1r1r1k2/ppp2Bpp/4P3/8/8/5P1Q/PP2q1PP/6RK b - - 4 25`
+  - Answer: Rd1 Qh4 Rbd8 Qb4+ R8d6 h3
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a rook. / Move the rook on d8. / The answer is Rd1.
+  - In the game you played Qd3, and the engine's answer was Qh5. Your evaluation went from +4.3 to −1.1.
+  - Rd1 keeps +4.3. Engine line: Rd1 Qh4 Rbd8 Qb4+ R8d6 h3.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, pinMissed
+- **Find the move that wins material.** `2rrb1k1/np2bppp/4pn2/3q4/1P1P1BP1/3B1N1P/4QP2/RR4K1 w - - 0 22`
+  - Answer: Rxa7 Bc6 Ra3 Ra8 Rab3 b5
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a rook. / Move the rook on a1. / The answer is Rxa7.
+  - In the game you played Ra5, and the engine's answer was Nb5. Your evaluation went from −2.0 to −4.0.
+  - Rxa7 keeps −2.0. Engine line: Rxa7 Bc6 Ra3 Ra8 Rab3 b5.
+  - The game move was classed as a mistake.
+  - Tags: missedCapture
+- **Find the move that wins material.** `rnbqkb1r/ppp2ppp/4p3/3pP3/3P4/2nB4/PPP2PPP/R1BQK1NR w KQkq - 0 6`
+  - Answer: bxc3 c5 h4 c4 Be2 Bd7
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on b2. / The answer is bxc3.
+  - In the game you played Qh5, and the engine's answer was Na4. Your evaluation went from +0.1 to −3.9.
+  - bxc3 keeps +0.1. Engine line: bxc3 c5 h4 c4 Be2 Bd7.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, openingError
+- **Find the move that wins material.** `2k2n2/ppb5/2q5/3p3p/1P2R1p1/P6P/3NQ1P1/3B3K b - - 0 37`
+  - Answer: dxe4 hxg4 Qd6 Nf1 hxg4 Qxg4+
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on d5. / The answer is dxe4.
+  - In the game you played Qf6, and the engine's answer was Re8+. Your evaluation went from +0.4 to −5.5.
+  - dxe4 keeps +0.4. Engine line: dxe4 hxg4 Qd6 Nf1 hxg4 Qxg4+.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture
+- **Find the move that wins material.** `2r2rk1/R1B2pp1/4p1b1/8/1n1P3p/1PN1P3/1P1K1PPP/R7 w - - 2 23`
+  - Answer: Bd6 Nd3 Bxf8 Kxf8 R1a5 Nxb2
+  - Also accepted: R1a4, h3
+  - Hints: One move can attack two pieces at once. / Move a bishop. / Move the bishop on c7. / The answer is Bd6.
+  - In the game you played e4, and the engine's answer was h3. Your evaluation went from +5.5 to +2.8.
+  - Bd6 keeps +5.5. Engine line: Bd6 Nd3 Bxf8 Kxf8 R1a5 Nxb2.
+  - Bd6 attacks the knight on b4 and the rook on f8 at once.
+  - The game move was classed as a mistake.
+  - Tags: forkMissed, conversionFailure
+- **Find the move that wins material.** `rnb1kbnr/pp2pppp/8/8/3q4/5N2/PP2PPPP/RNB1KB1R w KQkq - 0 6`
+  - Answer: Nxd4 Bd7 e4 Nc6 Be3 Nxd4
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a knight. / Move the knight on f3. / The answer is Nxd4.
+  - In the game you played Na3, and the engine's answer was Qb4+. Your evaluation went from +0.3 to −7.4.
+  - Nxd4 keeps +0.3. Engine line: Nxd4 Bd7 e4 Nc6 Be3 Nxd4.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, pieceActivity, openingError
+- **Find the move that wins material.** `Nn2kbnr/3b1ppp/p3p3/8/8/8/P2BBPPP/2q1K2R w Kk - 0 18`
+  - Answer: Bxc1 Bb4+ Bd2 Bxd2+ Kxd2 Nf6
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a bishop. / Move the bishop on d2. / The answer is Bxc1.
+  - In the game you played Bd1, and the engine's answer was Qa3. Your evaluation went from −5.6 to −12.7.
+  - Bxc1 keeps −5.6. Engine line: Bxc1 Bb4+ Bd2 Bxd2+ Kxd2 Nf6.
+  - The game move was classed as a mistake.
+  - Tags: missedCapture
+- **Find the move that wins material.** `2kr1bnr/1p2qppp/p1n1b3/1N6/2PPN3/8/PP3PPP/R1BQR1K1 b - - 0 12`
+  - Answer: axb5 Bg5 Nf6 cxb5 Rxd4 Qc2
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on a6. / The answer is axb5.
+  - In the game you played Bxc4, and the engine's answer was Ned6+. Your evaluation went from +2.5 to −0.3.
+  - axb5 keeps +2.5. Engine line: axb5 Bg5 Nf6 cxb5 Rxd4 Qc2.
+  - After Bxc4 and Ned6+: Around your king: 2 attackers against 3 defenders, up from 1 against 4.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, trappedPiece, forkAllowed, discoveredAttack, kingSafety
+- **Find the move that wins material.** `rnbqkb1r/pppp1ppp/8/4p3/2PPn3/5P2/PP2P1PP/RNBQKBNR w KQkq - 0 4`
+  - Answer: fxe4 Nc6 dxe5 Qh4+ g3 Qxe4
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on f3. / The answer is fxe4.
+  - In the game you played dxe5, and the engine's answer was Bb4+. Your evaluation went from +4.7 to −3.4.
+  - fxe4 keeps +4.7. Engine line: fxe4 Nc6 dxe5 Qh4+ g3 Qxe4.
+  - After dxe5 and Bb4+: 1 more file beside your king is open. You have 1 new doubled pawn. Your pawns split into 2 islands, from 1. You hold 2 fewer safe squares in the enemy half.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, pawnStructure, openingError
+- **Find the move that wins material.** `rnbqk2r/pppp1ppp/8/4P3/1bP5/2n2P2/PP2P1PP/R1BQKBNR w KQkq - 0 6`
+  - Answer: Qb3 Nxa2+ Bd2 Bxd2+ Kxd2 d6
+  - Also accepted: bxc3
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a queen. / Move the queen on d1. / The answer is Qb3.
+  - In the game you played Qd2, and the engine's answer was Nxa2. Your evaluation went from −3.5 to −7.5.
+  - Qb3 keeps −3.5. Engine line: Qb3 Nxa2+ Bd2 Bxd2+ Kxd2 d6.
+  - Qb3 attacks the knight on c3 and the bishop on b4 at once.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, forkMissed, pinAllowed, discoveredAttack, openingError
+- **Find the move that wins material.** `r2qk1nr/ppp2p2/2b1p1pp/3pP1B1/P2P4/2NN1Q2/1PP2PP1/R3K2R b KQkq - 0 13`
+  - Answer: Qxg5 g4 h5 gxh5 gxh5 Ke2
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a queen. / Move the queen on d8. / The answer is Qxg5.
+  - In the game you played h5, and the engine's answer was Bxd8. Your evaluation went from −0.3 to −8.9.
+  - Qxg5 keeps −0.3. Engine line: Qxg5 g4 h5 gxh5 gxh5 Ke2.
+  - The game move was classed as a blunder.
+  - Tags: hangingPiece, missedCapture
+- **Find the move that wins material.** `r3kb2/ppqn2p1/2p1p1Pr/3pPN2/8/P1N4P/1PP2P2/2KRR1Q1 b q - 0 22`
+  - Answer: exf5 Qg5 Be7 Qxf5 O-O-O f4
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on e6. / The answer is exf5.
+  - In the game you played Rxh3, and the engine's answer was Qg4. Your evaluation went from +3.0 to −4.2.
+  - exf5 keeps +3.0. Engine line: exf5 Qg5 Be7 Qxf5 O-O-O f4.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, trappedPiece
+- **Find the move that wins material.** `Q2bk2r/3q2p1/2p2N2/p5Bp/3P2b1/P1N3P1/1P3P2/R3K2R b KQk - 0 20`
+  - Answer: gxf6 Be3 f5 Qa6 h4 Kd2
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a pawn. / Move the pawn on g7. / The answer is gxf6.
+  - In the game you played Ke7, and the engine's answer was Nxd7+. Your evaluation went from −5.4 to −17.7.
+  - gxf6 keeps −5.4. Engine line: gxf6 Be3 f5 Qa6 h4 Kd2.
+  - After Ke7 and Nxd7+: Your pieces reach 11 fewer squares (14 from 25).
+  - The game move was classed as a mistake.
+  - Tags: hangingPiece, missedCapture, skewerAllowed, discoveredAttack, pieceActivity
+- **Find the move that wins material.** `r4rk1/pp3pp1/3b1n1p/3p4/3N1n2/PP2P2q/1B2BP1P/R2Q1R1K w - - 0 20`
+  - Answer: exf4 Bxf4 Nf3 Ng4 Qd4 Be5
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on e3. / The answer is exf4.
+  - In the game you played Rg1, and the engine's answer was Ne4. Your evaluation went from −1.2 to −3.9.
+  - exf4 keeps −1.2. Engine line: exf4 Bxf4 Nf3 Ng4 Qd4 Be5.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture
+- **Find the move that wins material.** `r1b2rk1/ppb2pp1/4p2p/1P6/8/P2B1qP1/1BP2PP1/R4RK1 w - - 0 18`
+  - Answer: gxf3 Rd8 Rfd1 a6 c4 axb5
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on g2. / The answer is gxf3.
+  - In the game you played b6, and the engine's answer was Qxd3. Your evaluation went from +0.5 to −6.6.
+  - gxf3 keeps +0.5. Engine line: gxf3 Rd8 Rfd1 a6 c4 axb5.
+  - After b6 and Qxd3: Your pieces reach 6 fewer squares (15 from 21). You gave up the bishop pair.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, pieceActivity
+- **Find the move that wins material.** `r1bq1rk1/pp1p1ppp/4p3/4n3/3n1P1b/1BN3P1/PPP1Q2P/R1B1K1NR w KQ - 1 12`
+  - Answer: Qxe5 Bf6 Qe3 d5 Nce2 Nxb3
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a queen. / Move the queen on e2. / The answer is Qxe5.
+  - In the game you played Qh5, and the engine's answer was Nef3+. Your evaluation went from +1.9 to +0.6.
+  - Qxe5 keeps +1.9. Engine line: Qxe5 Bf6 Qe3 d5 Nce2 Nxb3.
+  - The game move was classed as a mistake.
+  - Tags: missedCapture
+- **Find the move that wins material.** `r4rk1/1bp1bppp/p1n1P3/1p1q2B1/8/1B3N2/PPP2PPP/R3K2R w KQ - 0 14`
+  - Answer: Bxd5 f6 Bf4 g5 Bxc7 Rfc8
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a bishop. / Move the bishop on b3. / The answer is Bxd5.
+  - In the game you played exf7+, and the engine's answer was Qxf7. Your evaluation went from +1.6 to −5.5.
+  - Bxd5 keeps +1.6. Engine line: Bxd5 f6 Bf4 g5 Bxc7 Rfc8.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture
+
+## setup
+
+- **Find the quiet move that sets up a tactic.** `r1b2rk1/1p1n2pp/p1N1pp2/P1qpP3/5BP1/3B4/1PP4P/R2Q1KR1 w - - 0 16`
+  - Answer: Nd4 fxe5 Nxe6 Rxf4+ Nxf4 exf4
+  - Hints: Your move in the game left a piece undefended. Keep everything protected. / Move a knight. / Move the knight on c6. / The answer is Nd4.
+  - In the game you played Kg2, and the engine's answer was Qxc6. Your evaluation went from +1.4 to −1.0.
+  - Nd4 keeps +1.4. Engine line: Nd4 fxe5 Nxe6 Rxf4+ Nxf4 exf4.
+  - Nd4 is quiet. After fxe5, Nxe6 is a fork.
+  - The game move was classed as a blunder.
+  - Tags: hangingPiece, trappedPiece, quietSetupMissed
+- **Find the quiet move that sets up a tactic.** `rnbqkb1r/ppp4p/4p1p1/3pPp2/3Pn1Q1/3B1P2/PPP3PP/R1B1K1NR w KQkq f6 0 9`
+  - Answer: Qf4 c5 fxe4 dxe4 Bxe4 fxe4
+  - Hints: The best move is quiet. It prepares a tactic for the next move. / Move a queen. / Move the queen on g4. / The answer is Qf4.
+  - In the game you played Qh3, and the engine's answer was Ng5. Your evaluation went from −2.5 to −5.4.
+  - Qf4 keeps −2.5. Engine line: Qf4 c5 fxe4 dxe4 Bxe4 fxe4.
+  - Qf4 is quiet. After c5, fxe4 wins material.
+  - The game move was classed as a blunder.
+  - Tags: quietSetupMissed, openingError
+- **Find the quiet move that sets up a tactic.** `r3k2r/2pn1ppp/2Nb1nb1/p2pp3/P7/2PP2P1/1P1NPP1P/R1B1KB1R b KQk - 3 14`
+  - Answer: Ra6 Nxe5 Nxe5 d4 Nc4 Nxc4
+  - Hints: The best move is quiet. It prepares a tactic for the next move. / Move a rook. / Move the rook on a8. / The answer is Ra6.
+  - In the game you played h5, and the engine's answer was Nb3. Your evaluation went from +2.1 to −1.9.
+  - Ra6 keeps +2.1. Engine line: Ra6 Nxe5 Nxe5 d4 Nc4 Nxc4.
+  - Ra6 is quiet. After Nxe5, Nxe5 wins material.
+  - The game move was classed as a blunder.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `rn4k1/1p4p1/p1p1pr1p/5pq1/2PPp3/P3P2P/1P1N1P1P/R2QRB1K b - - 0 18`
+  - Answer: Rg6 Qg4 fxg4
+  - Hints: The best move is not a capture or a check. / Move a rook. / Move the rook on f6. / The answer is Rg6.
+  - This is Lichess puzzle P0wOb, rated 1214. The solution has 2 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `5rk1/ppp2p2/3p2pR/3P2P1/2P5/3R4/PP4r1/1K6 w - - 2 31`
+  - Answer: Rdh3 Rxg5 Rh8+ Kg7 R3h7+ Kf6
+  - Hints: The best move is not a capture or a check. / Move a rook. / Move the rook on d3. / The answer is Rdh3.
+  - This is Lichess puzzle zzWJ8, rated 1275. The solution has 4 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/4K3/5pp1/5k2/7P/7P/8/8 w - - 0 53`
+  - Answer: Kf7 Ke5 Kxg6 f5 h5 f4
+  - Hints: The best move is not a capture or a check. / Move a king. / Move the king on e7. / The answer is Kf7.
+  - This is Lichess puzzle VwPeQ, rated 1291. The solution has 5 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/8/1p5p/3p4/P4k1P/2K5/8/8 w - - 0 43`
+  - Answer: Kd4 h5 Kxd5 Kg4 Kc6 Kxh4
+  - Hints: The best move is not a capture or a check. / Move a king. / Move the king on c3. / The answer is Kd4.
+  - This is Lichess puzzle JJzBy, rated 1235. The solution has 8 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/8/8/p7/Pp4P1/1Pk2p2/5K2/8 w - - 1 43`
+  - Answer: g5 Kxb3 g6
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on g4. / The answer is g5.
+  - This is Lichess puzzle r66Ix, rated 1231. The solution has 2 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/8/8/p5pp/P3P3/3K3k/8/8 w - - 0 44`
+  - Answer: e5 g4 e6 g3 e7 g2
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on e4. / The answer is e5.
+  - This is Lichess puzzle hw3h5, rated 1264. The solution has 5 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/8/p2k4/Pp4p1/1P2K2p/2P5/6P1/8 w - - 0 46`
+  - Answer: Kf5 Kd5 Kxg5 Kc4 Kxh4 Kxc3
+  - Hints: The best move is not a capture or a check. / Move a king. / Move the king on e4. / The answer is Kf5.
+  - This is Lichess puzzle TfxvZ, rated 1276. The solution has 8 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/7p/8/1Kp1k3/8/P6P/8/8 b - - 1 38`
+  - Answer: Kd4 a4 c4 a5 c3 a6
+  - Hints: The best move is not a capture or a check. / Move a king. / Move the king on e5. / The answer is Kd4.
+  - This is Lichess puzzle wJVdU, rated 1294. The solution has 5 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/1kpK4/3p4/2P1p3/1P6/3P4/8/8 b - - 0 48`
+  - Answer: d5 Ke6 e4
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on d6. / The answer is d5.
+  - This is Lichess puzzle HIEi8, rated 1681. The solution has 2 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `4q1k1/5pp1/4p3/2p3P1/3p4/1p3P1R/P1P3P1/2KR4 w - - 0 31`
+  - Answer: Rdh1 f6 Rh8+
+  - Hints: The best move is not a capture or a check. / Move a rook. / Move the rook on d1. / The answer is Rdh1.
+  - This is Lichess puzzle rbivE, rated 1625. The solution has 2 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/p7/1p5p/8/2P5/1P2K1k1/P7/8 w - - 3 38`
+  - Answer: b4 h5 c5 h4 c6 h3
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on b3. / The answer is b4.
+  - This is Lichess puzzle agvP7, rated 1671. The solution has 4 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `3k4/3P4/4P3/4K1p1/bP6/8/8/8 w - - 1 54`
+  - Answer: Kd6 Bxd7 exd7 g4 b5 g3
+  - Hints: The best move is not a capture or a check. / Move a king. / Move the king on e5. / The answer is Kd6.
+  - This is Lichess puzzle 1yHog, rated 1610. The solution has 6 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/6pp/8/p3KP2/1k4P1/7P/8/8 w - - 0 43`
+  - Answer: g5 a4 f6 gxf6+ gxf6 a3
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on g4. / The answer is g5.
+  - This is Lichess puzzle mGSOs, rated 1657. The solution has 5 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/p4pp1/7p/1pp1P3/5P2/PP2K1k1/6P1/8 w - - 0 34`
+  - Answer: f5 Kg4 e6 fxe6 fxe6 Kf5
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on f4. / The answer is f5.
+  - This is Lichess puzzle TnW28, rated 1628. The solution has 4 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/2p5/6p1/p7/7P/2k1K1P1/8/8 w - - 6 51`
+  - Answer: g4 Kc2 h5 gxh5 gxh5 a4
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on g3. / The answer is g4.
+  - This is Lichess puzzle g44J9, rated 1664. The solution has 6 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `4r3/pp4k1/6p1/5p1p/8/5N2/P1p2PPP/2R3K1 b - - 1 29`
+  - Answer: Rd8 Kf1 Rd1+ Ke2 Rxc1
+  - Hints: The best move is not a capture or a check. / Move a rook. / Move the rook on e8. / The answer is Rd8.
+  - This is Lichess puzzle Nq5Ip, rated 1616. The solution has 3 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/5K2/8/k6p/8/8/7P/8 w - - 0 66`
+  - Answer: h4 Kb4 Kg6 Kc5 Kxh5
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on h2. / The answer is h4.
+  - This is Lichess puzzle FEWE5, rated 2005. The solution has 3 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/7p/3k1Kp1/8/6P1/8/8/8 w - - 1 42`
+  - Answer: g5 Kd5 Kg7 h5 gxh6
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on g4. / The answer is g5.
+  - This is Lichess puzzle VHD2I, rated 2029. The solution has 3 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/5p1p/2K5/7P/2k5/P7/8/8 b - - 2 46`
+  - Answer: f5 a4 f4 a5 f3 a6
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on f7. / The answer is f5.
+  - This is Lichess puzzle D619C, rated 2053. The solution has 4 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/7p/6p1/8/6PP/4k1K1/8/8 b - - 1 40`
+  - Answer: h6 g5 h5
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on h7. / The answer is h6.
+  - This is Lichess puzzle pwNng, rated 2012. The solution has 2 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `8/8/2N5/P6p/2K5/6k1/5b2/8 w - - 2 41`
+  - Answer: Nd4 Kf4 a6 Ke5 a7 Bxd4
+  - Hints: The best move is not a capture or a check. / Move a knight. / Move the knight on c6. / The answer is Nd4.
+  - This is Lichess puzzle rTlPc, rated 2058. The solution has 4 of your moves.
+  - Tags: quietSetupMissed
+- **Find the quiet move.** `6k1/8/8/3pP3/P5p1/8/1P1K4/8 b - - 1 50`
+  - Answer: g3 Ke2 d4 Kf3 d3
+  - Hints: The best move is not a capture or a check. / Move a pawn. / Move the pawn on g4. / The answer is g3.
+  - This is Lichess puzzle Y8iWn, rated 2002. The solution has 3 of your moves.
+  - Tags: quietSetupMissed
+
+## sacrifice
+
+- **Find the sacrifice that works.** `r1b2rk1/1p1nb1pp/1pp1P2n/3p1p2/5PP1/2N2N1P/PPPBB3/R3KR2 b Q - 0 15`
+  - Answer: fxg4 exd7 gxf3 dxc8=Q Bh4+ Rf2
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a pawn. / Move the pawn on f5. / The answer is fxg4.
+  - In the game you played Nc5, and the engine's answer was g5. Your evaluation went from −0.4 to −2.3.
+  - fxg4 keeps −0.4. Engine line: fxg4 exd7 gxf3 dxc8=Q Bh4+ Rf2.
+  - In that line you are up to 10 pawns of material down, and the engine still rates the position −0.4 for you.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, sacrificeMissed
+- **Find the sacrifice.** `2r5/2r2p1k/p1q2Qp1/4R1Rp/7P/5P2/5P2/5K2 w - - 0 33`
+  - Answer: Rxh5+ gxh5 Rxh5+ Kg8 Rh8#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on g5. / The answer is Rxh5+.
+  - This is Lichess puzzle MZZdi, rated 1273. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `3r3r/pk3p2/1p2p3/6Q1/8/P1P5/4nPPP/R4R1K b - - 0 22`
+  - Answer: Rxh2+ Kxh2 Rh8+ Qh4 Rxh4#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h8. / The answer is Rxh2+.
+  - This is Lichess puzzle Z6pek, rated 1222. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r5rk/p1R3pp/4p3/8/3P1N2/6QP/Pn3PPK/4q3 w - - 0 29`
+  - Answer: Ng6+ hxg6 Qh4#
+  - Hints: Giving up material works. / Move a knight. / Move the knight on f4. / The answer is Ng6+.
+  - This is Lichess puzzle 1HcuU, rated 1280. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r7/1kp1Q1p1/4p2p/2R5/1P6/5bP1/4qP1P/5RK1 b - - 2 30`
+  - Answer: Qxf1+ Kxf1 Ra1+ Rc1 Rxc1#
+  - Hints: Giving up material works. / Move a queen. / Move the queen on e2. / The answer is Qxf1+.
+  - This is Lichess puzzle CNTQU, rated 1228. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r4bk1/ppq2ppp/2p5/3p1N2/3P1r2/3Q1P1R/PPP3P1/R6K w - - 0 23`
+  - Answer: Ne7+ Bxe7 Qxh7+ Kf8 Qh8#
+  - Hints: Giving up material works. / Move a knight. / Move the knight on f5. / The answer is Ne7+.
+  - This is Lichess puzzle bYgo4, rated 1292. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r4rk1/pp3ppp/1qpn1b2/8/3P4/1P1Q3P/P1P3B1/RN3RK1 w - - 3 20`
+  - Answer: Rxf6 gxf6 Qg3+ Kh8 Qxd6
+  - Hints: Giving up material works. / Move a rook. / Move the rook on f1. / The answer is Rxf6.
+  - This is Lichess puzzle JCpSd, rated 1278. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `3k3r/ppp2pp1/3p4/2b3pn/8/2N3P1/PPP1QPBq/R3RK2 b - - 3 19`
+  - Answer: Nxg3+ fxg3 Qg1#
+  - Hints: Giving up material works. / Move a knight. / Move the knight on h5. / The answer is Nxg3+.
+  - This is Lichess puzzle GW855, rated 1248. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `3R4/1B3pk1/2P1p1p1/p6p/P1rn4/7P/5PP1/6K1 w - - 7 49`
+  - Answer: Rxd4 Rxd4 c7
+  - Hints: Giving up material works. / Move a rook. / Move the rook on d8. / The answer is Rxd4.
+  - This is Lichess puzzle eg06E, rated 1231. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `5rk1/Q4ppp/4r2q/4p3/2P5/5R2/P1n2PPP/3R2K1 w - - 0 23`
+  - Answer: Qxf7+ Rxf7 Rd8+ Re8 Rxe8+ Rf8
+  - Hints: Giving up material works. / Move a queen. / Move the queen on a7. / The answer is Qxf7+.
+  - This is Lichess puzzle U836e, rated 1639. The solution has 4 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r1b2r1k/3pN1pp/p7/1p2p3/1P2PP2/P1K5/4q3/3R3R w - - 0 32`
+  - Answer: Rxh7+ Kxh7 Rh1+ Qh2 Rxh2#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h1. / The answer is Rxh7+.
+  - This is Lichess puzzle XKyQ4, rated 1657. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `8/p4p1k/2Q1b1p1/7r/2P1B2P/1P2q1P1/P6K/6R1 b - - 0 34`
+  - Answer: Rxh4+ gxh4 Qh3#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h5. / The answer is Rxh4+.
+  - This is Lichess puzzle uXzhD, rated 1604. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r4rk1/1p3ppp/p3n3/3Nq3/8/P2Q1R2/1P4PP/R5K1 w - - 0 22`
+  - Answer: Ne7+ Kh8 Qxh7+ Kxh7 Rh3+ Qh5
+  - Hints: Giving up material works. / Move a knight. / Move the knight on d5. / The answer is Ne7+.
+  - This is Lichess puzzle 3Fn7t, rated 1648. The solution has 4 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r1bq3k/pp2r1bp/5p2/3BnP1R/8/8/PP4P1/R1BQ1K2 w - - 3 20`
+  - Answer: Rxh7+ Kxh7 Qh5+ Bh6 Qxh6#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h5. / The answer is Rxh7+.
+  - This is Lichess puzzle wyerh, rated 1627. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `2b1q1kr/3p2p1/1Q2p3/2B3p1/8/2PP4/P1P1n1PP/R4R1K b - - 2 19`
+  - Answer: Rxh2+ Kxh2 Qh5#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h8. / The answer is Rxh2+.
+  - This is Lichess puzzle g6mln, rated 1616. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `8/1R4R1/p4p1k/P5p1/6qp/2P3B1/1PB2PK1/4r3 b - - 0 40`
+  - Answer: h3+ Kh2 Rh1+ Kxh1 Qf3+ Kg1
+  - Hints: Giving up material works. / Move a pawn. / Move the pawn on h4. / The answer is h3+.
+  - This is Lichess puzzle 7rf3T, rated 1656. The solution has 4 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r3kb1r/pp2pppb/2p4p/7P/2BqnBP1/5Q2/PPP2P2/R3K1NR w KQkq - 0 14`
+  - Answer: Bxf7+ Kxf7 Be5+ Nf6 Bxd4
+  - Hints: Giving up material works. / Move a bishop. / Move the bishop on c4. / The answer is Bxf7+.
+  - This is Lichess puzzle 0YTZr, rated 1637. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `2r5/1R6/3p2k1/p2Pp3/4q1b1/P3B3/3Q1K2/6R1 b - - 0 47`
+  - Answer: Qf3+ Ke1 Rc1+ Qxc1 Qe2#
+  - Hints: Giving up material works. / Move a queen. / Move the queen on e4. / The answer is Qf3+.
+  - This is Lichess puzzle wsMTB, rated 2096. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `8/1p3p1R/p4k2/5N2/5P2/r2nPK1P/8/8 w - - 2 32`
+  - Answer: Rh6+ Kxf5 e4#
+  - Hints: Giving up material works. / Move a rook. / Move the rook on h7. / The answer is Rh6+.
+  - This is Lichess puzzle 7WvMG, rated 2018. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `6k1/p4pp1/1p4r1/6q1/8/3P1P2/PR2Q1PP/2rR3K b - - 7 34`
+  - Answer: Qxg2+ Qxg2 Rxd1+ Qf1 Rxf1#
+  - Hints: Giving up material works. / Move a queen. / Move the queen on g5. / The answer is Qxg2+.
+  - This is Lichess puzzle eWyF5, rated 2011. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r7/5pk1/6pp/5p2/r4P1K/7P/p4QP1/R7 b - - 1 38`
+  - Answer: Rxf4+ Qxf4 g5+ Kg3 gxf4+
+  - Hints: Giving up material works. / Move a rook. / Move the rook on a4. / The answer is Rxf4+.
+  - This is Lichess puzzle GxCfh, rated 2068. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `2r3rk/pp3p1p/1q1bpP1Q/3p4/1n1P2P1/5R2/PP2b1BP/R1B4K w - - 0 22`
+  - Answer: Qxh7+ Kxh7 Rh3+ Kg6 Rh6#
+  - Hints: Giving up material works. / Move a queen. / Move the queen on h6. / The answer is Qxh7+.
+  - This is Lichess puzzle JnYhu, rated 2036. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `r4rk1/p5pp/1qp5/4p3/6n1/1P6/P1Q1RPPP/RN4K1 b - - 2 19`
+  - Answer: Rxf2 Rxf2 Rf8
+  - Hints: Giving up material works. / Move a rook. / Move the rook on f8. / The answer is Rxf2.
+  - This is Lichess puzzle DsVo2, rated 2047. The solution has 2 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `1rk2r2/p1pq2pp/2nb4/6QB/4P1n1/P1N5/1P4PP/R1BR2K1 b - - 6 22`
+  - Answer: Bxh2+ Kh1 Qxd1+ Nxd1 Rf1#
+  - Hints: Giving up material works. / Move a bishop. / Move the bishop on d6. / The answer is Bxh2+.
+  - This is Lichess puzzle FQkqQ, rated 2012. The solution has 3 of your moves.
+  - Tags: sacrificeMissed
+- **Find the sacrifice.** `5rk1/5ppp/1rN1p3/p2pN3/8/8/5PPP/2R3K1 w - - 3 29`
+  - Answer: Ne7+ Kh8 Nxf7+ Rxf7 Rc8+ Rf8
+  - Hints: Giving up material works. / Move a knight. / Move the knight on c6. / The answer is Ne7+.
+  - This is Lichess puzzle khlHi, rated 2028. The solution has 4 of your moves.
+  - Tags: sacrificeMissed
+
+## theme
+
+- **Find the fork.** `r3r1k1/p4pb1/2pp2pp/1p1Pp3/1PP1P1nq/P1N1BQ2/5P2/RB2RK2 b - - 6 22`
+  - Answer: Nh2+ Kg2 Nxf3
+  - Hints: One move can attack two things. / Move a knight. / Move the knight on g4. / The answer is Nh2+.
+  - This is Lichess puzzle KMCUb, rated 1217. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `r4r1k/1b2pPbp/p5p1/1pp5/3q2nQ/P1NP1P2/BPP3KP/R1B2R2 b - - 2 17`
+  - Answer: Ne3+ Bxe3 Qxh4
+  - Hints: One move can attack two things. / Move a knight. / Move the knight on g4. / The answer is Ne3+.
+  - This is Lichess puzzle Kpeyi, rated 1262. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `8/p4k2/8/1p6/1B2R3/P2rP1P1/KR5p/7r b - - 0 46`
+  - Answer: Ra1+ Kxa1 h1=Q+ Ka2 Qxe4
+  - Hints: One move can attack two things. / Move a rook. / Move the rook on h1. / The answer is Ra1+.
+  - This is Lichess puzzle 8Q3bm, rated 1255. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `3rk2r/pRp2p1p/2n3pb/8/8/B1p3Q1/P1P2PPP/1K2N3 b k - 0 18`
+  - Answer: Rd1+ Bc1 Rxc1#
+  - Hints: One move can attack two things. / Move a rook. / Move the rook on d8. / The answer is Rd1+.
+  - This is Lichess puzzle SX6Fx, rated 1233. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `8/rk2b3/8/4Np1p/6p1/4P1P1/3K3P/R7 w - - 0 42`
+  - Answer: Rxa7+ Kxa7 Nc6+ Kb6 Nxe7
+  - Hints: One move can attack two things. / Move a rook. / Move the rook on a1. / The answer is Rxa7+.
+  - This is Lichess puzzle j28jV, rated 1215. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `8/4nk2/2r5/2R3P1/2N1K3/1p6/8/8 w - - 0 54`
+  - Answer: Ne5+ Ke8 Nxc6 b2 Rb5
+  - Hints: One move can attack two things. / Move a knight. / Move the knight on c4. / The answer is Ne5+.
+  - This is Lichess puzzle k7fwC, rated 1245. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `8/8/3RN3/1p2nPK1/1k6/8/8/5r2 b - - 0 62`
+  - Answer: Nf7+ Kf6 Nxd6
+  - Hints: One move can attack two things. / Move a knight. / Move the knight on e5. / The answer is Nf7+.
+  - This is Lichess puzzle 8SmOR, rated 1203. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `8/6k1/2R5/5pBp/3n1P1P/r7/5K2/8 w - - 13 43`
+  - Answer: Bf6+ Kf7 Bxd4
+  - Hints: One move can attack two things. / Move a bishop. / Move the bishop on g5. / The answer is Bf6+.
+  - This is Lichess puzzle RJpKc, rated 1275. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Use the pin.** `8/4k1pp/8/4K3/1R3P2/4P3/rp4P1/8 b - - 0 40`
+  - Answer: Ra5+ Kd4 Ra4 Rxa4 b1=Q
+  - Hints: A piece cannot move without exposing something behind it. / Move a rook. / Move the rook on a2. / The answer is Ra5+.
+  - This is Lichess puzzle ISOAr, rated 1268. The solution has 3 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `8/6pk/p2p2np/1pp4Q/1P2p3/P1P2N1P/4q1PK/8 w - - 0 35`
+  - Answer: Ng5+ Kg8 Qxe2
+  - Hints: A piece cannot move without exposing something behind it. / Move a knight. / Move the knight on f3. / The answer is Ng5+.
+  - This is Lichess puzzle aWeKV, rated 1263. The solution has 2 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `8/7p/6pk/3rqp2/P4Q2/1P2p1P1/5P1P/2R3K1 b - - 1 38`
+  - Answer: Qxf4 gxf4 e2 Re1 Rd1 Kg2
+  - Hints: A piece cannot move without exposing something behind it. / Move a queen. / Move the queen on e5. / The answer is Qxf4.
+  - This is Lichess puzzle 6Yt3F, rated 1298. The solution has 4 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `8/RP3p2/8/1r2k3/3p4/8/6PK/8 w - - 0 50`
+  - Answer: Ra5 Rxa5 b8=Q+
+  - Hints: A piece cannot move without exposing something behind it. / Move a rook. / Move the rook on a7. / The answer is Ra5.
+  - This is Lichess puzzle vZ3H9, rated 1250. The solution has 2 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `3r3k/p4p2/2pr1q1p/4pp2/4P2P/P5QK/PBPn1PR1/8 w - - 0 40`
+  - Answer: Bxe5 Qxe5 Qxe5+
+  - Hints: A piece cannot move without exposing something behind it. / Move a bishop. / Move the bishop on b2. / The answer is Bxe5.
+  - This is Lichess puzzle EtIHJ, rated 1295. The solution has 2 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `1r3r2/2p2pk1/pb3q2/1p1BR3/3n4/7P/PP3PP1/R2Q2K1 w - - 0 22`
+  - Answer: Qg4+ Qg6 Rg5
+  - Hints: A piece cannot move without exposing something behind it. / Move a queen. / Move the queen on d1. / The answer is Qg4+.
+  - This is Lichess puzzle MfUw1, rated 1279. The solution has 2 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `3rr1k1/p5p1/1qp4p/1p3P2/5P2/2P1RQ2/PPB2K2/R7 b - - 2 29`
+  - Answer: Rd2+ Ke1 Rxe3+ Kxd2 Rxf3
+  - Hints: A piece cannot move without exposing something behind it. / Move a rook. / Move the rook on d8. / The answer is Rd2+.
+  - This is Lichess puzzle m2Ftm, rated 1280. The solution has 3 of your moves.
+  - Tags: pinMissed
+- **Use the pin.** `2r5/ppkb2Q1/4p3/3pP1NP/1b3qP1/8/PP2B3/1K5n w - - 0 31`
+  - Answer: Nxe6+ Kb8 Nxf4
+  - Hints: A piece cannot move without exposing something behind it. / Move a knight. / Move the knight on g5. / The answer is Nxe6+.
+  - This is Lichess puzzle kxDY0, rated 1272. The solution has 2 of your moves.
+  - Tags: pinMissed
+- **Find the fork.** `1k1r2nr/pbq3pp/1p6/1P6/2QN2P1/P1P4P/5P2/R3R1K1 w - - 3 24`
+  - Answer: Qxc7+ Kxc7 Ne6+ Kc8 Nxd8
+  - Hints: One move can attack two things. / Move a queen. / Move the queen on c4. / The answer is Qxc7+.
+  - This is Lichess puzzle VG9xO, rated 1638. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `r3rbk1/pb5n/1p2n2p/2qpN3/5B2/4P3/PPQ2PPP/R4RK1 w - - 0 21`
+  - Answer: Qg6+ Ng7 Qf7+ Kh8 Ng6#
+  - Hints: One move can attack two things. / Move a queen. / Move the queen on c2. / The answer is Qg6+.
+  - This is Lichess puzzle GkVId, rated 1680. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `r4rk1/ppb3p1/4pn1p/q3p3/2P1P3/1PP2NBP/P2Q2P1/3R1R1K b - - 0 24`
+  - Answer: Nxe4 Qe1 Nxg3+ Qxg3 e4
+  - Hints: One move can attack two things. / Move a knight. / Move the knight on f6. / The answer is Nxe4.
+  - This is Lichess puzzle dvEQJ, rated 1606. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `4r1k1/1p3ppp/1qn5/r1bQp3/2B5/P4N2/1BP2PPP/R3R1K1 b - - 0 19`
+  - Answer: Bxf2+ Kh1 Rxd5
+  - Hints: One move can attack two things. / Move a bishop. / Move the bishop on c5. / The answer is Bxf2+.
+  - This is Lichess puzzle y2eLm, rated 1604. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `r1b1k2r/pp2qp2/4p2p/4b1p1/8/1QN3P1/PP2B1PP/R4RK1 w kq - 0 17`
+  - Answer: Qb5+ Bd7 Qxe5
+  - Hints: One move can attack two things. / Move a queen. / Move the queen on b3. / The answer is Qb5+.
+  - This is Lichess puzzle 0qkVG, rated 1628. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `5r1k/r7/4ppQ1/1qp1n3/4P2P/1P3P2/P1P5/1K4RR w - - 4 28`
+  - Answer: Qh6+ Rh7 Qxf8#
+  - Hints: One move can attack two things. / Move a queen. / Move the queen on g6. / The answer is Qh6+.
+  - This is Lichess puzzle nZMMG, rated 1609. The solution has 2 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `2kr3r/Qqpb1p1p/3p1b2/1P1P1Pp1/8/3B4/1P4PP/R1B2RK1 b - - 0 19`
+  - Answer: Qxa7+ Rxa7 Bd4+ Kh1 Bxa7
+  - Hints: One move can attack two things. / Move a queen. / Move the queen on b7. / The answer is Qxa7+.
+  - This is Lichess puzzle Jpenh, rated 1632. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Find the fork.** `r2qr3/1p1n1kpp/p3Rn2/8/1b3B2/2N5/PPP1QPPP/R5K1 w - - 3 15`
+  - Answer: Rxe8 Qxe8 Qc4+ Qe6 Qxb4
+  - Hints: One move can attack two things. / Move a rook. / Move the rook on e6. / The answer is Rxe8.
+  - This is Lichess puzzle QkNoA, rated 1634. The solution has 3 of your moves.
+  - Tags: forkMissed
+- **Use the pin.** `5rk1/ppp2ppp/8/3NPp2/5P2/4Pq2/PPPK4/6RR w - - 1 18`
+  - Answer: Nf6+ Kh8 Rxh7#
+  - Hints: A piece cannot move without exposing something behind it. / Move a knight. / Move the knight on d5. / The answer is Nf6+.
+  - This is Lichess puzzle SsCKw, rated 1688. The solution has 2 of your moves.
+  - Tags: pinMissed
+
+## plan
+
+- **Pick the best plan.** `r1b1k2r/pp3ppp/4p3/2q5/6Q1/3BR3/P1P2PPP/R5K1 b kq - 2 15`
+  - Choices: Kf8 −0.9 (game move), O-O −0.1, g6 −0.2
+  - Kf8: Around your king: 1 attacker against 2 defenders, up from 0 against 3.
+  - O-O: Around your king: 2 attackers against 2 defenders, up from 0 against 3.
+  - In the game you played 15... Kf8.
+  - Tags: kingSafety
+- **Pick the best plan.** `2r1k2r/pp3ppp/2q1p3/8/1Q6/3R3P/P1P2PP1/R5K1 b - - 2 21`
+  - Choices: Qb6 −1.2, Qc5 −2.2 (game move), Rd8 −0.6, h5 −1.3
+  - Qc5: You have 1 new isolated pawn. Your pieces reach 7 more squares (28 from 21).
+  - In the game you played 21... Qc5.
+  - Tags: pawnStructure
+- **Pick the best plan.** `2r1k2r/pp3ppp/4p3/2q5/7Q/3R3P/P1P2PP1/R5K1 b - - 4 22`
+  - Choices: Qxc2 −1.9 (game move), g5 −0.5, h5 −0.5, h6 −0.5
+  - Qxc2: You control 2 fewer center squares.
+  - In the game you played 22... Qxc2.
+- **Pick the best plan.** `2r1k2r/ppq2ppp/4p3/6Q1/8/3R3P/P4PP1/3R2K1 b - - 3 24`
+  - Choices: f5 −3.3, f6 −2.3 (game move), g6 −2.9, Rg8 −1.6
+  - f5: Your king's pawn shield went from 2 pawns to 1.
+  - In the game you played 24... f6.
+- **Pick the best plan.** `2r1kr2/ppqR2pp/4pp2/8/8/7P/P2Q1PP1/3R2K1 b - - 3 26`
+  - Choices: Qb6 −M2 (game move), Qc5 −6.1, Qc6 −3.7, Rf7 −5.5
+  - Qb6: Your pieces reach 6 more squares (28 from 22).
+  - Qc5: You have 1 new isolated pawn. Your pawns split into 3 islands, from 2. Your pieces reach 7 more squares (29 from 22).
+  - Qc6: You have 1 new isolated pawn. Your pawns split into 3 islands, from 2.
+  - Rf7: Your pieces reach 14 fewer squares (8 from 22).
+  - In the game you played 26... Qb6.
+  - Tags: mateAllowed
+- **Pick the best plan.** `r2q2k1/4brpp/p3Qp2/1p1p4/3P1B2/8/PP3PPP/2RR2K1 w - - 2 21`
+  - Choices: Rc7 +4.0, Re1 +2.8, Bc7 +3.3, g3 +2.1 (game move)
+  - Re1: 1 rook now stands on an open file.
+  - In the game you played 21. g3.
+  - Tags: pinMissed, conversionFailure
+- **Pick the best plan.** `8/4k3/4p3/p3P3/8/P1r3P1/2br1P1P/R1R2BK1 b - - 0 34`
+  - Choices: a4 −3.5, Rc5 −3.9, Rc7 −4.5 (game move), Rf3 −1.5
+  - In the game you played 34... Rc7.
+  - Tags: timeTrouble
+- **Pick the best plan.** `r4rk1/pp1q1pp1/2nb3p/1Q1B1b2/8/4BN2/PP3PPP/3R1RK1 w - - 3 16`
+  - Choices: Rd2 +0.5, Bb3 +0.9, Rfe1 +0.3 (game move), h3 +0.3
+  - Bb3: Your pieces reach 6 more squares (47 from 41).
+  - Rfe1: 1 rook now stands on an open file.
+  - In the game you played 16. Rfe1.
+  - Tags: pinMissed, discoveredAttack
+- **Pick the best plan.** `3b2k1/5pp1/7p/8/Pp1B4/1P5P/2b1NPP1/6K1 w - - 7 31`
+  - Choices: a5 −0.1, Bc5 0.0 (game move), Nc1 +1.1
+  - a5: You have 1 new isolated pawn. You lost 1 passed pawn.
+  - Bc5: You have 1 new isolated pawn.
+  - In the game you played 31. Bc5.
+  - Tags: pawnStructure, endgame:minor
+- **Pick the best plan.** `5rk1/3p4/4qp2/1R2p2P/4b3/1R2B2P/1Pr2P1K/8 b - - 2 33`
+  - Choices: Qc4 +7.8 (game move), Qf5 +16.6, Kf7 +13.0, Kh7 +14.0
+  - Qf5: Your pieces reach 6 fewer squares (35 from 41).
+  - Kh7: Your king's pawn shield went from 1 pawn to 0.
+  - In the game you played 33... Qc4.
+  - Tags: skewerAllowed
+- **Pick the best plan.** `rnbq1rk1/2p1b2p/1p1pp3/5p1n/p2P3P/P1P2NB1/1PBQ1PP1/R3KN1R b KQ - 0 14`
+  - Choices: Nc6 −1.0, Nd7 −1.8 (game move), Ba6 −1.4, Qe8 −1.1
+  - In the game you played 14... Nd7.
+- **Pick the best plan.** `r3b1k1/2p3r1/3pP3/1p6/p4P2/P1P5/KP6/4R2R b - - 0 33`
+  - Choices: Bc6 +4.0, Bg6 +3.7, Rg4 +3.3, Kf8 +0.5 (game move)
+  - In the game you played 33... Kf8.
+- **Pick the best plan.** `rnb2rk1/pp1n1ppp/1q2p3/1N1pP3/5B2/3B4/PPP3PP/R2Q1KR1 w - - 3 11`
+  - Choices: a4 −1.5 (game move), Qf3 −1.4, Qg4 −1.3, Qh5 −0.5
+  - Qg4: Your pieces reach 6 more squares (35 from 29).
+  - In the game you played 11. a4.
+- **Pick the best plan.** `r1b2rk1/1p1n2pp/p1N1pp2/P1qpP3/5BP1/3B4/1PP4P/R2Q1KR1 w - - 0 16`
+  - Choices: Nd4 +1.4, Qe1 −1.2, Kg2 −1.0 (game move)
+  - Nd4: 1 more file beside your king is open.
+  - Qe1: 1 more file beside your king is open. Your pieces reach 10 more squares (44 from 34).
+  - In the game you played 16. Kg2.
+  - Tags: hangingPiece, trappedPiece, quietSetupMissed
+- **Pick the best plan.** `r1bqkb1r/pp3p1p/2n2p2/3p4/3p4/5NP1/PP2PP1P/RN1QKB1R b KQkq - 1 9`
+  - Choices: Bf5 +1.0, Bg4 +0.4 (game move), Qb6 +1.8, Bh6 +0.9
+  - Bf5: Your pieces reach 8 more squares (33 from 25).
+  - In the game you played 9... Bg4.
+  - Tags: openingError
+- **Pick the best plan.** `rn2kb1r/pp3ppp/5n2/1qppN3/3PP3/N1P5/PP3PPP/R1BQK2R b KQkq - 2 8`
+  - Choices: Qa5 −2.8, Qa6 −1.9, Qb6 −4.0 (game move)
+  - Qb6: 1 more file beside your king is open. You hold 2 fewer safe squares in the enemy half.
+  - In the game you played 8... Qb6.
+  - Tags: openingError
+- **Pick the best plan.** `rn2k2r/pp3ppp/q2b1n2/2pP4/2N1p3/N1P2P2/PP4PP/R1BQ1RK1 b kq - 2 12`
+  - Choices: Nbd7 −2.4, e3 −3.2 (game move), O-O −2.4
+  - e3: 1 more file beside your king is open.
+  - In the game you played 12... e3.
+- **Pick the best plan.** `R5k1/3n1pp1/8/2pP3p/1PP2q2/5N1P/5BP1/3nR1K1 b - - 1 32`
+  - Choices: Nb8 −8.6 (game move), Nf8 −7.9, Kh7 −5.8
+  - Nb8: Your pieces reach 7 fewer squares (21 from 28).
+  - Kh7: Your king's pawn shield went from 2 pawns to 1.
+  - In the game you played 32... Nb8.
+  - Tags: hangingPiece, pieceActivity
+- **Pick the best plan.** `1r1r1k2/ppp2Bpp/4P3/4q3/8/7Q/PP3PPP/R5K1 b - - 2 22`
+  - Choices: Rd2 +1.0, Qe4 −0.1 (game move), h6 +0.9, h6 +0.9
+  - Rd2: You have 1 new isolated pawn.
+  - Qe4: Around your king: 3 attackers against 1 defender, up from 2 against 2.
+  - In the game you played 22... Qe4.
+  - Tags: kingSafety
+- **Pick the best plan.** `1r1r1k2/ppp2Bpp/4P3/8/8/5P1Q/PP2q1PP/6RK b - - 4 25`
+  - Choices: Rd1 +4.3, Qd3 −1.1 (game move), Qe5 −0.2, h6 −0.1
+  - Qe5: You have 1 new isolated pawn.
+  - In the game you played 25... Qd3.
+  - Tags: trappedPiece, pinMissed
+- **Pick the best plan.** `1r1r1k2/ppp2Bpp/4P3/7Q/8/3q1P2/PP4PP/6RK b - - 6 26`
+  - Choices: b6 −0.9, Qd4 −0.3, Rd6 −0.1, h6 −3.6 (game move)
+  - In the game you played 26... h6.
+  - Tags: trappedPiece, forkAllowed
+- **Pick the best plan.** `8/ppp1k1p1/5r2/5B2/6P1/5RKP/PP6/4r3 b - - 4 43`
+  - Choices: Rb6 +3.7 (game move), Rc6 +3.7, g6 +4.7
+  - In the game you played 43... Rb6.
+- **Pick the best plan.** `2rrb1k1/pp2bppp/2n1pn2/q7/3P1BP1/P1NB1N1P/1P2QP2/2R2RK1 w - - 3 17`
+  - Choices: b4 −1.3 (game move), Rfd1 +0.5, Bd2 +0.3, g5 +0.3
+  - b4: You have 1 new isolated pawn.
+  - Bd2: Your pieces reach 8 fewer squares (39 from 47).
+  - In the game you played 17. b4.
+  - Tags: pawnStructure
+- **Pick the best plan.** `r1br2k1/1pq2pp1/4p2p/p1bn4/2P5/P2B1N2/1PQB1PPP/R2R2K1 b - - 0 16`
+  - Choices: Nb6 −1.0, Ne7 −1.3 (game move), Nf6 −0.1
+  - In the game you played 16... Ne7.
+  - Tags: discoveredAttack
+- **Pick the best plan.** `r1b4k/1pq1nppB/4p2p/2b5/2P2B2/Pp3N2/3Q1PPP/3R2K1 b - - 1 21`
+  - Choices: Qa5 +0.7, Qc6 −0.9 (game move), Qd7 +0.5, e5 +1.0
+  - In the game you played 21... Qc6.
+  - Tags: timeTrouble
+
+## conversion
+
+- **You are winning. Win it against the engine.** `r3k2r/ppp3p1/2n4p/5p2/2bPnP2/B3Q3/P3N1PP/R4RK1 w kq - 0 17`
+  - Start: +5.4, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +5.4 for you.
+- **You are winning. Win it against the engine.** `3rqbk1/5R1p/p4p2/1p1Q2p1/3P1B2/6P1/PP3P1P/3R2K1 w - - 1 25`
+  - Start: +9.5, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +9.5 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `2rqkb1r/3p1ppp/p3p3/4nN2/1P6/6P1/1PP1QPbP/R1B2RK1 b k - 1 16`
+  - Start: +4.3, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.3 for you.
+- **You are winning. Win it against the engine.** `r4rk1/2pb1q2/3pp3/1p3N2/p2P1n2/P1P3P1/1PB5/K3R2R b - - 0 28`
+  - Start: +4.1, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.1 for you.
+- **You are winning. Win it against the engine.** `r3r1k1/p4p1p/2p1bp2/3p4/1q1b4/N4BP1/P1Q1P2P/R1K4R b - - 1 22`
+  - Start: +9.9, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +9.9 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `r4rk1/2b3p1/2p4p/p1Bp1b2/P7/N1P2NqP/6P1/R2Q1RK1 w - - 1 22`
+  - Start: +3.4, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.4 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `1r1r1k2/ppp2Bp1/4P3/8/5p2/7P/PP4P1/5R1K b - - 0 31`
+  - Start: +4.0, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.0 for you.
+- **You are winning. Win it against the engine.** `r1bq1b1r/1p1knQ2/p3pP1p/3B2p1/P1pp3N/3P4/1PP2PPP/RNB1R1K1 w - - 0 16`
+  - Start: +11.7, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +11.7 for you.
+- **You are winning. Win it against the engine.** `2kbRn2/pp6/5q2/3p4/1P4B1/P6P/3N2P1/7K b - - 0 40`
+  - Start: +3.6, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.6 for you.
+- **You are winning. Win it against the engine.** `2kr1b1r/p2q2pp/3n1p2/8/2NPp1b1/1P2P3/PBPNQ1PP/2K1RR2 w - - 1 21`
+  - Start: +5.4, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +5.4 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `r1bq1rk1/p2n1ppp/1p2pn2/1N1p4/2PP4/PP3N2/3bBPPP/R2Q1RK1 b - - 0 12`
+  - Start: +6.7, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +6.7 for you.
+- **You are winning. Win it against the engine.** `2r2rk1/R1p2ppp/4p3/8/1n1P1B2/1PNbP3/1P3PPP/4K2R w K - 1 20`
+  - Start: +4.1, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.1 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `rnbqkb1r/pppp1ppp/8/3n4/3QP3/8/PPP2PPP/R1B1KBNR b KQkq - 0 5`
+  - Start: +6.4, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +6.4 for you.
+- **You are winning. Win it against the engine.** `r2qkbnr/pp1bpppp/2B5/2ppP3/8/5N2/PPPP1PPP/RNBQK2R w KQkq - 1 6`
+  - Start: +7.5, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +7.5 for you.
+- **You are winning. Win it against the engine.** `r5k1/1pp2pp1/n4n1p/p1P1r3/6b1/2P1BN2/PP3PPP/R2Q2K1 w - - 2 18`
+  - Start: +4.6, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.6 for you.
+- **You are winning. Win it against the engine.** `r3kb1r/pp1n2p1/1qp1p1Pn/3pPbB1/7p/P1N2N1P/1PP2PQ1/2KRR3 b kq - 0 18`
+  - Start: +3.4, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.4 for you.
+- **You are winning. Win it against the engine.** `r1bqrbk1/pp3pp1/2pp3p/8/2PNNP2/P3BQ1P/1P4P1/1R2R1K1 w - - 1 19`
+  - Start: +4.9, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.9 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `r1bq1rk1/p3bpp1/2p1pn2/1p4p1/2PP3P/5N2/PPQ2PP1/2KR1B1R b - - 1 13`
+  - Start: +3.2, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.2 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `rq2br1k/1p2b1p1/7p/p2Q1p2/8/P2N4/BPP2PPP/R1B2RK1 w - - 1 21`
+  - Start: +6.0, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +6.0 for you.
+- **You are winning. Win it against the engine.** `r5k1/pp3p2/3b3p/3p2p1/3N3Q/PP1nP3/6KP/R1B3n1 w - - 0 28`
+  - Start: +4.3, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.3 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `r1bq1rk1/1pp1bppp/4p3/p3P3/P1N1P3/4n3/1B3PBP/2QR1RK1 b - - 4 16`
+  - Start: +3.9, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.9 for you.
+- **You are winning. Win it against the engine.** `r1b2rk1/3p3p/4p2B/2bBPp2/pp6/2N2nP1/PPP1N2P/R2K3R w - - 0 22`
+  - Start: +5.8, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +5.8 for you.
+- **You are winning. Win it against the engine.** `5rk1/1p6/2pb4/1p6/6BB/7P/2P3K1/8 b - - 1 46`
+  - Start: +4.2, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +4.2 for you.
+- **You are winning. Win it against the engine.** `2r5/p3qBkp/6p1/8/3R2P1/5pK1/P4Q1P/8 w - - 1 45`
+  - Start: +3.2, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +3.2 for you and the game was not won.
+  - Tags: conversionFailure
+- **You are winning. Win it against the engine.** `r4r1k/1Bp2npp/p2b4/1p4B1/8/5N2/PPP2PPP/R4RK1 w - - 0 18`
+  - Start: +7.1, opponent Skill Level 4
+  - This position comes from your game, where the engine rated it +7.1 for you.
+
+## time
+
+- **With 0:01 left you played 34... Rc7. Find a safer move.** `8/4k3/4p3/p3P3/8/P1r3P1/2br1P1P/R1R2BK1 b - - 0 34`
+  - Answer: Rf3 Ra2 Rfxf2 h4 Kf7 Rb2
+  - Hints: You played this with little time left. Take a moment now. / Move a rook. / Move the rook on c3. / The answer is Rf3.
+  - In the game you played Rc7, and the engine's answer was h4. Your evaluation went from −1.5 to −4.5.
+  - Rf3 keeps −1.5. Engine line: Rf3 Ra2 Rfxf2 h4 Kf7 Rb2.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a blunder.
+  - Tags: timeTrouble
+- **With 0:13 left you played 21... Qc6. Find a safer move.** `r1b4k/1pq1nppB/4p2p/2b5/2P2B2/Pp3N2/3Q1PPP/3R2K1 b - - 1 21`
+  - Answer: e5 Bxe5 Qb6 Bd3 Bf5 Bxf5
+  - Also accepted: Qa5
+  - Hints: You played this with little time left. Take a moment now. / Move a pawn. / Move the pawn on e6. / The answer is e5.
+  - In the game you played Qc6, and the engine's answer was Bb1. Your evaluation went from +1.0 to −0.9.
+  - e5 keeps +1.0. Engine line: e5 Bxe5 Qb6 Bd3 Bf5 Bxf5.
+  - You spent 6 seconds on this move. Your average in this game was 7 seconds.
+  - The game move was classed as a blunder.
+  - Tags: timeTrouble
+- **With 0:01 left you played 23... Qd7. Find a safer move.** `r1b4k/1p2n1p1/2q1p2B/2b2p2/2P5/Pp3N2/3Q1PPP/1B1R2K1 b - - 0 23`
+  - Answer: Qc7 Bf4 Qa5 Qd3 Kg8 h4
+  - Also accepted: e5
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a queen. / Move the queen on c6. / The answer is Qc7.
+  - In the game you played Qd7, and the engine's answer was Bxg7+. Your evaluation went from −1.5 to −4.8.
+  - Qc7 keeps −1.5. Engine line: Qc7 Bf4 Qa5 Qd3 Kg8 h4.
+  - After Qd7 and Bxg7+: Your king's pawn shield went from 1 pawn to 0. 1 more file beside your king is open.
+  - You spent 0 seconds on this move. Your average in this game was 7 seconds.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, kingSafety, timeTrouble
+- **With 0:01 left you played 24... Kh7. Find a safer move.** `r1b4k/1p1qn1B1/4p3/2b2p2/2P5/Pp3N2/3Q1PPP/1B1R2K1 b - - 0 24`
+  - Answer: Kxg7 Qc3+ Kg8 Rxd7 Bxd7 Qf6
+  - Also accepted: Kg8
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a king. / Move the king on h8. / The answer is Kxg7.
+  - In the game you played Kh7, and the engine's answer was Qh6+. Your evaluation went from −4.8 to −M3.
+  - Kxg7 keeps −4.8. Engine line: Kxg7 Qc3+ Kg8 Rxd7 Bxd7 Qf6.
+  - You spent 0 seconds on this move. Your average in this game was 7 seconds.
+  - The game move was classed as a mistake.
+  - Tags: missedCapture, trappedPiece, discoveredAttack, mateAllowed, timeTrouble
+- **With 0:01 left you played 23... axb3. Find a safer move.** `r1b1kb1r/1ppq3p/2np1pp1/3NnPPB/p3P2P/1PP1B3/P2Q4/2KR3R b kq - 1 23`
+  - Answer: Kd8 Be2 axb3 axb3 gxf5 exf5
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a king. / Move the king on e8. / The answer is Kd8.
+  - In the game you played axb3, and the engine's answer was Nxf6+. Your evaluation went from +2.3 to −0.4.
+  - Kd8 keeps +2.3. Engine line: Kd8 Be2 axb3 axb3 gxf5 exf5.
+  - After axb3 and Nxf6+: Your king's pawn shield went from 2 pawns to 1. 1 more file beside your king is open. You have 1 new doubled pawn. 1 rook now stands on an open file.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, forkAllowed, pawnStructure, timeTrouble
+- **With 0:01 left you played 29... Kg6. Find a safer move.** `r7/2p2kp1/2p1pp2/B1Pn3p/rPR4P/P4K2/5P2/R7 b - - 1 29`
+  - Answer: R8xa5 bxa5 Rxc4 a4 Rxc5 a6
+  - Also accepted: g5
+  - Hints: You played this with little time left. Take a moment now. / Move a rook. / Move the rook on a8. / The answer is R8xa5.
+  - In the game you played Kg6, and the engine's answer was Rcc1. Your evaluation went from +6.0 to +3.6.
+  - R8xa5 keeps +6.0. Engine line: R8xa5 bxa5 Rxc4 a4 Rxc5 a6.
+  - You spent 0 seconds on this move. Your average in this game was 6 seconds.
+  - The game move was classed as a mistake.
+  - Tags: timeTrouble
+- **With 0:01 left you played 30. f4. Find a safer move.** `r5k1/2p2pp1/4bn1p/2p4r/p1P5/B2Q1P2/PP4PP/4R1K1 w - - 0 30`
+  - Answer: g4 Rh4 Bxc5 Nxg4 fxg4 Rxg4+
+  - Hints: You played this with little time left. Take a moment now. / Move a pawn. / Move the pawn on g2. / The answer is g4.
+  - In the game you played f4, and the engine's answer was Rf5. Your evaluation went from +3.1 to +1.7.
+  - g4 keeps +3.1. Engine line: g4 Rh4 Bxc5 Nxg4 fxg4 Rxg4+.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a mistake.
+  - Tags: timeTrouble
+- **With 0:01 left you played 42. Kh2. Find a safer move.** `8/2p2ppk/4r2p/2p2b1n/2P3P1/1PQ4P/1B6/5rK1 w - - 0 42`
+  - Answer: Kxf1 Ng3+ Qxg3 Be4 h4 c6
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a king. / Move the king on g1. / The answer is Kxf1.
+  - In the game you played Kh2, and the engine's answer was Re2#. Your evaluation went from +4.2 to −M1.
+  - Kxf1 keeps +4.2. Engine line: Kxf1 Ng3+ Qxg3 Be4 h4 c6.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, mateAllowed, timeTrouble
+- **With 0:01 left you played 43. Nd6. Find a safer move.** `6k1/4b1p1/4r3/2pRP2p/P1p1N3/2N5/7K/8 w - - 4 43`
+  - Answer: Nd2 Kf7 Nxc4 Rc6 a5 Ke6
+  - Also accepted: Rd7
+  - Hints: You played this with little time left. Take a moment now. / Move a knight. / Move the knight on e4. / The answer is Nd2.
+  - In the game you played Nd6, and the engine's answer was Rxe5. Your evaluation went from +4.3 to +2.1.
+  - Nd2 keeps +4.3. Engine line: Nd2 Kf7 Nxc4 Rc6 a5 Ke6.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a mistake.
+  - Tags: timeTrouble, conversionFailure
+- **With 0:01 left you played 31... Qd5. Find a safer move.** `2kr4/1p1b4/7p/8/P2q3Q/2np1P1Q/5P1P/6RK b - - 1 31`
+  - Answer: Bxh3 Qxh3+ Qd7 Qh5 Ne2 Qc5+
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a bishop. / Move the bishop on d7. / The answer is Bxh3.
+  - In the game you played Qd5, and the engine's answer was Q3g3. Your evaluation went from +6.5 to +1.6.
+  - Bxh3 keeps +6.5. Engine line: Bxh3 Qxh3+ Qd7 Qh5 Ne2 Qc5+.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, timeTrouble
+- **With 0:01 left you played 33... Kc7. Find a safer move.** `2kr4/1p6/7p/3q4/P5Q1/2np1P1Q/5P1P/7K b - - 0 33`
+  - Answer: Kb8 Qf4+ Ka8 Qd2 Rg8 Qg3
+  - Hints: Keep the pawns and pieces around your king in place. / Move a king. / Move the king on c8. / The answer is Kb8.
+  - In the game you played Kc7, and the engine's answer was Qhg3+. Your evaluation went from +5.5 to +0.6.
+  - Kb8 keeps +5.5. Engine line: Kb8 Qf4+ Ka8 Qd2 Rg8 Qg3.
+  - After Kc7 and Qhg3+: Your king's pawn shield went from 1 pawn to 0.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: kingSafety, timeTrouble
+- **With 0:18 left you played 21. Qf3. Find a safer move.** `5rk1/p2b1rpp/5q2/2p1p3/4Qn1P/B1P3P1/P3PPB1/R4RK1 w - - 3 21`
+  - Answer: gxf4 exf4 Rad1 Re8 Qc4 Bc6
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a pawn. / Move the pawn on g3. / The answer is gxf4.
+  - In the game you played Qf3, and the engine's answer was Nxg2. Your evaluation went from +4.0 to +0.5.
+  - gxf4 keeps +4.0. Engine line: gxf4 exf4 Rad1 Re8 Qc4 Bc6.
+  - After Qf3 and Nxg2: Your pieces reach 8 fewer squares (25 from 33). You gave up the bishop pair.
+  - You spent 13 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, discoveredAttack, pieceActivity, timeTrouble
+- **With 0:05 left you played 22. Bxc5. Find a safer move.** `5rk1/p2b1rpp/5q2/2p1p3/7P/B1P2QP1/P3PPn1/R4RK1 w - - 0 22`
+  - Answer: Qxf6 Rxf6 Kxg2 Bb5 Bxc5 Rc8
+  - Hints: You played this with little time left. Take a moment now. / Move a queen. / Move the queen on f3. / The answer is Qxf6.
+  - In the game you played Bxc5, and the engine's answer was Rc8. Your evaluation went from +0.4 to −1.4.
+  - Qxf6 keeps +0.4. Engine line: Qxf6 Rxf6 Kxg2 Bb5 Bxc5 Rc8.
+  - You spent 4 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: timeTrouble
+- **With 0:01 left you played 34. gxh4. Find a safer move.** `6k1/8/p5rp/5r2/3B3p/P1P2bP1/5P1K/1R2R3 w - - 0 34`
+  - Answer: g4 Rxg4 Rb6 h5 Rxa6 Be4
+  - Also accepted: Rb8+, Re8+
+  - Hints: Avoid creating weak pawns. / Move a pawn. / Move the pawn on g3. / The answer is g4.
+  - In the game you played gxh4, and the engine's answer was Rh5. Your evaluation went from +0.8 to −4.7.
+  - g4 keeps +0.8. Engine line: g4 Rxg4 Rb6 h5 Rxa6 Be4.
+  - After gxh4 and Rh5: You have 2 new isolated pawns. Your pawns split into 4 islands, from 3.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: pawnStructure, timeTrouble
+- **With 0:01 left you played 35. Re5. Find a safer move.** `6k1/8/p6p/5r2/3B2rP/P1P2b2/5P1K/1R2R3 w - - 1 35`
+  - Answer: Rg1 Rf4 Rxg4+ Rxg4 Rb6 Kh7
+  - Hints: Look for a line through one piece onto a bigger one behind it. / Move a rook. / Move the rook on e1. / The answer is Rg1.
+  - In the game you played Re5, and the engine's answer was Rxh4+. Your evaluation went from +2.6 to 0.0.
+  - Rg1 keeps +2.6. Engine line: Rg1 Rf4 Rxg4+ Rxg4 Rb6 Kh7.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: pinMissed, timeTrouble
+- **With 0:01 left you played 36. Kg1. Find a safer move.** `6k1/8/p6p/4Rr2/3B3r/P1P2b2/5P1K/1R6 w - - 0 36`
+  - Answer: Kg3 Rg4+ Kh3 Rff4 Rb6 Rh4+
+  - Hints: Keep your king and queen off open lines with a piece behind them. / Move a king. / Move the king on h2. / The answer is Kg3.
+  - In the game you played Kg1, and the engine's answer was Rh1#. Your evaluation went from 0.0 to −M1.
+  - Kg3 keeps 0.0. Engine line: Kg3 Rg4+ Kh3 Rff4 Rb6 Rh4+.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: skewerAllowed, backRank, mateAllowed, timeTrouble
+- **With 0:01 left you played 31. Kh1. Find a safer move.** `r5k1/pp3p2/7p/3pb1p1/3N4/PP2P2n/7P/R1BQ2K1 w - - 3 31`
+  - Answer: Kg2 Bxd4 exd4 a5 Kxh3 a4
+  - Also accepted: Kf1
+  - Hints: In the game one of your pieces ran out of squares. Keep your pieces free. / Move a king. / Move the king on g1. / The answer is Kg2.
+  - In the game you played Kh1, and the engine's answer was Nf2+. Your evaluation went from +6.4 to −2.5.
+  - Kg2 keeps +6.4. Engine line: Kg2 Bxd4 exd4 a5 Kxh3 a4.
+  - You spent 0 seconds on this move. Your average in this game was 5 seconds.
+  - The game move was classed as a blunder.
+  - Tags: trappedPiece, forkAllowed, timeTrouble, conversionFailure
+- **With 0:16 left you played 22... Rf8. Find a safer move.** `r6R/2p1kpp1/5nb1/p2pN3/P4P2/1NPp4/1P2PP2/R3K3 b Q - 0 22`
+  - Answer: Rxh8 exd3 Bf5 O-O-O Rh4 Re1
+  - Hints: Something of your opponent is loose. Look at every capture. / Move a rook. / Move the rook on a8. / The answer is Rxh8.
+  - In the game you played Rf8, and the engine's answer was Rxf8. Your evaluation went from −1.9 to −7.4.
+  - Rxh8 keeps −1.9. Engine line: Rxh8 exd3 Bf5 O-O-O Rh4 Re1.
+  - After Rf8 and Rxf8: Your pieces reach 9 fewer squares (11 from 20).
+  - You spent 15 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a blunder.
+  - Tags: missedCapture, pieceActivity, timeTrouble
+- **With 0:01 left you played 26. h3. Find a safer move.** `5k2/p1pq1p2/8/2pp4/3b3r/P4pN1/1PQ2PPP/4R1K1 w - - 0 26`
+  - Answer: Nf5 Rg4 g3 c4 Nxd4 Rxd4
+  - Hints: Keep the pawns and pieces around your king in place. / Move a knight. / Move the knight on g3. / The answer is Nf5.
+  - In the game you played h3, and the engine's answer was fxg2. Your evaluation went from 0.0 to −4.7.
+  - Nf5 keeps 0.0. Engine line: Nf5 Rg4 g3 c4 Nxd4 Rxd4.
+  - After h3 and fxg2: Your king's pawn shield went from 3 pawns to 2. 1 more file beside your king is open. You have 2 new isolated pawns. Your pawns split into 3 islands, from 2.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a blunder.
+  - Tags: kingSafety, pawnStructure, timeTrouble
+- **With 0:01 left you played 28. Nh6. Find a safer move.** `5k2/2pq1p2/8/p1pp1N2/3b1r2/P4p1P/1PQ2PP1/4R1K1 w - - 2 28`
+  - Answer: Nxd4 cxd4 Qh7 Re4 Qh8+ Ke7
+  - Hints: Keep your pieces active. / Move a knight. / Move the knight on f5. / The answer is Nxd4.
+  - In the game you played Nh6, and the engine's answer was Qd8. Your evaluation went from 0.0 to −3.5.
+  - Nxd4 keeps 0.0. Engine line: Nxd4 cxd4 Qh7 Re4 Qh8+ Ke7.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a blunder.
+  - Tags: pieceActivity, timeTrouble
+- **With 0:01 left you played 29. Nf5. Find a safer move.** `5k2/2p2p2/2q4N/p1pp4/3b1r2/P4p1P/1PQ2PP1/4R1K1 w - - 4 29`
+  - Answer: Ng4 Qg6 Qxg6 fxg6 Ne5 Kg7
+  - Hints: Do not line up a piece in front of a more valuable one. / Move a knight. / Move the knight on h6. / The answer is Ng4.
+  - In the game you played Nf5, and the engine's answer was Qg6. Your evaluation went from −2.6 to −4.6.
+  - Ng4 keeps −2.6. Engine line: Ng4 Qg6 Qxg6 fxg6 Ne5 Kg7.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a mistake.
+  - Tags: pinAllowed, timeTrouble
+- **With 0:01 left you played 31... Rf7. Find a safer move.** `6k1/1p4rp/2p5/1pn2B2/1P6/2N2N1P/2P5/2b1BK2 b - - 0 31`
+  - Answer: Na6 Ne4 Kf8 Ke2 Bf4 Nd4
+  - Also accepted: Na4, Nd7
+  - Hints: You played this with little time left. Take a moment now. / Move a knight. / Move the knight on c5. / The answer is Na6.
+  - In the game you played Rf7, and the engine's answer was Bg4. Your evaluation went from −1.9 to −3.5.
+  - Na6 keeps −1.9. Engine line: Na6 Ne4 Kf8 Ke2 Bf4 Nd4.
+  - You spent 0 seconds on this move. Your average in this game was 4 seconds.
+  - The game move was classed as a mistake.
+  - Tags: timeTrouble

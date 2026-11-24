@@ -124,3 +124,21 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Route names.** `#/progress` is the Progress screen from the plan (puzzle rating and weakness trends). The import and analysis status screen moved to `#/analysis`.
 
 **2026-11-24. The rating chart.** One series, so it has no legend and a title instead. It has a 2 px accent line, three gridlines, a hover or tap readout, and a "Show as table" view. Weakness trends are a table, older half against newer half, because each one is a comparison of two numbers.
+
+## Phase 5
+
+**2026-11-24. Drill types from one mistake.** Each classified mistake becomes one move drill, typed by its most specific tag: time trouble, then sacrifice, then quiet setup, then any other missed tactic, then replay. Plan and conversion drills are extra drills with their own ids.
+
+**2026-11-24. Setup builder and sacrifice finder also use Lichess puzzles.** Your own games rarely give 20 of each. `quietMove` puzzles count only when the first solution move is quiet, because Lichess tags a puzzle `quietMove` when any move in it is quiet. `sacrifice` puzzles are used as they are.
+
+**2026-11-24. "Does it work?"** After any move drill, the player can step through the engine line or puzzle solution on the board, with the material count against the start shown at each step. For sacrifices the button reads "Does it work?".
+
+**2026-11-24. Plan picker.** Built from mistakes where all three engine lines start with a quiet move, so the choice is positional, not tactical. Choices are the three lines plus the game move, in a fixed order that does not reveal the best one. After the pick, each choice shows its score, the engine's reply, and the measured changes after the move and the reply. A plan drill waits until the move drill for the same position has been solved once.
+
+**2026-11-24. Conversion practice.** The first position in a game where the player, to move, is clearly winning (about +3) in two positions in a row and is already two pawns of material up. Without the material rule, a hanging queen still to be taken counted as a conversion. The opponent is Stockfish at Skill Level 1 to 10, from the player's rating: (rating - 900) / 150. After each move a full-strength check at depth 12 decides the result: below +1.5 is a miss; checkmate, or a forced mate in 3 or less, is a solve; still winning after 30 moves counts as "hard".
+
+**2026-11-24. Time awareness.** Mistakes tagged `timeTrouble` become drills that say how much clock was left, show a running timer, and report seconds spent on the move against the game average. A correct answer after 30 seconds counts as "hard".
+
+**2026-11-24. Explanations.** `src/strategy/explain.ts` writes sentences only from counted feature changes, such as pawn shield 3 to 1, or 7 fewer squares. Drills tagged with a strategy tag include these sentences after the game move and the reply.
+
+**2026-11-24. Drill report.** `docs/reports/drills.md` holds at least 20 generated examples of every type. It is built from the 50 generated games, now with synthetic clocks for a 3-minute game, and from the local puzzle shards. Run it with `REPORT=1 npx vitest run tests/unit/drill-report.node.test.ts`. The games' moves did not change when clocks were added.

@@ -33,9 +33,26 @@ export interface Drill {
   /** Difficulty on the puzzle rating scale. */
   rating: number;
   source?: { gameId: string; ply: number; played: string; playedSan: string };
+  /** For plan drills: the candidate moves and what each one does. */
+  choices?: PlanChoice[];
+  /** For conversion drills: the engine's strength, Stockfish Skill Level 0 to 20. */
+  opponentSkill?: number;
   /** For theme puzzles: the Lichess puzzle id and its themes. */
   puzzle?: { id: string; theme: string };
   createdAt: number;
+}
+
+export interface PlanChoice {
+  uci: string;
+  san: string;
+  /** Score after the move, from the side to move before it. */
+  score: Score;
+  /** Measured changes after the move and the engine's reply. */
+  changes: string[];
+  /** The engine's reply in SAN, when known. */
+  reply?: string;
+  /** True for the move played in the game. */
+  played?: boolean;
 }
 
 /** Scheduler state for one drill. */

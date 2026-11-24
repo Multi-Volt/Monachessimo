@@ -1022,3 +1022,48 @@ input[aria-invalid='true'] {
   text-align: left;
   margin-bottom: var(--s2);
 }
+
+/* Plan picker and line stepper */
+
+.plan__choices {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s2);
+}
+
+.plan__choice {
+  font-variant-numeric: tabular-nums;
+}
+
+.plan__results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plan__results li {
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.plan__results li:last-child {
+  border-bottom: 0;
+}
+
+.plan__results li.is-picked {
+  background: var(--raised);
+  margin-inline: calc(-1 * var(--s3));
+  padding-inline: var(--s3);
+  border-radius: var(--r-control);
+}
+
+.plan__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.stepper .row > .button {
+  flex: 1;
+}

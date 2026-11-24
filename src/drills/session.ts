@@ -26,7 +26,7 @@ export function buildSession(
 ): Drill[] {
   const size = opts.size ?? SESSION_SIZE;
   const maxNew = opts.maxNew ?? Math.ceil(size * 0.6);
-  const pool = opts.tag ? drills.filter((d) => d.tags.includes(opts.tag!)) : drills;
+  const pool = eligible(drills, reviews).filter((d) => !opts.tag || d.tags.includes(opts.tag));
   const due = pool
     .filter((d) => {
       const r = reviews.get(d.id);
@@ -61,6 +61,28 @@ export function buildSession(
     }
   }
   return picked;
+}
+
+/** Position key part of a drill id, `type:key`. */
+const positionOf = (id: string) => id.slice(id.indexOf(':') + 1);
+
+/**
+ * A plan drill waits until the move drill for the same position has been
+ * solved once: first fix the mistake, then compare the plans.
+ */
+export function eligible(drills: Drill[], reviews: Map<string, ReviewState>): Drill[] {
+  const solved = new Set<string>();
+  const hasMoveDrill = new Set<string>();
+  for (const d of drills) {
+    if (d.type === 'plan') continue;
+    hasMoveDrill.add(positionOf(d.id));
+    if ((reviews.get(d.id)?.reps ?? 0) > 0) solved.add(positionOf(d.id));
+  }
+  return drills.filter((d) => {
+    if (d.type !== 'plan') return true;
+    const key = positionOf(d.id);
+    return !hasMoveDrill.has(key) || solved.has(key);
+  });
 }
 
 /** Local calendar day as YYYY-MM-DD. */

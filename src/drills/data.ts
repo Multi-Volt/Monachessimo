@@ -1,7 +1,7 @@
 import type { AnalysisSettings } from '../analysis/types';
 import { loadProfile } from '../profile/data';
 import type { Repo } from '../store/repo';
-import { drillsFromGame } from './generate';
+import { conversionDrillFromGame, drillsFromGame, planDrillsFromGame } from './generate';
 import { START_RATING } from './rating';
 import type { Drill, ReviewState } from './types';
 
@@ -19,7 +19,12 @@ export async function syncDrills(repo: Repo, settings: AnalysisSettings, now = D
   const existing = new Map((await repo.allDrills()).map((d) => [d.id, d]));
   const generated: Drill[] = [];
   for (const { game, analysis } of profile.analyzed) {
-    for (const d of drillsFromGame(game, analysis, profile.tags, now)) {
+    const conversion = conversionDrillFromGame(game, analysis, profile.tags, now);
+    for (const d of [
+      ...drillsFromGame(game, analysis, profile.tags, now),
+      ...planDrillsFromGame(game, analysis, profile.tags, now),
+      ...(conversion ? [conversion] : []),
+    ]) {
       const old = existing.get(d.id);
       generated.push(old ? { ...d, createdAt: old.createdAt } : d);
     }

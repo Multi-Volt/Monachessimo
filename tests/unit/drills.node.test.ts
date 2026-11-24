@@ -5,7 +5,7 @@ import { tagGame } from '../../src/detectors';
 import { acceptable, judge } from '../../src/drills/answers';
 import { drillsFromGame } from '../../src/drills/generate';
 import { newReview, schedule } from '../../src/drills/scheduler';
-import { buildSession, dayKey, streak } from '../../src/drills/session';
+import { buildSession, dayKey, eligible, streak } from '../../src/drills/session';
 import type { Drill } from '../../src/drills/types';
 import { makeGame } from '../support/games';
 import { nodePool } from '../support/node-engine';
@@ -124,5 +124,19 @@ describe('streak', () => {
     expect(streak([dayKey(now), dayKey(now - day), dayKey(now - 2 * day)], now)).toBe(3);
     expect(streak([dayKey(now - day), dayKey(now - 2 * day)], now)).toBe(2);
     expect(streak([dayKey(now - 3 * day)], now)).toBe(0);
+  });
+});
+
+describe('eligible', () => {
+  const now = 1_800_000_000_000;
+  const plan = { ...drill('plan:k1', []), type: 'plan' as const };
+  const move = drill('replay:k1', []);
+  it('holds a plan drill back until its position is solved', () => {
+    expect(eligible([plan, move], new Map()).map((d) => d.id)).toEqual(['replay:k1']);
+    const solved = new Map([['replay:k1', schedule(newReview('replay:k1', now), 'good', now)]]);
+    expect(eligible([plan, move], solved).map((d) => d.id)).toEqual(['plan:k1', 'replay:k1']);
+  });
+  it('allows a plan drill with no move drill', () => {
+    expect(eligible([plan], new Map())).toEqual([plan]);
   });
 });

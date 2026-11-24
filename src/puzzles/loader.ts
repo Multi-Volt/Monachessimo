@@ -2,7 +2,7 @@ import { makeFen } from 'chessops/fen';
 import { makeSquare, parseUci } from 'chessops/util';
 import { uciToSan } from '../chess/san';
 import type { TagName } from '../detectors';
-import { fromFen } from '../detectors/board';
+import { fromFen, isQuiet, normalMove } from '../detectors/board';
 import type { Drill } from '../drills/types';
 import { TAG_THEME, THEME_GOAL } from './themes';
 
@@ -62,7 +62,7 @@ export function puzzleDrill(row: PuzzleRow, theme: string, now: number): Drill |
   const start = makeFen(pos.toSetup());
   return {
     id: `theme:${id}`,
-    type: 'theme',
+    type: theme === 'quietMove' ? 'setup' : theme === 'sacrifice' ? 'sacrifice' : 'theme',
     fen: start,
     side,
     goal: THEME_GOAL[theme] ?? 'Find the best move.',
@@ -136,6 +136,12 @@ export async function themeDrills(
       if (seen.has(`theme:${row[0]}`)) continue;
       const d = puzzleDrill(row, theme, now);
       if (!d) continue;
+      // Lichess tags a puzzle quietMove when any of its moves is quiet. The
+      // setup builder needs the first move to be the quiet one.
+      if (theme === 'quietMove') {
+        const m = normalMove(d.solution![0]);
+        if (!m || !isQuiet(fromFen(d.fen), m)) continue;
+      }
       // The same puzzle can sit in several theme shards.
       seen.add(d.id);
       out.push({ ...d, tags: [tag] });

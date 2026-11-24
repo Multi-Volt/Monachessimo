@@ -31,6 +31,30 @@ function send(cmd, until) {
 let seed = 20261124;
 const rand = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
 
+// Clocks use their own sequence so the moves stay the same as before clocks were added.
+let clockSeed = 7;
+const clockRand = () => (clockSeed = (clockSeed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+
+/**
+ * Remaining clock after each ply, in centiseconds, for a 3-minute game with
+ * no increment. In two games of three, TestPlayer runs short of time near
+ * the end.
+ */
+function makeClocks(plies, game) {
+  const left = [18000, 18000];
+  const userSide = game % 2 === 0 ? 0 : 1;
+  const hurried = game % 3 === 1 ? -1 : userSide;
+  const out = [];
+  for (let ply = 0; ply < plies; ply++) {
+    const side = ply % 2;
+    const share = side === hurried ? 1.9 : 0.8;
+    const spend = Math.round((100 + clockRand() * 500) * share * (ply > 20 ? 1.4 : 1));
+    left[side] = Math.max(60, left[side] - spend);
+    out.push(left[side]);
+  }
+  return out;
+}
+
 await send('uci', (l) => l === 'uciok');
 engine.processCommand('setoption name MultiPV value 3');
 await send('isready', (l) => l === 'readyok');
@@ -66,7 +90,8 @@ for (let g = 0; g < 50; g++) {
     createdAt: 1_790_000_000_000 - g * 3_600_000,
     winner: g % 3 === 0 ? 'white' : 'black',
     moves: san.join(' '),
-    clock: { initial: 300, increment: 0 },
+    clock: { initial: 180, increment: 0 },
+    clocks: makeClocks(san.length, g),
     players: userWhite ? { white: me, black: opp } : { white: opp, black: me },
   });
   process.stdout.write(`game ${g + 1}: ${san.length} plies\n`);

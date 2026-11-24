@@ -9,6 +9,32 @@ import type { Detector } from './types';
  */
 export const SETUP_MOVES = 1;
 
+export type Payoff = 'mate' | 'fork' | 'pin' | 'skewer' | 'material';
+
+/**
+ * What the player's next move in a line achieves, if anything: the payoff
+ * a quiet setup prepares. `pv` starts with the quiet move.
+ */
+export function setupPayoff(
+  before: import('chessops/chess').Chess,
+  pv: readonly string[],
+): { kind: Payoff; move: string } | undefined {
+  const line = playLine(before, pv, 4);
+  const me = before.turn;
+  const pos = line[2];
+  const m = normalMove(pv[2]);
+  const next = line[3];
+  if (!pos || !m || !next || !pos.isLegal(m)) return undefined;
+  if (next.isCheckmate()) return { kind: 'mate', move: pv[2]! };
+  if (isFork(pos, m)) return { kind: 'fork', move: pv[2]! };
+  if (newMotifs(pos, next, me, pins).length) return { kind: 'pin', move: pv[2]! };
+  if (newMotifs(pos, next, me, skewers).length) return { kind: 'skewer', move: pv[2]! };
+  const end = line[4];
+  if (end && isCapture(pos, m) && balance(end, me) - balance(before, me) >= 2)
+    return { kind: 'material', move: pv[2]! };
+  return undefined;
+}
+
 /**
  * The best move was quiet (no capture, check or promotion), and within the
  * next SETUP_MOVES moves of the best line the player has a fork, pin,

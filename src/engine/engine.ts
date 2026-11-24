@@ -54,7 +54,7 @@ export class Engine {
 
   constructor(
     private readonly transport: Transport,
-    options: { hashMb?: number } = {},
+    options: { hashMb?: number; uci?: Record<string, string | number> } = {},
   ) {
     transport.onLine((line) => {
       for (const l of [...this.listeners]) l(line);
@@ -63,6 +63,8 @@ export class Engine {
       await this.send('uci', (l) => l === 'uciok');
       this.transport.post(`setoption name Hash value ${options.hashMb ?? 16}`);
       this.transport.post('setoption name UCI_AnalyseMode value true');
+      for (const [name, value] of Object.entries(options.uci ?? {}))
+        this.transport.post(`setoption name ${name} value ${value}`);
       await this.isReady();
     })();
   }

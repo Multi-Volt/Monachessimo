@@ -53,16 +53,15 @@ test('a daily session from your own games brings missed positions back', async (
   await expect(page.getByText('Missed positions come back in ten minutes')).toBeVisible();
   await expect(page.getByRole('img', { name: '1 day of practice in a row' })).toBeVisible();
 
-  // Nothing is due until tomorrow.
+  // Solving the positions unlocks their plan drills.
   await page.getByRole('button', { name: 'Check for more drills' }).click();
-  await expect(
-    page.getByText(/Nothing is due right now\. The next drill is due in 24 hours\./),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pick the best plan.' })).toBeVisible();
 
-  // A day later both drills are due again.
+  // A day later the two solved drills are due again and come first.
   await page.clock.setFixedTime(T0 + 25 * 3_600_000);
   await page.reload();
-  await expect(page.getByText('Daily practice · 1 of 2')).toBeVisible();
+  await expect(page.getByText(/Daily practice · 1 of \d+/)).toBeVisible();
+  await expect(page.locator('.drill__goal')).toContainText('You played');
 
   // The progress screen charts the puzzle rating and has a table view.
   await page.goto('./#/progress');
