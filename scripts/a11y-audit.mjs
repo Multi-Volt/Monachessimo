@@ -68,6 +68,7 @@ const routes = [
   ['weakness', '#/weakness/openingError'],
   ['train', '#/train'],
   ['progress', '#/progress'],
+  ['play', '#/play'],
   ['settings', '#/settings'],
   ['about', '#/about'],
 ];

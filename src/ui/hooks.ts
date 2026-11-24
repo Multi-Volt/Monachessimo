@@ -42,10 +42,17 @@ export function useAsync<T>(
   return { ...result, reload: () => setTick((t) => t + 1) };
 }
 
+/** Services once loaded, so later components get them on their first render. */
+let loaded: Services | undefined;
+
 export function useServices(): Services | undefined {
-  const [s, setS] = useState<Services>();
+  const [s, setS] = useState<Services | undefined>(loaded);
   useEffect(() => {
-    void getServices().then(setS);
+    if (s) return;
+    void getServices().then((v) => {
+      loaded = v;
+      setS(v);
+    });
   }, []);
   return s;
 }

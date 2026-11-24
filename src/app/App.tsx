@@ -1,6 +1,7 @@
 import { About } from './screens/About';
 import { Dashboard } from './screens/Dashboard';
 import { Train } from './screens/Train';
+import { Play } from './screens/Play';
 import { WeaknessDetail } from './screens/WeaknessDetail';
 import type { TagName } from '../detectors';
 import { Connect } from './screens/Connect';
@@ -17,6 +18,7 @@ import { applyUpdate, pwaState } from '../pwa/register';
 const NAV = [
   { route: '', label: 'Home' },
   { route: 'train', label: 'Train' },
+  { route: 'play', label: 'Play' },
   { route: 'games', label: 'Games' },
   { route: 'settings', label: 'Settings' },
 ];
@@ -34,6 +36,19 @@ export function App() {
       break;
     case 'import':
       screen = <Connect />;
+      break;
+    case 'play':
+      screen = (
+        <Play
+          route={
+            arg === 'fen' && arg2
+              ? { kind: 'fen', fen: arg2 }
+              : arg === 'game' && arg2 !== undefined
+                ? { kind: 'game', gameId: arg2, ply: Number(route[3] ?? 0) }
+                : { kind: 'new' }
+          }
+        />
+      );
       break;
     case 'train':
       screen = <Train tag={arg ? (arg as TagName) : undefined} />;

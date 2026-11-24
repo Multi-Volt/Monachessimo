@@ -127,6 +127,12 @@ export function Review({
         </button>
       </div>
 
+      <p>
+        <a class="button" href={href('play', 'game', game.id, String(pos))}>
+          Practice from here
+        </a>
+      </p>
+
       {here && <MistakeDetail review={here} fen={fens[pos]!} />}
 
       {analysis ? (

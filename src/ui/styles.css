@@ -1104,3 +1104,64 @@ input[aria-invalid='true'] {
   color: var(--text-2);
   font-weight: 500;
 }
+
+/* Board color settings */
+
+.board-preview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 128px;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: var(--s4);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s2);
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+}
+
+.swatch input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.swatch__chip {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+  outline: 1px solid var(--hairline);
+}
+
+.swatch__chip span {
+  width: 14px;
+  height: 20px;
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+  flex: 1;
+}
+
+.color-field input {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-control);
+  background: none;
+}

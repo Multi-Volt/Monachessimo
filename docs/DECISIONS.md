@@ -180,3 +180,11 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 **2026-11-24. Try again.** Every finished drill offers "Try again" to replay the position. Only the first attempt changes the schedule and the puzzle rating.
 
 **2026-11-24. Taps on a board that moved.** Chessground caches the board's position on the page and refreshes it only on scroll and resize. When text above the board changed height between drills, taps landed on the wrong squares. The board wrapper now clears that cache at the start of every touch or click and after every render. The board also never switches to view-only mode, because Chessground binds input handlers only when the board is created.
+
+**2026-11-24. Practice games.** `#/play` plays a full game against Stockfish at Skill Level 0 to 20, suggested from the puzzle rating as (rating - 700) / 100. A full-strength search (depth 14, MultiPV 3) checks each of the player's moves. Depending on the chosen strictness, it refuses moves that drop 0.30, 0.20 or 0.10 of winning chances. A refused move shows its cost but never the better move; hints go from piece to square to move. The first refusal in a position saves it as a drill. Games start from the initial position, from any move of a stored game, from a random position where the player went wrong, or from a drill ("Play it out"). Game review has "Practice from here". The game in progress is saved after every move.
+
+**2026-11-24. References to your own games.** `src/play/positions.ts` indexes every position in the stored games. On the player's turn in a practice game, the screen lists the earlier games that reached the same position, the move played there, and how that game ended.
+
+**2026-11-24. Board colors.** Settings offers six square-color presets and a custom pair of colors. They apply to every board through CSS custom properties. The coordinate ink switches between dark and light, whichever has the better contrast against both square colors.
+
+**2026-11-24. Services on first render.** `useServices` now returns the loaded services on a component's first render once they exist. Before, every component saw `undefined` once, and the practice game's first effect failed on it.

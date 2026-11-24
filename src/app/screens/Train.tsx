@@ -784,6 +784,9 @@ function Session(props: {
           <button type="button" class="button" onClick={retry}>
             Try again
           </button>
+          <a class="button" href={href('play', 'fen', drill.fen)}>
+            Play it out
+          </a>
           <button
             type="button"
             class="button button--primary"

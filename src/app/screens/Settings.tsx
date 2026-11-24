@@ -5,6 +5,86 @@ import { DEPTH_PRESETS } from '../services';
 import { href } from '../router';
 import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
+import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors } from '../../ui/boardTheme';
+
+function BoardPanel() {
+  const services = useServices()!;
+  const current = services.settings.board ?? DEFAULT_BOARD;
+  const [colors, setColors] = useState<BoardColors>(current);
+  const presetKey = Object.keys(BOARD_PRESETS).find((k) => {
+    const p = BOARD_PRESETS[k]!.colors;
+    return p.light === colors.light && p.dark === colors.dark;
+  });
+  const [custom, setCustom] = useState(!presetKey);
+  const choose = async (c: BoardColors) => {
+    setColors(c);
+    await services.saveSettings({ ...services.settings, board: c });
+  };
+  return (
+    <div class="panel">
+      <h2>Board colors</h2>
+      <div class="board-preview" aria-hidden="true">
+        {Array.from({ length: 16 }, (_, i) => (
+          <span
+            key={i}
+            style={{ background: (Math.floor(i / 4) + i) % 2 === 0 ? colors.light : colors.dark }}
+          />
+        ))}
+      </div>
+      <fieldset class="field">
+        <legend>Squares</legend>
+        <div class="swatches">
+          {Object.entries(BOARD_PRESETS).map(([k, p]) => (
+            <label key={k} class="swatch">
+              <input
+                type="radio"
+                name="board"
+                checked={!custom && presetKey === k}
+                onChange={() => {
+                  setCustom(false);
+                  void choose(p.colors);
+                }}
+              />
+              <span class="swatch__chip" aria-hidden="true">
+                <span style={{ background: p.colors.light }} />
+                <span style={{ background: p.colors.dark }} />
+              </span>
+              <span>{p.label}</span>
+            </label>
+          ))}
+          <label class="swatch">
+            <input type="radio" name="board" checked={custom} onChange={() => setCustom(true)} />
+            <span class="swatch__chip" aria-hidden="true">
+              <span style={{ background: colors.light }} />
+              <span style={{ background: colors.dark }} />
+            </span>
+            <span>Custom</span>
+          </label>
+        </div>
+      </fieldset>
+      {custom && (
+        <div class="row">
+          <label class="color-field">
+            <input
+              type="color"
+              value={colors.light}
+              onInput={(e) => void choose({ ...colors, light: e.currentTarget.value })}
+            />
+            <span>Light squares</span>
+          </label>
+          <label class="color-field">
+            <input
+              type="color"
+              value={colors.dark}
+              onInput={(e) => void choose({ ...colors, dark: e.currentTarget.value })}
+            />
+            <span>Dark squares</span>
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function InstallPanel() {
   const pwa = useStore(pwaState);
@@ -147,6 +227,8 @@ export function Settings() {
           <p class="hint">Changing depth analyzes your games again with the new setting.</p>
         </fieldset>
       </div>
+
+      <BoardPanel />
 
       <InstallPanel />
 

@@ -4,10 +4,13 @@ import { EnginePool, defaultPoolSize } from '../engine/pool';
 import { workerTransport } from '../engine/worker';
 import { Repo } from '../store/repo';
 import { retagIfNeeded } from '../profile/data';
+import { applyBoardColors, type BoardColors } from '../ui/boardTheme';
 
 export interface AppSettings {
   workers: number;
   analysis: AnalysisSettings;
+  /** Square colors. Missing means the default olive wood. */
+  board?: BoardColors;
 }
 
 /** Depth presets shown in Settings. "Standard" matches the build plan. */
@@ -47,6 +50,7 @@ export function getServices(): Promise<Services> {
       workers: defaultPoolSize(),
       analysis: DEFAULT_SETTINGS,
     });
+    applyBoardColors(settings.board);
     await retagIfNeeded(repo, settings.analysis);
     const pool = new EnginePool(workerTransport, settings.workers);
     const runner = new AnalysisRunner(repo, pool, settings.analysis);
@@ -59,6 +63,7 @@ export function getServices(): Promise<Services> {
         s.settings = next;
         await repo.setSetting('app', next);
         pool.resize(next.workers);
+        applyBoardColors(next.board);
         runner.setSettings(next.analysis);
       },
     };
