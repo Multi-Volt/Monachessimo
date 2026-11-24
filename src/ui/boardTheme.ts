@@ -66,70 +66,132 @@ export function isHexColor(s: string): boolean {
   return /^#[0-9a-f]{6}$/i.test(s);
 }
 
-/** The fixed text colors of each theme, which tinted surfaces must keep readable. */
-const LIGHT = {
-  bg: '#f8f4ec',
-  card: '#fdfbf6',
-  raised: '#f0e9dc',
-  muted: '#72685c',
-  onAccent: '#ffffff',
-};
-const DARK = {
-  bg: '#171411',
-  card: '#1f1b17',
-  raised: '#29241f',
-  muted: '#958b7c',
-  onAccent: '#1d120c',
-};
-const AA = 4.5;
-
-/** Moves `color` toward `target` until it reaches AA contrast against every color in `against`. */
-function until(color: string, target: string, against: string[]): string {
-  for (let t = 0; t <= 1.0001; t += 0.05) {
-    const c = mix(color, target, t);
-    if (against.every((x) => contrast(c, x) >= AA)) return c;
-  }
-  return target;
+/** Hue in degrees and saturation and lightness from 0 to 1. */
+function toHsl(hex: string): [number, number, number] {
+  const [r, g, b] = toRgb(hex).map((v) => v / 255) as [number, number, number];
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const h =
+    max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
 }
 
-/** A surface tinted toward `tint`, as much as `max`, while muted text stays AA. */
-function tinted(base: string, tint: string, max: number, muted: string): string {
-  for (let t = max; t > 0; t -= 0.02) {
-    const c = mix(base, tint, t);
-    if (contrast(muted, c) >= AA) return c;
-  }
-  return base;
+function fromHsl(h: number, s: number, l: number): string {
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return toHex([f(0) * 255, f(8) * 255, f(4) * 255]);
+}
+
+export interface Tokens {
+  bg: string;
+  card: string;
+  raised: string;
+  text: string;
+  text2: string;
+  muted: string;
+  hairline: string;
+  hairlineStrong: string;
+  accent: string;
+  onAccent: string;
 }
 
 export interface ThemeColors {
-  light: { bg: string; card: string; raised: string; accent: string };
-  dark: { bg: string; card: string; raised: string; accent: string };
+  light: Tokens;
+  dark: Tokens;
+}
+
+/** Contrast targets: primary text, secondary text and muted text against every surface. */
+export const TARGETS = { text: 12, text2: 7, muted: 4.5, accent: 4.5 } as const;
+
+/**
+ * Moves the lightness of a color one step at a time toward black (`dir` -1)
+ * or white (`dir` 1) until it meets `min` contrast against every surface.
+ */
+function reach(
+  h: number,
+  s: number,
+  l: number,
+  dir: 1 | -1,
+  min: number,
+  surfaces: string[],
+): string {
+  for (let x = l; x >= 0 && x <= 1; x += dir * 0.01) {
+    const c = fromHsl(h, s, x);
+    if (surfaces.every((b) => contrast(c, b) >= min)) return c;
+  }
+  return dir < 0 ? '#000000' : '#ffffff';
+}
+
+function alpha(hex: string, a: number): string {
+  const [r, g, b] = toRgb(hex);
+  return `rgb(${r} ${g} ${b} / ${a})`;
 }
 
 /**
- * Theme colors that follow the board loosely: the accent takes its hue from
- * the dark squares, and surfaces take a faint tint from the squares. Every
- * pair still meets WCAG AA.
+ * A full palette in the board's hue. Surfaces and text form one neutral
+ * ramp with a small amount of the hue, so nothing clashes with the board.
+ * Text roles meet fixed contrast targets on every surface. The accent is
+ * the board hue at real saturation; a gray board gets a monochrome accent.
  */
 export function themeFor(c: BoardColors): ThemeColors {
-  const light = {
-    bg: tinted(LIGHT.bg, c.light, 0.35, LIGHT.muted),
-    card: tinted(LIGHT.card, c.light, 0.15, LIGHT.muted),
-    raised: tinted(LIGHT.raised, c.light, 0.35, LIGHT.muted),
-    accent: '',
+  const [h, sat] = toHsl(c.dark);
+  const gray = sat < 0.08;
+  const n = gray ? 0 : Math.min(0.14, sat * 0.35);
+  const accentS = gray ? 0 : Math.max(0.45, Math.min(0.75, sat * 1.4));
+
+  const build = (mode: 'light' | 'dark'): Tokens => {
+    const light = mode === 'light';
+    const bg = fromHsl(h, n, light ? 0.97 : 0.09);
+    const card = fromHsl(h, n, light ? 0.995 : 0.12);
+    const raised = fromHsl(h, n, light ? 0.925 : 0.17);
+    const surfaces = [bg, card, raised];
+    const dir = light ? -1 : 1;
+    const text = reach(h, n, light ? 0.14 : 0.9, dir, TARGETS.text, surfaces);
+    const text2 = reach(h, n, light ? 0.34 : 0.74, dir, TARGETS.text2, surfaces);
+    const muted = reach(h, n, light ? 0.44 : 0.62, dir, TARGETS.muted, surfaces);
+    let accent: string;
+    let onAccent: string;
+    if (gray) {
+      // No hue to borrow: buttons take the primary text color.
+      accent = text;
+      onAccent = bg;
+    } else {
+      onAccent = light ? '#ffffff' : fromHsl(h, n, 0.07);
+      accent = reach(h, accentS, light ? 0.45 : 0.62, dir, TARGETS.accent, [onAccent, ...surfaces]);
+    }
+    return {
+      bg,
+      card,
+      raised,
+      text,
+      text2,
+      muted,
+      hairline: alpha(text, 0.1),
+      hairlineStrong: alpha(text, 0.22),
+      accent,
+      onAccent,
+    };
   };
-  light.accent = until(c.dark, '#000000', [LIGHT.onAccent, light.bg, light.card]);
-  const dark = {
-    bg: tinted(DARK.bg, c.dark, 0.1, DARK.muted),
-    card: tinted(DARK.card, c.dark, 0.1, DARK.muted),
-    raised: tinted(DARK.raised, c.dark, 0.12, DARK.muted),
-    accent: '',
-  };
-  dark.accent = until(c.dark, '#ffffff', [DARK.onAccent, dark.bg, dark.card]);
-  return { light, dark };
+  return { light: build('light'), dark: build('dark') };
 }
 
-const THEME_VARS = ['bg', 'card', 'raised', 'accent'] as const;
+const THEME_VARS = {
+  bg: 'bg',
+  card: 'card',
+  raised: 'raised',
+  text: 'text',
+  text2: 'text-2',
+  muted: 'muted',
+  hairline: 'hairline',
+  hairlineStrong: 'hairline-strong',
+  accent: 'accent',
+  onAccent: 'on-accent',
+} as const satisfies Record<keyof Tokens, string>;
 
 /** Applies the colors to every board, and lets the theme follow them. */
 export function applyBoardColors(c: BoardColors | undefined): void {
@@ -140,14 +202,14 @@ export function applyBoardColors(c: BoardColors | undefined): void {
   root.setProperty('--coord', coordInk(colors));
   const isDefault = colors.light === DEFAULT_BOARD.light && colors.dark === DEFAULT_BOARD.dark;
   const theme = themeFor(colors);
-  for (const v of THEME_VARS) {
+  for (const [key, name] of Object.entries(THEME_VARS) as [keyof Tokens, string][]) {
     // The default board keeps the designed Bottega theme exactly.
     if (isDefault) {
-      root.removeProperty(`--theme-${v}-light`);
-      root.removeProperty(`--theme-${v}-dark`);
+      root.removeProperty(`--theme-${name}-light`);
+      root.removeProperty(`--theme-${name}-dark`);
     } else {
-      root.setProperty(`--theme-${v}-light`, theme.light[v]);
-      root.setProperty(`--theme-${v}-dark`, theme.dark[v]);
+      root.setProperty(`--theme-${name}-light`, theme.light[key]);
+      root.setProperty(`--theme-${name}-dark`, theme.dark[key]);
     }
   }
 }
