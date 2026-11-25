@@ -124,7 +124,7 @@ export function praiseMove(args: {
 
   const headline =
     label === 'good'
-      ? `${san} is good. It loses about ${(verdict.cpLoss / 100).toFixed(1)} pawns against the best move.`
+      ? `${san} is good, about ${(verdict.cpLoss / 100).toFixed(1)} pawns short of the best move.`
       : label === 'excellent'
         ? `${san} is excellent, almost as strong as the best move.`
         : label === 'best'

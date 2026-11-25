@@ -1,6 +1,7 @@
 import { Chess } from 'chessops/chess';
 import { makeFen, parseFen } from 'chessops/fen';
-import { opposite } from 'chessops/util';
+import { opposite, parseUci } from 'chessops/util';
+import type { Color } from 'chessops/types';
 import type { SearchRequest, SearchResult } from './engine';
 import { toCp, type Score } from './eval';
 
@@ -38,10 +39,50 @@ export interface Threat {
  */
 export const THREAT_CP = 80;
 
+const VALUE = { pawn: 100, knight: 300, bishop: 300, rook: 500, queen: 900, king: 0 } as const;
+
+function material(pos: Chess, color: Color): number {
+  let n = 0;
+  for (const sq of pos.board[color]) n += VALUE[pos.board.getRole(sq)!];
+  return n;
+}
+
+/** Plies of the engine's line in which the threat must win material. */
+const THREAT_PLIES = 4;
+
+/**
+ * Whether the opponent's best move after a pass threatens something a
+ * player can see: a mate, a check, a capture, or a line that wins at least
+ * a pawn of material. A quiet developing move can be worth a free tempo in
+ * the opening, but it is not a threat.
+ */
+export function isConcrete(passedFen: string, pv: string[], score: Score): boolean {
+  if (score.kind === 'mate' && score.value > 0) return true;
+  const setup = parseFen(passedFen);
+  if (setup.isErr) return false;
+  const pos = Chess.fromSetup(setup.value);
+  if (pos.isErr) return false;
+  const p = pos.value;
+  const them = p.turn;
+  const first = parseUci(pv[0] ?? '');
+  if (!first || !p.isLegal(first)) return false;
+  if ('from' in first && p.board.has(first.to)) return true;
+  const balance = () => material(p, them) - material(p, opposite(them));
+  const start = balance();
+  for (const [i, uci] of pv.slice(0, THREAT_PLIES).entries()) {
+    const m = parseUci(uci);
+    if (!m || !p.isLegal(m)) break;
+    p.play(m);
+    if (i === 0 && p.isCheck()) return true;
+  }
+  return balance() - start >= VALUE.pawn;
+}
+
 /**
  * Asks the engine what the opponent would play if the side to move passed.
  * `current` is the evaluation of the position from the side to move. The
- * result is a threat only when passing costs at least THREAT_CP.
+ * result is a threat only when passing costs at least THREAT_CP and the
+ * move threatens something concrete.
  */
 export async function findThreat(
   search: (req: SearchRequest) => Promise<SearchResult>,
@@ -56,5 +97,7 @@ export async function findThreat(
   if (!line?.pv[0]) return undefined;
   // The opponent's standing now is minus the player's; passing gives it line.score.
   const gain = toCp(line.score) + toCp(current);
-  return gain >= THREAT_CP ? { uci: line.pv[0], score: line.score, gain } : undefined;
+  return gain >= THREAT_CP && isConcrete(passed, line.pv, line.score)
+    ? { uci: line.pv[0], score: line.score, gain }
+    : undefined;
 }
