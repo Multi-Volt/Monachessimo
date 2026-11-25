@@ -262,6 +262,10 @@ main {
   gap: var(--s2);
 }
 
+.row--nav {
+  margin-block: var(--s3) var(--s4);
+}
+
 .row--nav > .button {
   flex: 1;
   padding-inline: var(--s2);
