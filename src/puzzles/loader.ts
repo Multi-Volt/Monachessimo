@@ -1,6 +1,6 @@
+import { moveHints } from '../chess/hints';
 import { makeFen } from 'chessops/fen';
-import { makeSquare, parseUci } from 'chessops/util';
-import { uciToSan } from '../chess/san';
+import { parseUci } from 'chessops/util';
 import type { TagName } from '../detectors';
 import { fromFen, isQuiet, normalMove } from '../detectors/board';
 import type { Drill } from '../drills/types';
@@ -106,17 +106,9 @@ const THEME_HINT: Record<string, string> = {
 };
 
 function puzzleHints(fen: string, uci: string, theme: string): string[] {
-  const pos = fromFen(fen);
-  const m = parseUci(uci);
-  const from = m && 'from' in m ? m.from : undefined;
-  const role = from !== undefined ? pos.board.getRole(from) : undefined;
-  const out = [THEME_HINT[theme] ?? 'Look at every check and capture first.'];
-  if (role && from !== undefined) {
-    out.push(`Move a ${role}.`);
-    out.push(`Move the ${role} on ${makeSquare(from)}.`);
-  }
-  out.push(`The answer is ${uciToSan(fen, uci)}.`);
-  return out;
+  return moveHints(fen, uci, {
+    first: THEME_HINT[theme] ?? 'Look at every check and capture first.',
+  });
 }
 
 /**

@@ -1,16 +1,26 @@
 import type { Chess } from 'chessops/chess';
 import { makeFen } from 'chessops/fen';
-import { makeSquare } from 'chessops/util';
+import type { Role, Square } from 'chessops/types';
+import { makeSquare, opposite } from 'chessops/util';
 import { pvToSan } from '../chess/san';
-import { balance, isCapture, normalMove, playLine, playUci } from '../detectors/board';
+import {
+  attacksFrom,
+  balance,
+  isCapture,
+  normalMove,
+  playLine,
+  playUci,
+  see,
+} from '../detectors/board';
+import { describeChanges } from '../strategy/explain';
+import { features } from '../strategy/features';
 import { tagMove, type TagName } from '../detectors';
 import type { Score } from '../engine/eval';
 import type { Line } from '../engine/uci';
-import { TAG_INFO } from '../profile/labels';
 import type { Verdict } from './coach';
 
-/** Tags that describe what went wrong on the board, as opposed to when. */
-const PATTERN_TAGS: TagName[] = [
+/** Tags that describe a tactic: when one is present, it is the lesson. */
+const TACTICAL: TagName[] = [
   'hangingPiece',
   'trappedPiece',
   'forkAllowed',
@@ -24,24 +34,57 @@ const PATTERN_TAGS: TagName[] = [
   'pinMissed',
   'skewerMissed',
   'mateMissed',
-  'kingSafety',
-  'pawnStructure',
-  'pieceActivity',
 ];
+/** Tags that describe a lasting change, used when no tactic explains the move. */
+const POSITIONAL: TagName[] = ['kingSafety', 'pawnStructure', 'pieceActivity'];
 
 export interface MoveExplanation {
-  /** Sentences of measured facts, in reading order. */
-  reasons: string[];
-  /** Patterns the move matched, for the game summary and the profile. */
+  /** One line: the move, its class and its cost. */
+  headline: string;
+  /** What happens, one fact per point, in reading order. */
+  points: string[];
+  /** Patterns the move matched, most important first. */
   tags: TagName[];
 }
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const VALUE_ORDER: Role[] = ['queen', 'rook', 'bishop', 'knight', 'pawn'];
+
+/** "your bishop on a4", "your knight on c3 and your rook on a1". */
+function listPieces(pos: Chess, squares: Square[]): string {
+  const sorted = [...squares].sort(
+    (a, b) =>
+      VALUE_ORDER.indexOf(pos.board.getRole(a)!) - VALUE_ORDER.indexOf(pos.board.getRole(b)!),
+  );
+  const names = sorted.map((sq) => `your ${pos.board.getRole(sq)} on ${makeSquare(sq)}`);
+  return names.length <= 1
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+}
+
+function article(role: Role): string {
+  return role === 'pawn' ? 'a pawn' : `a ${role}`;
+}
+
+/** Pieces each side captures along a line, in order, as roles. */
+function captures(start: Chess, line: readonly string[], me: Chess['turn']) {
+  const lost: Role[] = [];
+  const won: Role[] = [];
+  const positions = playLine(start, line);
+  for (let i = 0; i + 1 < positions.length; i++) {
+    const pos = positions[i]!;
+    const m = normalMove(line[i]);
+    if (!m || !isCapture(pos, m)) continue;
+    const role = pos.board.getRole(m.to) ?? 'pawn';
+    if (pos.turn === me) won.push(role);
+    else lost.push(role);
+  }
+  return { lost, won };
+}
 
 /**
- * Explains a move from facts: what the opponent's best answer does, how
- * much material it costs, which patterns it matches, and the cost in pawns.
- * Never names the player's better move.
+ * Explains a move from facts: the cost, what the opponent's best answer
+ * attacks, what changes hands in the line that follows, and the patterns
+ * it matches. Never names the player's better move.
  */
 export function explainMove(args: {
   before: Chess;
@@ -57,33 +100,64 @@ export function explainMove(args: {
   const { before, uci, reply, verdict } = args;
   const me = before.turn;
   const after = playUci(before, uci);
-  const reasons: string[] = [];
-  if (!after) return { reasons, tags: [] };
+  const san = pvToSan(makeFen(before.toSetup()), [uci], 1)[0] ?? uci;
+  const cost =
+    verdict.cpLoss >= 1000
+      ? 'turns the game around'
+      : `costs about ${(verdict.cpLoss / 100).toFixed(1)} pawns`;
+  const headline = verdict.class ? `${san} is a ${verdict.class}: it ${cost}.` : `${san} ${cost}.`;
+  const points: string[] = [];
+  if (!after) return { headline, points, tags: [] };
 
-  // The opponent's answer and what it wins.
-  const replySan = reply.length ? pvToSan(fenOf(after), reply, 4) : [];
+  const replySan = reply.length ? pvToSan(makeFen(after.toSetup()), reply, 6) : [];
   const first = normalMove(reply[0]);
   if (args.played.kind === 'mate' && args.played.value < 0) {
-    reasons.push(`It allows mate in ${-args.played.value}, starting with ${replySan[0]}.`);
+    points.push(`It allows mate in ${-args.played.value}: ${replySan.slice(0, 5).join(' ')}.`);
   } else if (first && replySan[0]) {
-    const line = playLine(after, reply, 4);
-    const start = balance(before, me);
-    // Material after each of the opponent's moves in its line.
-    const losses = [1, 3].filter((i) => line[i]).map((i) => start - balance(line[i]!, me));
-    const loss = Math.max(0, ...losses);
+    const answered = playUci(after, reply[0]);
     if (isCapture(after, first)) {
       const role = after.board.getRole(first.to) ?? 'pawn';
-      reasons.push(
-        `Your opponent's best answer is ${replySan[0]}, which takes your ${role} on ${makeSquare(first.to)}.`,
+      points.push(
+        `Your opponent answers ${replySan[0]}, taking your ${role} on ${makeSquare(first.to)}.`,
       );
-    } else {
-      reasons.push(`Your opponent's best answer is ${replySan[0]}.`);
+    } else if (answered) {
+      // What the answering piece now attacks that the player stands to lose.
+      const targets = [...attacksFrom(answered, first.to).intersect(answered.board[me])].filter(
+        (sq) => {
+          const role = answered.board.getRole(sq);
+          return role !== undefined && role !== 'king' && see(answered, sq, opposite(me)) > 0;
+        },
+      );
+      const trapped = targets.filter((sq) => {
+        for (const to of answered.dests(sq)) {
+          const next = answered.clone();
+          next.play({ from: sq, to });
+          if (see(next, to, opposite(me)) <= 0) return false;
+        }
+        return true;
+      });
+      if (trapped.length)
+        points.push(
+          `Your opponent answers ${replySan[0]}, attacking ${listPieces(answered, trapped)}, which has no safe square.`,
+        );
+      else if (targets.length)
+        points.push(
+          `Your opponent answers ${replySan[0]}, attacking ${listPieces(answered, targets)}.`,
+        );
+      else if (answered.isCheck()) points.push(`Your opponent answers ${replySan[0]}, with check.`);
+      else points.push(`Your opponent's best answer is ${replySan[0]}.`);
     }
-    if (loss >= 1)
-      reasons.push(`Within two moves you are ${plural(loss, 'pawn')} of material down.`);
+    // What changes hands in the line that follows.
+    const { lost, won } = captures(after, reply.slice(0, 6), me);
+    if (lost.length) {
+      const lostText = lost.map(article).join(', ');
+      const wonText = won.length ? `, and you win ${won.map(article).join(', ')}` : '';
+      points.push(
+        `In the line that follows you lose ${lostText}${wonText}: ${replySan.join(' ')}.`,
+      );
+    }
   }
 
-  // Patterns from the detectors.
   let tags: TagName[];
   try {
     tags = tagMove({
@@ -97,22 +171,75 @@ export function explainMove(args: {
       playedScore: args.played,
       drop: verdict.drop,
       class: verdict.class ?? 'inaccuracy',
-    }).filter((t) => PATTERN_TAGS.includes(t));
+    });
   } catch {
     tags = [];
   }
-  // When material is lost, the tactic is the lesson; structure and activity
-  // changes are side effects of losing the piece or pawn.
-  if (reasons.some((r) => r.includes('which takes your') || r.includes('material down')))
-    tags = tags.filter((t) => t !== 'pawnStructure' && t !== 'pieceActivity');
-  for (const t of tags.slice(0, 2)) reasons.push(`Pattern: you ${TAG_INFO[t].summary}.`);
-
-  if (verdict.cpLoss >= 1000) reasons.push('It turns the game around.');
-  else if (verdict.cpLoss > 0)
-    reasons.push(`It costs about ${(verdict.cpLoss / 100).toFixed(1)} pawns.`);
-  return { reasons, tags };
+  const tactical = tags.filter((t) => TACTICAL.includes(t));
+  // A tactic is the lesson; lasting changes only explain a move without one.
+  const shown = tactical.length ? tactical : tags.filter((t) => POSITIONAL.includes(t));
+  return { headline, points, tags: shown.slice(0, 3) };
 }
 
-function fenOf(pos: Chess): string {
-  return makeFen(pos.toSetup());
+/** Plain text of an explanation, for saved drills and notes. */
+export function explanationText(e: MoveExplanation): string[] {
+  return [e.headline, ...e.points];
+}
+
+const MINOR_HOME: Record<Chess['turn'], number[]> = {
+  white: [1, 2, 5, 6],
+  black: [57, 58, 61, 62],
+};
+
+/** Knights and bishops of `color` still on their starting squares. */
+function undeveloped(pos: Chess, color: Chess['turn']): number {
+  const minors = pos.board.knight.union(pos.board.bishop).intersect(pos.board[color]);
+  return MINOR_HOME[color].filter((sq) => minors.has(sq)).length;
+}
+
+function castled(pos: Chess, color: Chess['turn']): boolean {
+  const king = pos.board.kingOf(color);
+  if (king === undefined) return false;
+  const home = color === 'white' ? 0 : 56;
+  return king === home + 6 || king === home + 2;
+}
+
+function canCastle(pos: Chess, color: Chess['turn']): boolean {
+  return [...pos.castles.castlingRights].some((sq) => (color === 'white' ? sq < 8 : sq >= 56));
+}
+
+/**
+ * What is different at the end of the refuting line compared with the end of
+ * the engine's line from the same position, for `me`. Counted facts only:
+ * material, development, castling and the strategy features. The better move
+ * itself is never named.
+ */
+export function compareLines(
+  start: Chess,
+  me: Chess['turn'],
+  playedLine: readonly string[],
+  bestLine: readonly string[],
+): string[] {
+  const played = playLine(start, playedLine).at(-1)!;
+  const best = playLine(start, bestLine.slice(0, playedLine.length)).at(-1)!;
+  const out: string[] = [];
+  const mat = balance(played, me) - balance(best, me);
+  if (mat < 0) out.push(`You have ${-mat} ${mat === -1 ? 'pawn' : 'pawns'} less material.`);
+  if (mat > 0)
+    out.push(
+      `You have ${mat} more ${mat === 1 ? 'pawn' : 'pawns'} of material, but the position is worse.`,
+    );
+  const dev = undeveloped(played, me) - undeveloped(best, me);
+  if (dev > 0)
+    out.push(
+      `${dev} more of your knights and bishops ${dev === 1 ? 'is' : 'are'} still on the starting square: ${undeveloped(played, me)} instead of ${undeveloped(best, me)}.`,
+    );
+  if (castled(best, me) && !castled(played, me)) out.push('Your king has not castled yet.');
+  else if (canCastle(best, me) && !canCastle(played, me) && !castled(played, me))
+    out.push('Your king can no longer castle.');
+  const oppDev = undeveloped(best, opposite(me)) - undeveloped(played, opposite(me));
+  if (oppDev > 0)
+    out.push(`Your opponent has ${oppDev} more ${oppDev === 1 ? 'piece' : 'pieces'} developed.`);
+  out.push(...describeChanges(features(best, me), features(played, me)));
+  return out;
 }

@@ -1,3 +1,4 @@
+import { moveHints } from '../chess/hints';
 import type { Role } from 'chessops/types';
 import { makeSquare } from 'chessops/util';
 import { CLASS_LABEL } from '../analysis/summary';
@@ -191,14 +192,8 @@ function hints(review: PlyReview, fen: string, tags: TagName[]): string[] {
   const out: string[] = [];
   const theme = tags.map((t) => THEME_HINT[t]).find(Boolean);
   out.push(theme ?? 'Before you move, check what your opponent can do next.');
-  const pos = fromFen(fen);
-  const m = normalMove(review.lines[0]?.pv[0]);
-  if (m) {
-    const role = pos.board.getRole(m.from)!;
-    out.push(`Move a ${ROLE_NAME[role]}.`);
-    out.push(`Move the ${ROLE_NAME[role]} on ${makeSquare(m.from)}.`);
-    out.push(`The answer is ${uciToSan(fen, review.lines[0]!.pv[0]!)}.`);
-  }
+  const best = review.lines[0]?.pv[0];
+  if (best) return moveHints(fen, best, { first: out[0]! });
   return out;
 }
 

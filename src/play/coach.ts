@@ -22,8 +22,12 @@ const RANK: Record<MoveClass, number> = { inaccuracy: 1, mistake: 2, blunder: 3 
  * away near equality as an inaccuracy; a coach should call it a mistake.
  */
 export const CP_LOSS = { inaccuracy: 40, mistake: 90, blunder: 200 } as const;
-/** Beyond this, in centipawns, the game is decided and pawns matter less. */
-export const DECIDED_CP = 700;
+/**
+ * The pawn thresholds apply only while the best move keeps the game within
+ * this many centipawns. In a clearly won or lost position a pawn matters less,
+ * and winning chances alone judge the move, as on Lichess and Chess.com.
+ */
+export const CLOSE_CP = 300;
 
 const WC_LOSS = { inaccuracy: 0.1, mistake: 0.2, blunder: 0.3 } as const;
 
@@ -57,7 +61,7 @@ export function judgeMove(best: Score, played: Score): Verdict {
   const b = cp(best);
   const p = cp(played);
   const cpLoss = Math.max(0, b - p);
-  const decided = (b >= DECIDED_CP && p >= DECIDED_CP) || (b <= -DECIDED_CP && p <= -DECIDED_CP);
+  const decided = Math.abs(b) > CLOSE_CP;
   const byWc = byThreshold(drop, WC_LOSS);
   const byCp = decided ? null : byThreshold(cpLoss, CP_LOSS);
   const cls = [byWc, byCp].reduce<MoveClass | null>(

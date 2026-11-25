@@ -8,6 +8,8 @@ interface Props {
   /** Plies to mark more quietly, for example mistakes. */
   minorMarks?: number[];
   current: number;
+  /** Side to move in the first position. Practice games can start with Black. */
+  firstToMove?: 'white' | 'black';
   onSelect: (position: number) => void;
 }
 
@@ -15,7 +17,14 @@ interface Props {
  * Winning chances for White across the game. Values above the middle line
  * favor White. Tapping the graph jumps to that position.
  */
-export function EvalGraph({ evals, marks, minorMarks = [], current, onSelect }: Props) {
+export function EvalGraph({
+  evals,
+  marks,
+  minorMarks = [],
+  current,
+  onSelect,
+  firstToMove = 'white',
+}: Props) {
   const w = 300;
   const h = 64;
   const n = Math.max(1, evals.length - 1);
@@ -23,7 +32,8 @@ export function EvalGraph({ evals, marks, minorMarks = [], current, onSelect }: 
   const y = (i: number) => {
     const s = evals[i];
     if (!s) return h / 2;
-    const white = i % 2 === 0 ? winningChances(s) : -winningChances(s);
+    const whiteToMove = (i % 2 === 0) === (firstToMove === 'white');
+    const white = whiteToMove ? winningChances(s) : -winningChances(s);
     return h / 2 - (white * h) / 2;
   };
   const points = evals.map((_, i) => `${x(i).toFixed(1)},${y(i).toFixed(1)}`).join(' ');

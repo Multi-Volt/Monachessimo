@@ -2,6 +2,7 @@ import { About } from './screens/About';
 import { Dashboard } from './screens/Dashboard';
 import { Train } from './screens/Train';
 import { Play } from './screens/Play';
+import { PracticeReview } from './screens/PracticeReview';
 import { WeaknessDetail } from './screens/WeaknessDetail';
 import type { TagName } from '../detectors';
 import { Connect } from './screens/Connect';
@@ -37,9 +38,14 @@ export function App() {
     case 'import':
       screen = <Connect />;
       break;
+    case 'practice':
+      screen = <PracticeReview id={arg} />;
+      break;
     case 'play':
       screen = (
         <Play
+          // A new start link must not reuse the setup of the previous one.
+          key={`${arg ?? ''}/${arg2 ?? ''}`}
           route={
             arg === 'fen' && arg2
               ? { kind: 'fen', fen: arg2 }
@@ -111,7 +117,7 @@ export function App() {
         {NAV.map((n) => {
           const active =
             head === n.route ||
-            (n.route === 'games' && head === 'game') ||
+            (n.route === 'games' && (head === 'game' || head === 'practice')) ||
             (n.route === '' &&
               (head === 'import' ||
                 head === 'weakness' ||

@@ -1,8 +1,9 @@
+import { moveHints } from '../../chess/hints';
 import { chessgroundDests } from 'chessops/compat';
 import { makeFen } from 'chessops/fen';
 import { parseSan } from 'chessops/san';
 import type { Square } from 'chessops/types';
-import { makeSquare, parseSquare, parseUci } from 'chessops/util';
+import { parseSquare, parseUci } from 'chessops/util';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { standardUci } from '../../chess/uci';
 import { uciSquares, uciToSan, pvToSan } from '../../chess/san';
@@ -487,6 +488,10 @@ function Session(props: {
     return acceptable(score, target);
   };
 
+  // A refusal is about one position: once a move is accepted and the line
+  // moves on, the message no longer applies.
+  useEffect(() => setTryAgain(undefined), [applied.length]);
+
   /** Shows a wrong move on the board for a moment, then puts the piece back. */
   const showWrong = (uci: string, reason: string) => {
     setPhase({ kind: 'wrong', uci, reason });
@@ -563,15 +568,7 @@ function Session(props: {
   // piece and square of the engine's move after that.
   const stepHints = (() => {
     if (step === 0 || !stepBest) return drill.hints;
-    const m = parseUci(stepBest);
-    const from = m && 'from' in m ? m.from : undefined;
-    const role = from !== undefined ? pos.board.getRole(from) : undefined;
-    if (!role || from === undefined) return [];
-    return [
-      `Move a ${role}.`,
-      `Move the ${role} on ${makeSquare(from)}.`,
-      `The answer is ${uciToSan(fenNow, stepBest)}.`,
-    ];
+    return moveHints(fenNow, stepBest);
   })();
   // Every move the player made in this attempt, for the summary.
   const yourMoves =

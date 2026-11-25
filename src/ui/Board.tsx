@@ -4,6 +4,9 @@ import type { Config } from 'chessground/config';
 import type { DrawShape } from 'chessground/draw';
 import type { Key } from 'chessground/types';
 import { useEffect, useRef } from 'preact/hooks';
+import { Chess } from 'chessops/chess';
+import { parseFen } from 'chessops/fen';
+import { captured, MaterialRow } from './Material';
 import 'chessground/assets/chessground.base.css';
 import 'chessground/assets/chessground.cburnett.css';
 
@@ -17,6 +20,8 @@ export interface BoardProps {
   onMove?: (orig: string, dest: string) => void;
   /** Text description for screen readers. */
   label: string;
+  /** Show the pieces each side has taken, above and below the board. On by default. */
+  material?: boolean;
 }
 
 /** Chessground board that fills its container's width and stays square. */
@@ -26,8 +31,11 @@ export function Board(props: BoardProps) {
   const onMove = useRef(props.onMove);
   onMove.current = props.onMove;
 
+  const state = kingState(props.fen);
   const config = (): Config => ({
     fen: props.fen,
+    // Highlights the king of the side to move when it is in check.
+    check: state !== 'none',
     orientation: props.orientation,
     turnColor: props.fen.split(' ')[1] === 'b' ? 'black' : 'white',
     // Chessground clears the highlight only when lastMove is present and undefined.
@@ -78,9 +86,41 @@ export function Board(props: BoardProps) {
     api.current?.state.dom.bounds.clear();
   });
 
+  const taken = props.material === false ? undefined : takenFor(props.fen);
+  const top = props.orientation === 'white' ? 'black' : 'white';
+  const who = (c: 'white' | 'black') => (c === 'white' ? 'White' : 'Black');
   return (
-    <div class="board" role="img" aria-label={props.label}>
-      <div ref={el} class="board__cg" />
+    <div class="board-frame">
+      {taken && <MaterialRow side={top} taken={taken[top]} label={who(top)} />}
+      <div
+        class={`board${state === 'mate' ? ' board--mate' : ''}`}
+        role="img"
+        aria-label={`${props.label}${state === 'mate' ? ' Checkmate.' : state === 'check' ? ' Check.' : ''}`}
+      >
+        <div ref={el} class="board__cg" />
+      </div>
+      {taken && (
+        <MaterialRow
+          side={props.orientation}
+          taken={taken[props.orientation]}
+          label={who(props.orientation)}
+        />
+      )}
     </div>
   );
+}
+
+/** Whether the side to move is in check or checkmated. */
+export function kingState(fen: string): 'none' | 'check' | 'mate' {
+  const setup = parseFen(fen);
+  if (setup.isErr) return 'none';
+  const pos = Chess.fromSetup(setup.value);
+  if (pos.isErr) return 'none';
+  if (pos.value.isCheckmate()) return 'mate';
+  return pos.value.isCheck() ? 'check' : 'none';
+}
+
+function takenFor(fen: string) {
+  const setup = parseFen(fen);
+  return setup.isErr ? undefined : captured(setup.value.board);
 }

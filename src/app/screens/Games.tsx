@@ -4,6 +4,8 @@ import type { Game } from '../../import/types';
 import { formatDate } from '../../ui/format';
 import { useAsync, useRunner, useServices } from '../../ui/hooks';
 import { href } from '../router';
+import { finishedGames } from '../../play/data';
+import { endText } from '../../play/coach';
 
 function outcome(g: Game): 'Won' | 'Lost' | 'Drew' {
   if (g.result === '1/2-1/2') return 'Drew';
@@ -29,9 +31,39 @@ export function Games() {
     // Reload when a game finishes.
   }, [services, runner?.gamesDone]);
 
+  const practice = useAsync(
+    async () => (services ? await finishedGames(services.repo) : []),
+    [services],
+  );
   return (
     <section class="screen" aria-labelledby="games-title">
       <h1 id="games-title">Your games</h1>
+      {practice.status === 'ok' && practice.value.length > 0 && (
+        <div class="panel">
+          <h2>Practice games</h2>
+          <ul class="game-list">
+            {practice.value.map((g) => (
+              <li key={g.id}>
+                <a class="game-row" href={href('practice', g.id)}>
+                  <span class="game-row__main">
+                    <span class="game-row__title">
+                      {g.end
+                        ? g.end.kind === 'resigned'
+                          ? 'Resigned'
+                          : endText(g.end, g.you)
+                        : 'Unfinished'}
+                    </span>
+                    <span class="game-row__meta">
+                      {formatDate(g.startedAt)} · you played {g.you} · Skill Level {g.skill}
+                    </span>
+                  </span>
+                  <span class="game-row__status">{g.yourMoves.length} moves</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {data.status === 'loading' && <p>Loading games…</p>}
       {data.status === 'error' && (
         <p class="error-text" role="alert">

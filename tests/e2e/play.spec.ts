@@ -79,9 +79,13 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   // b5 hangs a pawn to the bishop: a blunder, with the reason.
   await typeMove(page, 'b5');
   const status = page.getByRole('status').filter({ hasText: 'Not good enough.' });
-  await expect(status).toContainText('b5 is a blunder.', { timeout: 30_000 });
-  await expect(status).toContainText('which takes your pawn on b5');
-  await expect(status).toContainText(/It costs about \d\.\d pawns\./);
+  await expect(status).toContainText(/b5 is a blunder: it costs about \d\.\d pawns\./, {
+    timeout: 30_000,
+  });
+  // The facts come as separate points.
+  await expect(status.locator('.verdict__points li').first()).toContainText(
+    'Your opponent answers Bxb5, taking your pawn on b5.',
+  );
   await expect(status).not.toContainText('Nc6');
 
   // Show what happens plays the refused move and the opponent's answer on the board.
@@ -96,7 +100,7 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   // Qf6 gives up a pawn too. Winning chances alone called this an inaccuracy.
   await page.getByText('Type a move instead').waitFor();
   await typeMove(page, 'Qf6');
-  await expect(status).toContainText('Qf6 is a mistake.', { timeout: 30_000 });
+  await expect(status).toContainText('Qf6 is a mistake', { timeout: 30_000 });
   expect(errors).toEqual([]);
 });
 
@@ -126,4 +130,50 @@ test('start links from review and drills open the game', async ({ page }) => {
   await page.getByRole('button', { name: 'Start the game' }).click();
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('from a drill position')).toBeVisible();
+});
+
+test('take back, check and checkmate, and reviewing a finished practice game', async ({ page }) => {
+  test.setTimeout(150_000);
+  const errors = collectErrors(page);
+  // Take back from the starting position.
+  await page.goto('./#/play');
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
+  await typeMove(page, 'e4');
+  await expect(page.getByRole('button', { name: 'Take back' })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Take back' }).click();
+  await expect(page.getByRole('button', { name: 'Take back' })).toBeHidden();
+  await expect(page.locator('.board').first()).toHaveAttribute('aria-label', /./);
+  await page.getByRole('button', { name: 'Resign' }).click();
+  await page.getByRole('button', { name: 'Tap again to resign' }).click();
+  await page.getByRole('button', { name: 'New practice game' }).click();
+  await expect(page.getByRole('button', { name: 'Start the game' })).toBeVisible();
+
+  // White to move with a back-rank mate available: Rd8#.
+  const fen = '6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1';
+  await page.goto(`./#/play/fen/${encodeURIComponent(fen)}`);
+  await page.getByLabel('Refuse blunders only').check();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
+
+  await typeMove(page, 'Rd8#');
+
+  await expect(page.getByRole('heading', { name: /You won by checkmate\./ })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.locator('.board--mate square.check')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Final position. Checkmate.' })).toBeVisible();
+  await expect(page.getByText('Best, great or brilliant')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Review this game' }).click();
+  await expect(page.getByRole('heading', { name: /Practice game review/ })).toBeVisible();
+  await expect(page.getByText('Checkmate. You won.')).toBeVisible();
+  await expect(page.locator('.eval-graph')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Start' }).click();
+  await expect(page.locator('.board--mate')).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'All games' }).click();
+  await expect(page.getByRole('heading', { name: 'Practice games' })).toBeVisible();
+  await expect(page.locator('.game-row').first()).toContainText('You won by checkmate.');
+  expect(errors).toEqual([]);
 });

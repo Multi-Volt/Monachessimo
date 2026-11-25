@@ -1,6 +1,7 @@
+import { moveHints } from '../../chess/hints';
 import { chessgroundDests } from 'chessops/compat';
 import { makeFen } from 'chessops/fen';
-import { makeSquare, parseSquare, parseUci } from 'chessops/util';
+import { parseSquare, parseUci } from 'chessops/util';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { moveLabel, replay } from '../../analysis/positions';
 import { settingsKey } from '../../analysis/types';
@@ -27,13 +28,20 @@ import {
   currentPosition,
   history,
   loadCurrent,
+  saveFinished,
   practiceDrill,
   saveCurrent,
   type PracticeGame,
 } from '../../play/data';
 import { buildIndex, yourVisits, type Visit } from '../../play/positions';
+import { PRAISE_LABEL, PRAISE_SYMBOL, praiseMove, type Praise } from '../../play/praise';
 import { balance, playLine } from '../../detectors/board';
-import { explainMove } from '../../play/explain';
+import {
+  compareLines,
+  explainMove,
+  explanationText,
+  type MoveExplanation,
+} from '../../play/explain';
 import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { EvalGraph } from '../../ui/EvalGraph';
@@ -444,13 +452,22 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const services = useServices()!;
   const [game, setGame] = useState(initial);
   const [phase, setPhase] = useState<Phase>({ kind: initial.end ? 'over' : 'thinking' });
-  const [refusal, setRefusal] = useState<{ cls: MoveClass; text: string }>();
+  const [refusal, setRefusal] = useState<{ cls: MoveClass; why: MoveExplanation }>();
   /** The last refused move and the opponent's best line after it. */
-  const [refutation, setRefutation] = useState<{ uci: string; reply: string[] }>();
+  const [refutation, setRefutation] = useState<{
+    uci: string;
+    reply: string[];
+    /** The engine's line from the same position, to compare the end against. */
+    best: string[];
+    /** Centipawns the move cost. */
+    cost: number;
+  }>();
   /** Step in "Show what happens": 1 is the refused move, then the reply line. */
   const [replayStep, setReplayStep] = useState<number>();
   /** A short note about an accepted but imperfect move. */
-  const [note, setNote] = useState<string>();
+  const [note, setNote] = useState<{ cls: MoveClass; why: MoveExplanation }>();
+  /** What a good move did, shown until the next move. */
+  const [praise, setPraise] = useState<Praise>();
   const [hints, setHints] = useState(0);
   const [refusedHere, setRefusedHere] = useState(0);
   /** Latest evaluation from White's side, from the coach's search. */
@@ -483,6 +500,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const finish = async (g: PracticeGame, end: NonNullable<PracticeGame['end']>) => {
     const done = { ...g, end };
     await save(done);
+    await saveFinished(services.repo, done);
     setPhase({ kind: 'over' });
     const result =
       end.kind === 'resigned'
@@ -542,6 +560,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (phase.kind !== 'your-move') return;
     setPhase({ kind: 'checking', uci });
     setNote(undefined);
+    setPraise(undefined);
     const t = await target.current!;
     const best = t.lines[0]?.score ?? { kind: 'cp' as const, value: 0 };
     const after = pos.clone();
@@ -577,18 +596,21 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           verdict,
           ply: game.moves.length,
         })
-      : { reasons: [], tags: [] };
+      : undefined;
 
     if (refuses(game.strictness, best, played)) {
-      const text = [`${san} is a ${verdict.class}.`, ...why.reasons, 'Find a better move.'].join(
-        ' ',
-      );
-      setRefusal({ cls: verdict.class!, text });
-      setRefutation({ uci, reply: reply.slice(0, 5) });
+      const text = why ? explanationText(why).join(' ') : `${san} is a ${verdict.class}.`;
+      setRefusal({ cls: verdict.class!, why: why! });
+      setRefutation({
+        uci,
+        reply: reply.slice(0, 5),
+        best: t.lines[0]?.pv ?? [],
+        cost: verdict.cpLoss,
+      });
       setReplayStep(undefined);
       setRefusedHere((n) => n + 1);
       setPhase({ kind: 'refused', uci, text });
-      const record = { ply: game.moves.length, san, class: verdict.class!, tags: why.tags };
+      const record = { ply: game.moves.length, san, class: verdict.class!, tags: why?.tags ?? [] };
       let next = { ...game, refusals: [...(game.refusals ?? []), record] };
       // Save the position as a drill the first time a move is refused here.
       if (!savedHere.current) {
@@ -599,8 +621,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           await services.repo.putDrills([
             {
               ...drill,
-              tags: why.tags,
-              explanation: [...why.reasons, ...drill.explanation.slice(1)],
+              tags: why?.tags ?? [],
+              explanation: [...(why ? explanationText(why) : []), ...drill.explanation.slice(1)],
             },
           ]);
           next = { ...next, savedDrills: next.savedDrills + 1 };
@@ -617,25 +639,60 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     setRefutation(undefined);
     setReplayStep(undefined);
     // A move the coach lets through can still be imperfect: say so.
-    if (verdict.class)
-      setNote(
-        `Accepted, but ${san} is an ${verdict.class === 'inaccuracy' ? 'inaccuracy' : verdict.class}. ${why.reasons.join(' ')}`,
-      );
+    setNote(why && verdict.class ? { cls: verdict.class, why } : undefined);
+    const praise = praiseMove({ before: pos, uci, lines: t.lines, played, verdict });
+    setPraise(praise);
     await save({
       ...game,
       moves: [...game.moves, uci],
       yourMoves: [
         ...game.yourMoves,
-        { ply: game.moves.length, refused: refusedHere, hinted: hints > 0 },
+        {
+          ply: game.moves.length,
+          refused: refusedHere,
+          hinted: hints > 0,
+          ...(praise ? { label: praise.label } : {}),
+        },
       ],
       ...(verdict.class
         ? {
             refusals: [
               ...(game.refusals ?? []),
-              { ply: game.moves.length, san, class: verdict.class, tags: why.tags, accepted: true },
+              {
+                ply: game.moves.length,
+                san,
+                class: verdict.class,
+                tags: why?.tags ?? [],
+                accepted: true,
+              },
             ],
           }
         : {}),
+    });
+  };
+
+  // Index of the player's last move in the game, for "Take back".
+  const firstMover = game.startFen.split(' ')[1] === 'b' ? 'black' : 'white';
+  const moverAt = (i: number) => ((i % 2 === 0) === (firstMover === 'white') ? 'white' : 'black');
+  const lastMine = (() => {
+    for (let i = game.moves.length - 1; i >= 0; i--) if (moverAt(i) === game.you) return i;
+    return -1;
+  })();
+  const canTakeBack = phase.kind === 'your-move' && replayStep === undefined && lastMine >= 0;
+
+  /** Undoes the player's last move and the opponent's reply. */
+  const takeBack = async () => {
+    if (!canTakeBack) return;
+    setNote(undefined);
+    setPraise(undefined);
+    setRefusal(undefined);
+    setRefutation(undefined);
+    await save({
+      ...game,
+      moves: game.moves.slice(0, lastMine),
+      yourMoves: game.yourMoves.filter((m) => m.ply < lastMine),
+      refusals: (game.refusals ?? []).filter((r) => !(r.accepted && r.ply >= lastMine)),
+      takebacks: (game.takebacks ?? 0) + 1,
     });
   };
 
@@ -655,18 +712,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     void target.current.then((t) => {
       const best = t.lines[0]?.pv[0];
       if (!live || !best) return;
-      const m = parseUci(best);
-      const from = m && 'from' in m ? m.from : undefined;
-      const role = from !== undefined ? pos.board.getRole(from) : undefined;
-      setHintText(
-        role && from !== undefined
-          ? [
-              `Move a ${role}.`,
-              `Move the ${role} on ${makeSquare(from)}.`,
-              `The coach's move is ${uciToSan(fen, best)}.`,
-            ]
-          : [],
-      );
+      setHintText(moveHints(fen, best, { answer: "The coach's move is" }));
     });
     return () => {
       live = false;
@@ -731,6 +777,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         onMove={onBoardMove}
         label={`Practice game, ${pos.turn} to move.`}
       />
+      {pos.isCheck() && (
+        <p class="check-notice" role="status">
+          {yourTurn ? 'You are in check.' : 'Check. Your opponent is in check.'}
+        </p>
+      )}
       {phase.kind === 'your-move' && (
         <p class="hint board-help">Drag a piece, or tap it and then tap where it goes.</p>
       )}
@@ -743,12 +794,14 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         )}
         {refusal && (phase.kind === 'refused' || phase.kind === 'your-move') && (
           <div class={`panel panel--${refusal.cls}`} role="status">
-            <p>
-              <span class={`tag tag--${refusal.cls}`}>
-                {CLASS_SYMBOL[refusal.cls]} {CLASS_LABEL[refusal.cls]}
-              </span>{' '}
-              <strong>Not good enough.</strong> {refusal.text}
-            </p>
+            <Verdict cls={refusal.cls} why={refusal.why} lead="Not good enough." />
+            <p class="verdict__ask">Find a better move.</p>
+            {refusedHere >= 2 && (
+              <p class="hint">
+                Stuck? Tap Hint. The first hint says what kind of move to look for, the next which
+                piece to move.
+              </p>
+            )}
           </div>
         )}
         {refutation && phase.kind === 'your-move' && !replaying && replayLine.length > 1 && (
@@ -768,10 +821,38 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
                 const at = replayPositions[replayStep]!;
                 const diff = balance(at, game.you) - balance(pos, game.you);
                 return `You play ${mine}${then.length ? `, then ${then.join(' ')}` : ''}. Material: ${
-                  diff === 0 ? 'even with now' : diff > 0 ? `${diff} up` : `${-diff} down`
+                  diff === 0
+                    ? 'even, as before your move'
+                    : diff > 0
+                      ? `you are ${diff} up`
+                      : `you are ${-diff} down`
                 }.${at.isCheckmate() ? ' Checkmate.' : ''}`;
               })()}
             </p>
+            {refutation && replayStep === replayPositions.length - 1 && (
+              <div class="stepper__why">
+                <p>
+                  <strong>Why this is worse.</strong> At the end of this line the engine rates your
+                  position about {(refutation.cost / 100).toFixed(1)} pawns lower than after a
+                  better move. Compared with that line:
+                </p>
+                {(() => {
+                  const diffs = compareLines(pos, game.you, replayLine, refutation.best);
+                  return diffs.length ? (
+                    <ul class="verdict__points">
+                      {diffs.map((d) => (
+                        <li key={d}>{d}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="hint">
+                      Material and the features the coach counts are the same. The difference is in
+                      the engine's deeper search: try another move and compare.
+                    </p>
+                  );
+                })()}
+              </div>
+            )}
             <div class="row">
               <button
                 type="button"
@@ -799,9 +880,27 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
             </div>
           </div>
         )}
+        {praise && !refusal && !note && (
+          <div class="panel panel--good" role="status">
+            <p class="verdict__head">
+              <span class={`tag tag--praise tag--${praise.label}`}>
+                {PRAISE_SYMBOL[praise.label]} {PRAISE_LABEL[praise.label]}
+              </span>{' '}
+              {praise.headline}
+            </p>
+            {praise.points.length > 0 && (
+              <ul class="verdict__points">
+                {praise.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         {note && !refusal && (
-          <div class="panel panel--inaccuracy" role="status">
-            <p>{note}</p>
+          <div class={`panel panel--${note.cls}`} role="status">
+            <Verdict cls={note.cls} why={note.why} lead="Accepted, but not the best." />
+            {canTakeBack && <p class="verdict__ask">You can take the move back and look again.</p>}
           </div>
         )}
       </div>
@@ -847,6 +946,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         >
           {showEval ? 'Hide evaluation' : 'Show evaluation'}
         </button>
+        {canTakeBack && (
+          <button type="button" class="button" onClick={() => void takeBack()}>
+            Take back
+          </button>
+        )}
         {phase.kind === 'your-move' && hints < hintText.length && (
           <button type="button" class="button" onClick={() => setHints((h) => h + 1)}>
             {hints === 0 ? 'Hint' : 'Another hint'}
@@ -879,6 +983,36 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         </div>
       )}
     </section>
+  );
+}
+
+/** A coach verdict: class, headline, what happens as points, then the patterns. */
+function Verdict({ cls, why, lead }: { cls: MoveClass; why: MoveExplanation; lead: string }) {
+  return (
+    <div class="verdict">
+      <p class="verdict__head">
+        <span class={`tag tag--${cls}`}>
+          {CLASS_SYMBOL[cls]} {CLASS_LABEL[cls]}
+        </span>{' '}
+        <strong>{lead}</strong> {why.headline}
+      </p>
+      {why.points.length > 0 && (
+        <ul class="verdict__points">
+          {why.points.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
+      {why.tags.length > 0 && (
+        <p class="verdict__tags">
+          {why.tags.map((t) => (
+            <span key={t} class="chip">
+              {TAG_INFO[t].label}
+            </span>
+          ))}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -923,6 +1057,11 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
   const firstTry = game.yourMoves.filter((m) => m.refused === 0 && !m.hinted).length;
   const refused = game.yourMoves.filter((m) => m.refused > 0).length;
   const hinted = game.yourMoves.filter((m) => m.hinted).length;
+  const topMoves = game.yourMoves.filter(
+    (m) => m.label === 'best' || m.label === 'great' || m.label === 'brilliant',
+  ).length;
+  const finalPos = currentPosition(game);
+  const finalFen = makeFen(finalPos.toSetup());
   const newGame = async () => {
     await saveCurrent(services.repo, undefined);
     onNew();
@@ -936,6 +1075,12 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
           Practice game from {game.source?.label ?? 'the starting position'}
         </span>
       </h1>
+      <Board
+        fen={finalFen}
+        orientation={game.you}
+        lastMove={game.moves.length ? uciSquares(game.moves[game.moves.length - 1]!) : undefined}
+        label="Final position."
+      />
       <ul class="plain-list num">
         <li>
           <span>Your moves</span> <span>{game.yourMoves.length}</span>
@@ -944,10 +1089,16 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
           <span>Good on the first try</span> <span>{firstTry}</span>
         </li>
         <li>
+          <span>Best, great or brilliant</span> <span>{topMoves}</span>
+        </li>
+        <li>
           <span>Sent back by the coach</span> <span>{refused}</span>
         </li>
         <li>
           <span>Needed a hint</span> <span>{hinted}</span>
+        </li>
+        <li>
+          <span>Moves taken back</span> <span>{game.takebacks ?? 0}</span>
         </li>
       </ul>
       <PatternList game={game} />
@@ -958,7 +1109,10 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
         </p>
       )}
       <div class="row">
-        <button type="button" class="button button--primary" onClick={() => void newGame()}>
+        <a class="button button--primary" href={href('practice', game.id)}>
+          Review this game
+        </a>
+        <button type="button" class="button" onClick={() => void newGame()}>
           New practice game
         </button>
         <a class="button" href={href('train')}>

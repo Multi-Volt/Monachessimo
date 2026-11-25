@@ -539,10 +539,48 @@ input[aria-invalid='true'] {
 
 /* Board: olive wood, the first moment of the direction. */
 
+.board-frame {
+  margin-bottom: var(--s4);
+}
+
 .board {
   width: 100%;
   aspect-ratio: 1;
-  margin-bottom: var(--s4);
+}
+
+/* Pieces each side has taken, drawn with the board's piece set. The row
+   keeps its height when empty so the board does not move. */
+.material {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: 26px;
+  padding: 1px 0;
+}
+
+.material__pieces.cg-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  position: static;
+}
+
+.material__pieces piece {
+  position: static;
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin-right: -10px;
+  will-change: auto;
+}
+
+.material__pieces piece.material__last {
+  margin-right: 2px;
+}
+
+.material__lead {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
 }
 
 .board__cg {
@@ -1218,4 +1256,80 @@ input[aria-invalid='true'] {
 
 .stepper .row > .stepper__done {
   flex-basis: 100%;
+}
+
+/* A king in check glows red; a checkmated king glows stronger. Text says it
+   too, so color is never the only signal. */
+.board cg-board square.check {
+  background: radial-gradient(
+    ellipse at center,
+    rgb(230 30 30 / 1) 0%,
+    rgb(210 20 20 / 0.85) 28%,
+    rgb(170 0 0 / 0) 78%
+  );
+}
+
+.board--mate cg-board square.check {
+  background: radial-gradient(
+    ellipse at center,
+    rgb(255 40 40 / 1) 0%,
+    rgb(220 20 20 / 1) 45%,
+    rgb(170 0 0 / 0.2) 95%
+  );
+  box-shadow: inset 0 0 0 3px rgb(200 0 0 / 0.9);
+}
+
+.check-notice {
+  font-weight: 600;
+  color: var(--blunder);
+  margin-top: calc(-1 * var(--s2));
+}
+
+/* Coach verdicts: headline, points, pattern chips. */
+.verdict__head {
+  margin-bottom: var(--s2);
+}
+
+.verdict__points {
+  margin: 0 0 var(--s2);
+  padding-left: var(--s5);
+}
+
+.verdict__points li {
+  margin-bottom: var(--s1);
+}
+
+.verdict__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+}
+
+.chip {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-2);
+  background: var(--raised);
+  border-radius: var(--r-tag);
+  padding: 2px var(--s2);
+}
+
+.verdict__ask {
+  font-weight: 500;
+  margin-top: var(--s2);
+}
+
+.stepper__why {
+  border-top: 1px solid var(--hairline);
+  padding-top: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.tag--praise {
+  color: var(--good);
+}
+
+.tag--brilliant,
+.tag--great {
+  color: var(--accent);
 }

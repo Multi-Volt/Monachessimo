@@ -32,6 +32,17 @@ describe('coach', () => {
     expect(judgeMove({ kind: 'cp', value: 900 }, { kind: 'cp', value: 800 }).class).toBeNull();
   });
 
+  it('does not refuse every move in a lost position', () => {
+    // Down 5.3, a move that ends 7.3 down loses little of the chances left.
+    expect(refuses('mistakes', { kind: 'cp', value: -530 }, { kind: 'cp', value: -730 })).toBe(
+      false,
+    );
+    // Allowing mate is still refused.
+    expect(refuses('mistakes', { kind: 'cp', value: -530 }, { kind: 'mate', value: -2 })).toBe(
+      true,
+    );
+  });
+
   it('maps rating to Skill Level within 0 to 20', () => {
     expect(skillFor(500)).toBe(0);
     expect(skillFor(1500)).toBe(8);

@@ -1,3 +1,4 @@
+import { moveHints } from '../chess/hints';
 import { makeFen } from 'chessops/fen';
 import { parseUci } from 'chessops/util';
 import { uciToSan, pvToSan } from '../chess/san';
@@ -18,6 +19,8 @@ export interface PlyRecord {
   refused: number;
   /** True when the player asked for a hint on this move. */
   hinted: boolean;
+  /** Praise for a good move, as the coach gave it. */
+  label?: import('./praise').PraiseLabel;
 }
 
 export interface PracticeGame {
@@ -39,6 +42,10 @@ export interface PracticeGame {
     tags: import('../detectors').TagName[];
     accepted?: boolean;
   }[];
+  /** Moves the player took back. */
+  takebacks?: number;
+  /** Engine review of the finished game, once it has run. */
+  review?: import('./review').PracticeReview;
   /** Where the start position came from, for the summary. */
   source?: { label: string; gameId?: string; ply?: number };
   end?: GameEnd | { kind: 'resigned' };
@@ -108,10 +115,6 @@ export function practiceDrill(
   if (!best?.pv[0]) return undefined;
   const san = uciToSan(fen, refusedUci);
   const bestSan = uciToSan(fen, best.pv[0]);
-  const pos = fromFen(fen);
-  const m = parseUci(best.pv[0]);
-  const from = m && 'from' in m ? m.from : undefined;
-  const role = from !== undefined ? pos.board.getRole(from) : undefined;
   return {
     id: `practice:${positionKey(fen)}`,
     type: 'replay',
@@ -123,13 +126,7 @@ export function practiceDrill(
       .map((l) => ({ uci: l.pv[0]!, score: l.score })),
     line: best.pv,
     bestScore: best.score,
-    hints: [
-      'Before you move, check what your opponent can do next.',
-      ...(role && from !== undefined
-        ? [`Move a ${role}.`, `Move the ${role} on ${squareName(from)}.`]
-        : []),
-      `The answer is ${bestSan}.`,
-    ],
+    hints: moveHints(fen, best.pv[0]!),
     explanation: [
       `In a practice game on ${formatDate(now)} the coach refused ${san}. It cost about ${Math.round(drop * 50)}% of your winning chances.`,
       `${bestSan} was the engine's choice. Engine line: ${pvToSan(fen, best.pv, 6).join(' ')}.`,
@@ -140,6 +137,15 @@ export function practiceDrill(
   };
 }
 
-function squareName(sq: number): string {
-  return 'abcdefgh'[sq % 8]! + String(Math.floor(sq / 8) + 1);
+/** Most finished practice games kept for review. */
+export const KEEP_FINISHED = 30;
+
+export async function finishedGames(repo: Repo): Promise<PracticeGame[]> {
+  return (await repo.getMeta<PracticeGame[]>('practiceGames')) ?? [];
+}
+
+/** Stores a finished game for review, newest first, replacing an older copy. */
+export async function saveFinished(repo: Repo, g: PracticeGame): Promise<void> {
+  const list = (await finishedGames(repo)).filter((x) => x.id !== g.id);
+  await repo.setMeta('practiceGames', [g, ...list].slice(0, KEEP_FINISHED));
 }
