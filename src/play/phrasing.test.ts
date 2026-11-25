@@ -1,0 +1,60 @@
+import { describe, expect, it } from 'vitest';
+import { checkPhrasing } from './phrasing';
+
+const sheet = [
+  'Bg5 is a blunder: it costs about 3.1 pawns.',
+  'Why: Your bishop on g5 can be taken by my pawn for free.',
+  'What happens next:',
+  '- You play Bg5.',
+  '- My pawn takes your bishop on g5.',
+  'Long term: 6 moves later you have 3 pawns less material than after a better move.',
+].join('\n');
+
+describe('phrasing check', () => {
+  it('passes a text that uses only the facts', () => {
+    const text =
+      'Bg5 puts your bishop where my pawn can take it for free. After hxg5 you are three pawns down.';
+    expect(checkPhrasing(sheet + '\n- I play hxg5.', text)).toEqual([]);
+  });
+
+  it('flags a square, move, piece, number or pattern not in the facts', () => {
+    const text = 'Your knight on f3 is lost to Qxf3, a fork. You lose 5 pawns.';
+    expect(checkPhrasing(sheet, text)).toEqual(
+      expect.arrayContaining([
+        'sans: Qxf3',
+        'squares: f3',
+        'numbers: 5',
+        'pieces: knight',
+        'pieces: queen',
+        'patterns: fork',
+      ]),
+    );
+  });
+
+  it('flags a piece given to the wrong side', () => {
+    const notes = [
+      'Nh6 is a blunder: it costs about 1.9 pawns.',
+      'What happens next:',
+      '- You play Nh6.',
+      '- I play h4, threatening Bg5.',
+      '- Now my pawn attacks your bishop on g4.',
+    ].join('\n');
+    expect(checkPhrasing(notes, 'Nh6 lets me play h4. I threaten Bg5 with my bishop.')).toEqual([]);
+    expect(
+      checkPhrasing(notes, 'Nh6 lets me play h4. That threatens your bishop on g5.'),
+    ).toContain('owner: your bishop g5');
+    expect(checkPhrasing(notes, 'Nh6 lets me play h4. Your queen is in danger.')).toEqual(
+      expect.arrayContaining(['owner: your queen']),
+    );
+    expect(
+      checkPhrasing(notes, 'Nh6 lets me play h4. Sixteen moves later you are worse.'),
+    ).toContain('numbers: 16');
+  });
+
+  it('flags the copy rules', () => {
+    expect(checkPhrasing(sheet, 'Bg5 loses the bishop — badly! Great.')).toEqual(
+      expect.arrayContaining(['dash', 'exclamation mark', 'filler: great']),
+    );
+    expect(checkPhrasing(sheet, 'Bg5 loses the bishop.')).toContain('1 sentences');
+  });
+});

@@ -5,7 +5,7 @@ import { makeSquare, opposite } from 'chessops/util';
 import { pvToSan } from '../chess/san';
 import { attacksFrom, balance, isCapture, normalMove, playLine, see } from '../detectors/board';
 import type { SearchRequest, SearchResult } from '../engine/engine';
-import { toCp } from '../engine/eval';
+import { MATE_CP, toCp } from '../engine/eval';
 import { findThreat, nullMoveFen } from '../engine/threat';
 import { features } from '../strategy/features';
 
@@ -145,10 +145,13 @@ export async function enrichLine(
       const [a, b] = r.lines;
       if (a && b && a.pv[0] === s.uci && toCp(a.score) - toCp(b.score) >= FORCED_CP) {
         const what = s.text.replace(/\.$/, '');
+        const gap = toCp(a.score) - toCp(b.score);
+        // A gap that includes a mate score is not a number of pawns.
+        const loss = gap >= MATE_CP / 2 ? 'far more' : `about ${(gap / 100).toFixed(1)} pawns`;
         out[i] = {
           ...s,
           kind: 'forced',
-          text: `${what}. You have to: anything else loses about ${((toCp(a.score) - toCp(b.score)) / 100).toFixed(1)} pawns.`,
+          text: `${what}. You have to: anything else loses ${loss}.`,
         };
       }
     } else if (!s.byPlayer && s.kind === 'quiet' && !after.isEnd()) {
