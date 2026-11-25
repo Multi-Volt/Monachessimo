@@ -14,7 +14,8 @@ import type { Role } from 'chessops/types';
 import { fromFen, normalMove, playUci, VALUE } from '../detectors/board';
 import { pvToSan } from '../chess/san';
 import type { ExplanationRecord } from './record';
-import { checkPhrasing, patternNames } from './phrasing';
+import { lineTactics } from '../detectors/lineTactics';
+import { checkPhrasing } from './phrasing';
 
 /** Half-moves the payoff may take: the move and two moves by each side. */
 const WINDOW_PLIES = 5;
@@ -168,20 +169,29 @@ export function coachNotes(r: ExplanationRecord): string {
   const shown = plies.slice(0, n);
   const out = [`Your move: ${r.move.san}. Verdict: ${article(r.verdict.class)}.`];
 
-  // The engine's line is the truth: a cause that says material is lost when
-  // the line loses none is left out.
+  // Tactics come from the line itself, each confirmed by what it wins, with
+  // a sentence from the board. The older cause sentence is used only when
+  // no tactic is found, and only when the line does not contradict it.
+  const paysOff = shown.some((p) => p.mate) || balance[n]! <= balance[0]! - 2;
+  const tactics = paysOff
+    ? lineTactics(
+        start,
+        plies.map((p) => p.uci),
+        n,
+      ).slice(0, 2)
+    : [];
   const loses = balance[n]! < balance[0]!;
   const cause =
-    r.sentences.cause && (loses || !/lose material|for free/.test(r.sentences.cause))
+    !tactics.length &&
+    r.sentences.cause &&
+    (loses || !/lose material|for free/.test(r.sentences.cause))
       ? r.sentences.cause
       : undefined;
+  const names = tactics.map((t) => `a ${t.kind}`);
+  if (!names.length && shown.some((p) => p.mate && !p.byPlayer)) names.push('a forced mate');
+  if (names.length) out.push(`Patterns: ${names.join(', ')}.`);
+  for (const t of tactics) out.push(`How: ${t.text}`);
   if (cause) out.push(`Why: ${coachVoice(cause)}`);
-  // A tactic is named only when the notes show it working: it is the explained
-  // cause, or the line ends in a mate or a real loss. A detector tag alone
-  // gives a writer nothing to show, and it makes one up.
-  const paysOff = shown.some((p) => p.mate) || balance[n]! <= balance[0]! - 2;
-  const patterns = cause || paysOff ? patternNames(r) : [];
-  if (patterns.length) out.push(`Patterns: ${patterns.join(', ')}.`);
   // Records exported before threats had to be concrete can hold a quiet
   // "threat"; only a capture, a check or a mate is one.
   if (
@@ -293,7 +303,10 @@ function opponentVoice(text: string): string {
  */
 export function checkCoachText(notes: string, text: string): string[] {
   // A checkmate is always of the player's king, though the notes do not say so.
-  const facts = /Checkmate\./.test(notes) ? `${notes}\nFact: your king is checkmated.` : notes;
+  let facts = /Checkmate\./.test(notes) ? `${notes}\nFact: your king is checkmated.` : notes;
+  // A promotion in notation names the new piece: "d8=Q" is a queen.
+  for (const m of notes.matchAll(/=([QRBN])/g))
+    facts += `\nFact: a pawn becomes a ${{ Q: 'queen', R: 'rook', B: 'bishop', N: 'knight' }[m[1]!]}.`;
   const problems = checkPhrasing(opponentVoice(facts), opponentVoice(text));
   problems.push(...wrongMaterialClaims(notes, text));
   if (
