@@ -4,11 +4,21 @@ import type { GameAnalysis } from '../analysis/types';
 import type { Game } from '../import/types';
 
 export const DB_NAME = 'monachessimo';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface CachedSearch {
   key: string;
   result: SearchResult;
+}
+
+/** Progress through one lesson of the Learn tab. */
+export interface LessonProgress {
+  id: string;
+  /** Steps finished, so a lesson resumes where it was left. */
+  step: number;
+  /** Best stars earned, 0 until the lesson is finished once. */
+  stars: 0 | 1 | 2 | 3;
+  updatedAt: number;
 }
 
 export interface MetaRecord {
@@ -33,10 +43,19 @@ export interface Schema extends DBSchema {
   reviews: { key: string; value: { id: string } & Record<string, unknown> };
   settings: { key: string; value: MetaRecord };
   meta: { key: string; value: MetaRecord };
+  lessons: { key: string; value: LessonProgress };
 }
 
 export type StoreName =
-  'games' | 'positions' | 'analyses' | 'tags' | 'drills' | 'reviews' | 'settings' | 'meta';
+  | 'games'
+  | 'positions'
+  | 'analyses'
+  | 'tags'
+  | 'drills'
+  | 'reviews'
+  | 'settings'
+  | 'meta'
+  | 'lessons';
 export const STORE_NAMES: StoreName[] = [
   'games',
   'positions',
@@ -46,6 +65,7 @@ export const STORE_NAMES: StoreName[] = [
   'reviews',
   'settings',
   'meta',
+  'lessons',
 ];
 
 export type DB = IDBPDatabase<Schema>;
@@ -68,6 +88,10 @@ const MIGRATIONS: Array<(db: IDBPDatabase<Schema>) => void> = [
     db.createObjectStore('reviews', { keyPath: 'id' });
     db.createObjectStore('settings', { keyPath: 'key' });
     db.createObjectStore('meta', { keyPath: 'key' });
+  },
+  // Version 2: lesson progress for the Learn tab.
+  (db) => {
+    db.createObjectStore('lessons', { keyPath: 'id' });
   },
 ];
 

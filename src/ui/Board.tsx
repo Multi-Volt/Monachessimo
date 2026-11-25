@@ -18,6 +18,8 @@ export interface BoardProps {
   /** When set, the player to move can drag pieces. */
   movable?: { color: 'white' | 'black'; dests: Map<string, string[]> } | undefined;
   onMove?: (orig: string, dest: string) => void;
+  /** Called with the square name on every tap or click on the board. */
+  onSelect?: (square: string) => void;
   /** Text description for screen readers. */
   label: string;
   /** Show the pieces each side has taken, above and below the board. On by default. */
@@ -30,6 +32,8 @@ export function Board(props: BoardProps) {
   const api = useRef<Api | undefined>(undefined);
   const onMove = useRef(props.onMove);
   onMove.current = props.onMove;
+  const onSelect = useRef(props.onSelect);
+  onSelect.current = props.onSelect;
 
   const state = kingState(props.fen);
   const config = (): Config => ({
@@ -58,6 +62,7 @@ export function Board(props: BoardProps) {
       events: { after: (o, d) => onMove.current?.(o, d) },
     },
     premovable: { enabled: false },
+    events: { select: (k) => onSelect.current?.(k) },
     drawable: { enabled: false, visible: true, autoShapes: props.shapes ?? [] },
   });
 
@@ -76,6 +81,9 @@ export function Board(props: BoardProps) {
     return () => {
       wrap.removeEventListener('touchstart', refresh, { capture: true });
       wrap.removeEventListener('mousedown', refresh, { capture: true });
+      // A redraw queued before unmount would measure a detached board and
+      // draw arrows at NaN; with no shapes left there is nothing to draw.
+      api.current?.setAutoShapes([]);
       api.current?.destroy();
     };
   }, []);

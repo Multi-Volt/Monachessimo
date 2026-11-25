@@ -4,17 +4,18 @@ This file lists every dependency, its license, and its source. Update it wheneve
 
 ## Shipped in the app
 
-| Package or asset                                                                                                           | License          | Source                                                     |
-| -------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------- |
-| preact                                                                                                                     | MIT              | https://github.com/preactjs/preact                         |
-| stockfish 19.0.1, the lite single-threaded build (stockfish.js by Nathan Rugg, from Stockfish by the Stockfish developers) | GPL-3.0          | https://github.com/nmrugg/stockfish.js                     |
-| chessops                                                                                                                   | GPL-3.0-or-later | https://github.com/niklasf/chessops                        |
-| chessground                                                                                                                | GPL-3.0-or-later | https://github.com/lichess-org/chessground                 |
-| Chess pieces by Colin M.L. Burnett, embedded in chessground's CSS                                                          | GPL-2.0-or-later | https://github.com/lichess-org/lila/blob/master/COPYING.md |
-| idb                                                                                                                        | ISC              | https://github.com/jakearchibald/idb                       |
-| Figtree typeface by Erik Kennedy, from @fontsource-variable/figtree                                                        | OFL-1.1          | https://github.com/erikdkennedy/figtree                    |
-| Workbox runtime (workbox-window and the generated service worker)                                                          | MIT              | https://github.com/GoogleChrome/workbox                    |
-| Lichess puzzle database, built into `puzzles/` at deploy time                                                              | CC0-1.0          | https://database.lichess.org/#puzzles                      |
+| Package or asset                                                                                                                                         | License          | Source                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------- |
+| preact                                                                                                                                                   | MIT              | https://github.com/preactjs/preact                         |
+| stockfish 19.0.1, the lite single-threaded build (stockfish.js by Nathan Rugg, from Stockfish by the Stockfish developers)                               | GPL-3.0          | https://github.com/nmrugg/stockfish.js                     |
+| chessops                                                                                                                                                 | GPL-3.0-or-later | https://github.com/niklasf/chessops                        |
+| chessground                                                                                                                                              | GPL-3.0-or-later | https://github.com/lichess-org/chessground                 |
+| Chess pieces by Colin M.L. Burnett, embedded in chessground's CSS                                                                                        | GPL-2.0-or-later | https://github.com/lichess-org/lila/blob/master/COPYING.md |
+| idb                                                                                                                                                      | ISC              | https://github.com/jakearchibald/idb                       |
+| Figtree typeface by Erik Kennedy, from @fontsource-variable/figtree                                                                                      | OFL-1.1          | https://github.com/erikdkennedy/figtree                    |
+| Workbox runtime (workbox-window and the generated service worker)                                                                                        | MIT              | https://github.com/GoogleChrome/workbox                    |
+| Lichess puzzle database, built into `puzzles/` at deploy time                                                                                            | CC0-1.0          | https://database.lichess.org/#puzzles                      |
+| Lesson format, lesson content and English lesson texts from Patzer, commit ba73060, adapted in `src/learn/` (Copyright (c) 2026 the Patzer contributors) | MIT              | https://github.com/SikamikanikoBG/patzer                   |
 
 ## Build and test tools (not shipped)
 

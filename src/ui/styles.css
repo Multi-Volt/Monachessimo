@@ -1324,6 +1324,15 @@ input[aria-invalid='true'] {
   gap: var(--s1);
 }
 
+a.chip {
+  display: inline-block;
+  text-decoration: none;
+}
+
+a.chip:hover {
+  color: var(--accent);
+}
+
 .chip {
   font-size: 13px;
   line-height: 18px;
@@ -1708,4 +1717,115 @@ input[aria-invalid='true'] {
   margin: 0 0 var(--s4);
   display: flex;
   gap: var(--s4);
+}
+
+/* Learn */
+
+.learn__level {
+  margin-top: var(--s6);
+}
+
+.learn__course {
+  margin-top: var(--s3);
+}
+
+.learn__course summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  min-height: var(--tap);
+  cursor: pointer;
+}
+
+.learn__course-title {
+  font-weight: 600;
+}
+
+.learn__lessons li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  min-height: var(--tap);
+}
+
+.learn__stars {
+  color: var(--hairline-strong);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.learn__stars .is-on {
+  color: var(--mistake);
+}
+
+.learn__progress {
+  height: 4px;
+  background: var(--raised);
+  border-radius: 2px;
+  margin-bottom: var(--s4);
+  overflow: hidden;
+}
+
+.learn__progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 200ms var(--ease);
+}
+
+.learn__text {
+  margin-bottom: var(--s4);
+}
+
+.learn__note {
+  margin: var(--s3) 0;
+  padding: var(--s3);
+  border-radius: var(--r-control);
+  background: var(--raised);
+  border-left: 4px solid var(--hairline-strong);
+}
+
+.learn__note--good {
+  border-left-color: var(--good);
+}
+
+.learn__note--bad {
+  border-left-color: var(--blunder);
+}
+
+.learn__note--hint {
+  border-left-color: var(--accent);
+}
+
+.learn__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin: var(--s4) 0;
+}
+
+.learn__options .is-right {
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.learn__options .is-wrong {
+  border-color: var(--blunder);
+  color: var(--blunder);
+}
+
+.learn__done {
+  text-align: center;
+  margin: var(--s4) 0;
+}
+
+.learn__done .learn__stars {
+  font-size: 32px;
+}
+
+.learn__done-title {
+  font-size: 20px;
+  font-weight: 600;
 }

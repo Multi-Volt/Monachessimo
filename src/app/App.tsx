@@ -2,8 +2,10 @@ import { About } from './screens/About';
 import { Dashboard } from './screens/Dashboard';
 import { Train } from './screens/Train';
 import { Play } from './screens/Play';
-import { Lab } from './screens/Lab';
-import { hashToFen } from '../lab/position';
+import { lazyScreen } from '../ui/Lazy';
+
+const Lab = lazyScreen(() => import('./screens/Lab').then((m) => m.Lab));
+const Learn = lazyScreen(() => import('./screens/Learn').then((m) => m.Learn));
 import { PracticeReview } from './screens/PracticeReview';
 import { WeaknessDetail } from './screens/WeaknessDetail';
 import type { TagName } from '../detectors';
@@ -21,6 +23,7 @@ import { applyUpdate, pwaState } from '../pwa/register';
 const NAV = [
   { route: '', label: 'Home' },
   { route: 'train', label: 'Train' },
+  { route: 'learn', label: 'Learn' },
   { route: 'play', label: 'Play' },
   { route: 'lab', label: 'Lab' },
   { route: 'games', label: 'Games' },
@@ -58,8 +61,11 @@ export function App() {
         />
       );
       break;
+    case 'learn':
+      screen = <Learn lessonId={arg || undefined} />;
+      break;
     case 'lab':
-      screen = <Lab initialFen={hashToFen(arg)} />;
+      screen = <Lab initialFen={arg || undefined} />;
       break;
     case 'train':
       screen = <Train tag={arg ? (arg as TagName) : undefined} />;

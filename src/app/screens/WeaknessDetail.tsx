@@ -4,6 +4,7 @@ import { TAG_INFO } from '../../profile/labels';
 import { loadProfile } from '../../profile/data';
 import { formatDate } from '../../ui/format';
 import { useAsync, useServices } from '../../ui/hooks';
+import { lessonFor } from '../../learn/weakness';
 import { href } from '../router';
 
 export function WeaknessDetail({ tag }: { tag: TagName }) {
@@ -37,9 +38,16 @@ export function WeaknessDetail({ tag }: { tag: TagName }) {
       {data.status === 'ok' && data.value?.length === 0 && <p>No positions with this pattern.</p>}
       {data.status === 'ok' && data.value && data.value.length > 0 && (
         <>
-          <a class="button button--primary" href={href('train', tag)}>
-            Train this
-          </a>
+          <div class="row">
+            {lessonFor(tag) && (
+              <a class="button" href={href('learn', lessonFor(tag)!)}>
+                Learn the pattern
+              </a>
+            )}
+            <a class="button button--primary" href={href('train', tag)}>
+              Train this
+            </a>
+          </div>
           <ul class="game-list">
             {data.value.map(({ t, game }) => {
               const opp = game.userColor === 'white' ? game.black : game.white;

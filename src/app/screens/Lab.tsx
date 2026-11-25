@@ -18,6 +18,7 @@ import {
   fenFromBoard,
   fenOf,
   fenToHash,
+  hashToFen,
   INITIAL_FEN,
   pieceLetter,
   pieceName,
@@ -58,7 +59,7 @@ interface Tried {
  */
 export function Lab({ initialFen }: { initialFen?: string | undefined }) {
   const services = useServices();
-  const [startFen, setStartFen] = useState(initialFen ?? INITIAL_FEN);
+  const [startFen, setStartFen] = useState(() => hashToFen(initialFen) ?? INITIAL_FEN);
   const [moves, setMoves] = useState<string[]>([]);
   const [cursor, setCursor] = useState(0);
   const [editing, setEditing] = useState(false);

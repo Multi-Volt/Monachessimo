@@ -13,6 +13,7 @@ import {
 import { positions } from '../../play/review';
 import type { Mark } from '../../play/cause';
 import { longTermReason, REASON_PLIES } from '../../play/reason';
+import { lessonFor } from '../../learn/weakness';
 import { buildRecord, toJsonl, withLine, type ExplanationRecord } from '../../play/record';
 import { enrichLine, narrateLine, type LineStep } from '../../play/narrate';
 import { findThreat, type Threat } from '../../engine/threat';
@@ -986,11 +987,22 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
               )}
               {(coach.tags?.length ?? 0) > 0 && (
                 <p class="verdict__tags">
-                  {coach.tags!.map((t) => (
-                    <span key={t} class="chip">
-                      {TAG_INFO[t].label}
-                    </span>
-                  ))}
+                  {coach.tags!.map((t) =>
+                    lessonFor(t) ? (
+                      <a
+                        key={t}
+                        class="chip"
+                        href={href('learn', lessonFor(t)!)}
+                        title="Open the lesson on this pattern"
+                      >
+                        {TAG_INFO[t].label}
+                      </a>
+                    ) : (
+                      <span key={t} class="chip">
+                        {TAG_INFO[t].label}
+                      </span>
+                    ),
+                  )}
                 </p>
               )}
             </details>

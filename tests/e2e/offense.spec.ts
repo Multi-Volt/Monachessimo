@@ -46,7 +46,7 @@ test('plan picker reveals how each candidate scored', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('./');
   await page.evaluate(async () => {
-    const req = indexedDB.open('monachessimo', 1);
+    const req = indexedDB.open('monachessimo');
     await new Promise((r) => (req.onsuccess = r));
     const db = req.result as IDBDatabase;
     const tx = db.transaction('drills', 'readwrite');

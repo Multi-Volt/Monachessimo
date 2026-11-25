@@ -4,7 +4,14 @@ import { searchKey } from '../engine/engine';
 import type { Game } from '../import/types';
 import type { TagRecord } from '../detectors';
 import type { Drill, ReviewState } from '../drills/types';
-import { openStore, STORE_NAMES, DB_VERSION, type DB, type StoreName } from './db';
+import {
+  openStore,
+  STORE_NAMES,
+  DB_VERSION,
+  type DB,
+  type LessonProgress,
+  type StoreName,
+} from './db';
 
 /** Data access used by the app. Each call opens its own short transaction. */
 export class Repo {
@@ -104,6 +111,17 @@ export class Repo {
   }
   delete<S extends StoreName>(store: S, key: string) {
     return this.db.delete(store, key);
+  }
+
+  // Lessons
+  allLessons(): Promise<LessonProgress[]> {
+    return this.db.getAll('lessons');
+  }
+  getLesson(id: string): Promise<LessonProgress | undefined> {
+    return this.db.get('lessons', id);
+  }
+  async putLesson(p: LessonProgress): Promise<void> {
+    await this.db.put('lessons', p);
   }
 
   // Export and import

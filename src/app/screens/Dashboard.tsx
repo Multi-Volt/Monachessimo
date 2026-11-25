@@ -1,6 +1,7 @@
 import { summarize, type Trend, type Weakness } from '../../profile/profile';
 import { loadProfile } from '../../profile/data';
 import { useAsync, useRunner, useServices } from '../../ui/hooks';
+import { lessonFor } from '../../learn/weakness';
 import { href } from '../router';
 import { Connect } from './Connect';
 
@@ -134,9 +135,16 @@ function WeaknessRow({ w, primary, share }: { w: Weakness; primary: boolean; sha
         <span class="num">{Math.round(w.avgDrop * 50)}%</span> winning chances on average.{' '}
         {TREND_TEXT[w.trend]}.
       </p>
-      <a class={`button${primary ? ' button--primary' : ''}`} href={href('train', w.tag)}>
-        Train this
-      </a>
+      <div class="row">
+        {lessonFor(w.tag) && (
+          <a class="button" href={href('learn', lessonFor(w.tag)!)}>
+            Learn the pattern
+          </a>
+        )}
+        <a class={`button${primary ? ' button--primary' : ''}`} href={href('train', w.tag)}>
+          Train this
+        </a>
+      </div>
     </li>
   );
 }
