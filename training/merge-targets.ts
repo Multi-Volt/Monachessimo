@@ -9,7 +9,13 @@
 // A record's text is the last one written for it in the last file that has a
 // passing one, so a later tier wins over an earlier. The held-out records are
 // chosen by a hash of their id, so the split stays the same as records are
-// added. A line without a writer, from before lines named one, is credited
+// added.
+//
+// --extra FILES adds records that only ever train, such as puzzles picked for
+// a rare tactic, so the held-out set stays the same. --drop FILE lists ids
+// whose texts were found bad after they passed the checker, by their loss
+// under a model that never saw them; such a record keeps a text only if the
+// last targets file, the rewrite, gives it one. A line without a writer, from before lines named one, is credited
 // to --writer. Writes train.jsonl and heldout.jsonl under --out, one
 // {id, source, rating, phase, writer, sheet, text} per line; a held-out record
 // has a text only when a writer got one past the checker.
@@ -38,6 +44,8 @@ function args() {
     out: get('--out') ?? 'training/data/set',
     heldout: Number(get('--heldout') ?? 1000),
     writer: get('--writer') ?? 'gemma-4-12B-it-Q8_0.gguf',
+    extra: (get('--extra') ?? '').split(',').filter(Boolean),
+    drop: get('--drop'),
   };
 }
 
@@ -57,18 +65,33 @@ const jsonl = <T>(file: string): T[] =>
 function main() {
   const o = args();
   const records = jsonl<RecordLine>(o.records);
-  const sheets = new Map(records.map((r) => [r.id, factSheet(r.record)]));
+  const known = new Set(records.map((r) => r.id));
+  const extra = o.extra
+    .flatMap((f) => jsonl<RecordLine>(f))
+    .filter((r) => !known.has(r.id) && known.add(r.id));
+  const sheets = new Map([...records, ...extra].map((r) => [r.id, factSheet(r.record)]));
 
   const chosen = new Map<string, TargetLine & { writer: string }>();
   const byFile: Record<string, number> = {};
+  const from = new Map<string, string>();
   for (const file of o.targets) {
     const ok = passing(file, sheets);
     const last = new Map<string, TargetLine & { writer: string }>();
     for (const t of jsonl<TargetLine & { writer?: string }>(file))
       last.set(t.id, { ...t, writer: t.writer ?? o.writer });
-    for (const id of ok) chosen.set(id, last.get(id)!);
+    for (const id of ok) {
+      chosen.set(id, last.get(id)!);
+      from.set(id, file);
+    }
     byFile[file] = ok.size;
   }
+  let dropped = 0;
+  if (o.drop)
+    for (const id of readFileSync(o.drop, 'utf8').split('\n').filter(Boolean))
+      if (chosen.has(id) && from.get(id) !== o.targets.at(-1)) {
+        chosen.delete(id);
+        dropped++;
+      }
 
   const held = new Set(
     [...records]
@@ -88,7 +111,9 @@ function main() {
       text: t?.text,
     });
   };
-  const train = records.filter((r) => !held.has(r.id) && chosen.has(r.id));
+  const train = [...records.filter((r) => !held.has(r.id)), ...extra].filter((r) =>
+    chosen.has(r.id),
+  );
   const heldout = records.filter((r) => held.has(r.id));
   mkdirSync(o.out, { recursive: true });
   writeFileSync(`${o.out}/train.jsonl`, train.map(row).join('\n') + '\n');
@@ -99,7 +124,9 @@ function main() {
     const w = chosen.get(r.id)!.writer;
     writers[w] = (writers[w] ?? 0) + 1;
   }
-  console.log(`${records.length} records, ${chosen.size} with a passing text.`);
+  console.log(
+    `${records.length} records and ${extra.length} extra, ${chosen.size} with a passing text, ${dropped} dropped.`,
+  );
   for (const [f, n] of Object.entries(byFile)) console.log(`  ${n} pass in ${f}`);
   console.log(`Train: ${train.length}, by writer: ${JSON.stringify(writers)}`);
   console.log(

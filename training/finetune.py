@@ -74,7 +74,7 @@ def train(o):
     tok = AutoTokenizer.from_pretrained(o.base)
     model = AutoModelForCausalLM.from_pretrained(o.base, torch_dtype=torch.bfloat16).cuda()
     model.gradient_checkpointing_enable()
-    data = rows(f"{o.data}/train.jsonl")
+    data = rows(o.train or f"{o.data}/train.jsonl")
     # A small slice of the training set shows the loss on unseen texts.
     rng.shuffle(data)
     val, data = data[: o.val], data[o.val :]
@@ -127,6 +127,31 @@ def train(o):
     print(f"Saved to {o.out} after {(time.time() - started) / 60:.1f} min", flush=True)
 
 
+def score(o):
+    """Each example's mean loss on its answer, from a model that never saw it.
+
+    Training on one half and scoring the other finds the outliers: texts
+    unlike the rest, written wrong or clumsily, or cases too rare to learn.
+    """
+    tok = AutoTokenizer.from_pretrained(o.score)
+    model = AutoModelForCausalLM.from_pretrained(o.score, torch_dtype=torch.bfloat16).cuda()
+    model.eval()
+    data = rows(o.train)
+    ex = [encode(tok, r, o.max_len) for r in data]
+    pad = tok.pad_token_id if tok.pad_token_id is not None else tok.eos_token_id
+    with open(o.out, "w") as f, torch.no_grad():
+        for idx in batches(ex, o.batch, random.Random(0)):
+            ids, labels, mask = collate(ex, idx, pad, "cuda")
+            logits = model(input_ids=ids, attention_mask=mask).logits[:, :-1].float()
+            target = labels[:, 1:]
+            loss = torch.nn.functional.cross_entropy(
+                logits.transpose(1, 2), target, ignore_index=-100, reduction="none"
+            )
+            n = (target != -100).sum(1)
+            for i, l in zip(idx, (loss.sum(1) / n).tolist()):
+                f.write(json.dumps({"id": data[i]["id"], "loss": l}) + "\n")
+
+
 def generate(o):
     tok = AutoTokenizer.from_pretrained(o.generate, padding_side="left")
     model = AutoModelForCausalLM.from_pretrained(o.generate, torch_dtype=torch.bfloat16).cuda()
@@ -160,6 +185,8 @@ def main():
     a.add_argument("--data", default="training/data/set")
     a.add_argument("--base", default="HuggingFaceTB/SmolLM2-360M-Instruct")
     a.add_argument("--out", required=True)
+    a.add_argument("--train", help="a training file in place of DATA/train.jsonl")
+    a.add_argument("--score", help="a trained model's folder: score the --train examples")
     a.add_argument("--generate", help="a trained model's folder: write texts for held-out records")
     a.add_argument("--epochs", type=int, default=3)
     a.add_argument("--batch", type=int, default=32)
@@ -168,7 +195,12 @@ def main():
     a.add_argument("--val", type=int, default=500)
     a.add_argument("--seed", type=int, default=1)
     o = a.parse_args()
-    generate(o) if o.generate else train(o)
+    if o.score:
+        score(o)
+    elif o.generate:
+        generate(o)
+    else:
+        train(o)
 
 
 if __name__ == "__main__":

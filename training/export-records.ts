@@ -4,6 +4,9 @@
 //     training/export-records.ts --puzzles lichess_db_puzzle.csv.zst \
 //     --pgn games.pgn.zst --count 20000 --out training/data/records.jsonl
 //
+// --themes backRankMate,discoveredAttack takes only puzzles with those
+// Lichess themes, to add records for tactics the data has too few of.
+//
 // Sources, both CC0 from database.lichess.org:
 //   --puzzles  The puzzle database. Each puzzle starts right before a real
 //              losing move, which is the move judged. Mostly blunders.
@@ -64,6 +67,8 @@ function args() {
     shard: (get('--shard') ?? '0/1').split('/').map(Number) as [number, number],
     out: get('--out') ?? 'training/data/records.jsonl',
     seed: Number(get('--seed') ?? 1),
+    /** Only puzzles with one of these Lichess themes, for tactics the data lacks. */
+    themes: (get('--themes') ?? '').split(',').filter(Boolean),
   };
 }
 
@@ -105,11 +110,16 @@ function shardOf(id: string, n: number): number {
   return (h >>> 0) % n;
 }
 
-/** Puzzle rows: PuzzleId,FEN,Moves,Rating,... The first move is the mistake. */
-async function* puzzles(file: string): AsyncGenerator<Candidate> {
+/**
+ * Puzzle rows: PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,
+ * Themes,... The first move is the mistake. With themes, only puzzles that
+ * carry one of them.
+ */
+async function* puzzles(file: string, themes: string[]): AsyncGenerator<Candidate> {
   for await (const row of lines(file)) {
-    const [id, fen, moves, rating] = row.split(',');
+    const [id, fen, moves, rating, , , , tags] = row.split(',');
     if (!id || id === 'PuzzleId' || !fen || !moves) continue;
+    if (themes.length && !tags?.split(' ').some((t) => themes.includes(t))) continue;
     const setup = parseFen(fen);
     if (setup.isErr) continue;
     const pos = Chess.fromSetup(setup.value);
@@ -264,7 +274,9 @@ async function child(o: ReturnType<typeof args>) {
   // Puzzles are read sparsely so the sample spans the file. Game moves are
   // judged as inaccuracies or worse about one time in five.
   const sources = {
-    puzzle: o.puzzles ? spread(mine(puzzles(o.puzzles)), quota.puzzle, done, rand, 0.05) : null,
+    puzzle: o.puzzles
+      ? spread(mine(puzzles(o.puzzles, o.themes)), quota.puzzle, done, rand, 0.05)
+      : null,
     game: o.pgn ? spread(mine(games(o.pgn, rand)), quota.game * 5, done, rand, 1) : null,
   };
 

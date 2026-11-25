@@ -17,3 +17,4 @@ COACH_PLAN.md
 
 # Training inputs and outputs: large, rebuilt from public sources
 training/data
+__pycache__/

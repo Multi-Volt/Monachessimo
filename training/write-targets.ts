@@ -219,15 +219,29 @@ const PATTERN_WORD: Record<string, RegExp> = {
 };
 
 /**
- * The checker's problems, plus one that only matters for training: when the
+ * Clumsy forms the app's checker lets pass but a target should not teach:
+ * a pawn move as a bare square, "pawn to b3" being the words form.
+ */
+const STYLE: [string, RegExp][] = [
+  ['play castling', /\bplays? castling\b/i],
+  [
+    'bare pawn move',
+    /\b(?:threat of|I play|you play|I answer|I answer with|then play|you then play)\s+[a-h][1-8]\b/i,
+  ],
+];
+
+/**
+ * The checker's problems, plus two that only matter for training: when the
  * notes name a pattern, a target names it too, so the phone model learns to
- * teach tactics by name. A text without it goes to the larger writer.
+ * teach tactics by name, and none of the clumsy STYLE forms. A text that
+ * fails either goes to the larger writer.
  */
 export function targetProblems(sheet: string, text: string): string[] {
   const problems = checkPhrasing(sheet, text);
   const first = /^Patterns: ([^,.\n]+)/m.exec(sheet)?.[1];
   const word = first ? PATTERN_WORD[first] : undefined;
   if (word && !word.test(text)) problems.push(`pattern not named: ${first}`);
+  for (const [name, rx] of STYLE) if (rx.test(text)) problems.push(`style: ${name}`);
   return problems;
 }
 
