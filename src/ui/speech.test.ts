@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { pickVoice, sanToWords, speakable } from './speech';
 
-const voice = (voiceURI: string, lang: string, isDefault = false) =>
+const voice = (voiceURI: string, lang: string, isDefault = false, localService = true) =>
   ({
     voiceURI,
     lang,
     default: isDefault,
-    localService: true,
+    localService,
     name: voiceURI,
   }) as SpeechSynthesisVoice;
 
@@ -32,5 +32,12 @@ describe('speech', () => {
     expect(pickVoice(voices, 'en-a')?.voiceURI).toBe('en-a');
     expect(pickVoice(voices, 'missing')?.voiceURI).toBe('en-b');
     expect(pickVoice([], undefined)).toBeUndefined();
+  });
+
+  it('prefers a device voice to a cloud voice, unless the cloud voice was chosen', () => {
+    const voices = [voice('cloud', 'en-US', true, false), voice('device', 'de-DE')];
+    expect(pickVoice(voices, undefined)?.voiceURI).toBe('device');
+    expect(pickVoice(voices, 'cloud')?.voiceURI).toBe('cloud');
+    expect(pickVoice([voice('cloud', 'en-US', true, false)], undefined)?.voiceURI).toBe('cloud');
   });
 });

@@ -1,16 +1,15 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { useServices } from './hooks';
-import { pickVoice, speak, stopSpeaking, useLocalVoices } from './speech';
+import { canSpeak, pickVoice, speak, stopSpeaking, useVoices } from './speech';
 
 /**
- * A button that reads `text` with a voice on the device, shown only when
- * the device has one. With `auto`, the text is also read whenever it
+ * A button that reads `text` aloud, shown when the browser can speak. With `auto`, the text is also read whenever it
  * changes, if the player turned on "read every verdict aloud". The text a
  * screen opens with is never read: sound needs a tap or a move first.
  */
 export function SpeakButton({ text, auto = false }: { text: string; auto?: boolean }) {
   const services = useServices();
-  const voices = useLocalVoices();
+  const voices = useVoices();
   const settings = services?.settings.voice;
   const voice = pickVoice(voices, settings?.uri);
   const first = useRef(true);
@@ -22,7 +21,7 @@ export function SpeakButton({ text, auto = false }: { text: string; auto?: boole
     if (auto && settings?.readAll && text) speak(text, voice);
   }, [text]);
   useEffect(() => () => stopSpeaking(), []);
-  if (!voice || !text) return null;
+  if (!canSpeak() || !text) return null;
   return (
     <button
       type="button"

@@ -6,14 +6,14 @@ import { href } from '../router';
 import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors } from '../../ui/boardTheme';
-import { pickVoice, speak, useLocalVoices } from '../../ui/speech';
+import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
 
-/** Spoken coaching. Shown only when the device has a voice of its own. */
+/** Spoken coaching. Shown when the browser can speak. */
 function VoicePanel() {
   const services = useServices()!;
-  const voices = useLocalVoices();
+  const voices = useVoices();
   const [v, setV] = useState(services.settings.voice ?? { readAll: false });
-  if (!voices.length) return null;
+  if (!canSpeak()) return null;
   const save = async (next: typeof v) => {
     setV(next);
     await services.saveSettings({ ...services.settings, voice: next });
@@ -23,23 +23,30 @@ function VoicePanel() {
     <div class="panel">
       <h2>Spoken coaching</h2>
       <p class="hint">
-        Only voices that run on this device are listed, so no text leaves it. Sound plays only after
-        you tap a speak button or make a move.
+        Voices that run on this device come first. A voice marked “may send text online” can send
+        what it reads to the browser maker. Sound plays only after you tap a speak button or make a
+        move.
       </p>
-      <div class="field">
-        <label for="voice">Voice</label>
-        <select
-          id="voice"
-          value={chosen?.voiceURI}
-          onChange={(e) => void save({ ...v, uri: e.currentTarget.value })}
-        >
-          {voices.map((x) => (
-            <option key={x.voiceURI} value={x.voiceURI}>
-              {x.name} ({x.lang})
-            </option>
-          ))}
-        </select>
-      </div>
+      {voices.length ? (
+        <div class="field">
+          <label for="voice">Voice</label>
+          <select
+            id="voice"
+            value={chosen?.voiceURI}
+            onChange={(e) => void save({ ...v, uri: e.currentTarget.value })}
+          >
+            {voices.map((x) => (
+              <option key={x.voiceURI} value={x.voiceURI}>
+                {voiceLabel(x)}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        <p class="hint">
+          This browser lists no voices, so it reads with the device's default voice.
+        </p>
+      )}
       <label class="choice">
         <input
           type="checkbox"

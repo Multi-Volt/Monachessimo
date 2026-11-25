@@ -1,25 +1,29 @@
 import { useEffect, useState } from 'preact/hooks';
 
 /**
- * Spoken coaching with the browser's own voices. Only voices that run on the
- * device (`localService`) are used: some browsers offer cloud voices that
- * send the text to a server. With no local voice, nothing is offered.
+ * Spoken coaching with the browser's own voices. Every voice is offered,
+ * but one that runs on the device (`localService`) is chosen first: some
+ * browsers offer cloud voices that send the text to a server, and those are
+ * marked. Some browsers, Chrome on Android among them, list no voices at all
+ * and still speak with the device's default voice, so speech is offered
+ * whenever the browser has it.
  */
 
 const synth = (): SpeechSynthesis | undefined =>
   typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : undefined;
 
-export function localVoices(): SpeechSynthesisVoice[] {
-  return (synth()?.getVoices() ?? []).filter((v) => v.localService);
-}
+/** Whether the browser can speak at all. */
+export const canSpeak = (): boolean => synth() !== undefined;
 
-/** The device's local voices; the list fills in after the browser loads it. */
-export function useLocalVoices(): SpeechSynthesisVoice[] {
-  const [voices, setVoices] = useState(localVoices);
+const allVoices = (): SpeechSynthesisVoice[] => synth()?.getVoices() ?? [];
+
+/** The browser's voices; the list fills in after the browser loads it. */
+export function useVoices(): SpeechSynthesisVoice[] {
+  const [voices, setVoices] = useState(allVoices);
   useEffect(() => {
     const s = synth();
     if (!s) return;
-    const on = () => setVoices(localVoices());
+    const on = () => setVoices(allVoices());
     s.addEventListener('voiceschanged', on);
     on();
     return () => s.removeEventListener('voiceschanged', on);
@@ -27,18 +31,28 @@ export function useLocalVoices(): SpeechSynthesisVoice[] {
   return voices;
 }
 
-/** The chosen voice, else an English one, else the first. */
+/**
+ * The chosen voice. Otherwise a device voice before a cloud one: an English
+ * default, then any English voice, then the first.
+ */
 export function pickVoice(
   voices: SpeechSynthesisVoice[],
   uri: string | undefined,
 ): SpeechSynthesisVoice | undefined {
-  return (
-    voices.find((v) => v.voiceURI === uri) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith('en') && v.default) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith('en')) ??
-    voices[0]
-  );
+  const saved = voices.find((v) => v.voiceURI === uri);
+  if (saved) return saved;
+  const en = (v: SpeechSynthesisVoice) => v.lang.toLowerCase().startsWith('en');
+  for (const pool of [voices.filter((v) => v.localService), voices])
+    for (const test of [(v: SpeechSynthesisVoice) => en(v) && v.default, en, () => true]) {
+      const found = pool.find(test);
+      if (found) return found;
+    }
+  return undefined;
 }
+
+/** A voice's name in the voice list, marking voices that may send text online. */
+export const voiceLabel = (v: SpeechSynthesisVoice): string =>
+  `${v.name}, ${v.lang}${v.localService ? '' : ', may send text online'}`;
 
 const PIECE: Record<string, string> = {
   K: 'king',
@@ -81,13 +95,16 @@ export function speakable(text: string): string {
     });
 }
 
+/** Reads text aloud; without a voice, with the device's default voice. */
 export function speak(text: string, voice: SpeechSynthesisVoice | undefined): void {
   const s = synth();
-  if (!s || !voice) return;
+  if (!s) return;
   s.cancel();
   const u = new SpeechSynthesisUtterance(speakable(text));
-  u.voice = voice;
-  u.lang = voice.lang;
+  if (voice) {
+    u.voice = voice;
+    u.lang = voice.lang;
+  } else u.lang = 'en';
   s.speak(u);
 }
 
