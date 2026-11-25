@@ -13,6 +13,7 @@ import {
   see,
 } from '../detectors/board';
 import { describeChanges } from '../strategy/explain';
+import { causeText, findCause, type Cause } from './cause';
 import { features } from '../strategy/features';
 import { tagMove, type TagName } from '../detectors';
 import type { Score } from '../engine/eval';
@@ -45,6 +46,8 @@ export interface MoveExplanation {
   points: string[];
   /** Patterns the move matched, most important first. */
   tags: TagName[];
+  /** Why the move allowed the loss, when one cause explains it. */
+  cause?: Cause;
 }
 
 const VALUE_ORDER: Role[] = ['queen', 'rook', 'bishop', 'knight', 'pawn'];
@@ -175,10 +178,13 @@ export function explainMove(args: {
   } catch {
     tags = [];
   }
+  // The cause comes first: it says why the move allowed what follows.
+  const cause = findCause(before, uci, reply);
+  if (cause) points.unshift(causeText(cause));
   const tactical = tags.filter((t) => TACTICAL.includes(t));
   // A tactic is the lesson; lasting changes only explain a move without one.
   const shown = tactical.length ? tactical : tags.filter((t) => POSITIONAL.includes(t));
-  return { headline, points, tags: shown.slice(0, 3) };
+  return { headline, points, tags: shown.slice(0, 3), ...(cause ? { cause } : {}) };
 }
 
 /** Plain text of an explanation, for saved drills and notes. */

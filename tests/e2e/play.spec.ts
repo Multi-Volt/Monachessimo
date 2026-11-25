@@ -86,9 +86,9 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   await expect(status).toContainText(/b5 is a blunder: it costs about \d\.\d pawns\./, {
     timeout: 30_000,
   });
-  // The main fact comes first; the rest is behind Why.
+  // The cause comes first, in the opponent's voice; the rest is behind Why.
   await expect(status.locator('.coach__text')).toContainText(
-    'Your opponent answers Bxb5, taking your pawn on b5.',
+    'Your pawn on b5 can be taken by my bishop for free.',
   );
   await expect(status).not.toContainText('Nc6');
 

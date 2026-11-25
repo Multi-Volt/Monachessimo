@@ -11,6 +11,7 @@ import {
   type MoveLabel,
 } from '../../ui/badges';
 import { positions } from '../../play/review';
+import { causeMarks, type Mark } from '../../play/cause';
 import { fromFen } from '../../detectors/board';
 import type { TagName } from '../../detectors';
 import { moveHints } from '../../chess/hints';
@@ -797,7 +798,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     const [, to] = uciSquares(phase.uci);
     shapes.push(badge(to, refusal.cls));
     const reply = squares(refutation?.reply[0]);
-    if (reply) shapes.push(arrow(reply[0], reply[1], 'red'));
+    const cause = refusal.why.cause;
+    if (cause) shapes.push(...causeMarks(cause).map(markShape));
+    else if (reply) shapes.push(arrow(reply[0], reply[1], 'red'));
   } else if (replaying && replayStep! < replayLine.length) {
     const next = squares(replayLine[replayStep!]);
     if (next) shapes.push(arrow(next[0], next[1], 'red'));
@@ -1074,6 +1077,10 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       )}
     </section>
   );
+}
+
+function markShape(m: Mark): DrawShape {
+  return m.dest ? arrow(m.orig, m.dest, m.brush) : ring(m.orig, m.brush);
 }
 
 /** The game's moves in one scrolling line, with a badge on each judged move of the player. */
