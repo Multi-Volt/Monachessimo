@@ -67,6 +67,7 @@ import {
 } from '../../play/explain';
 import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
@@ -973,7 +974,15 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         </span>
         <div class="coach__body">
           {coach.tone !== 'neutral' && <p class="coach__label">{LABEL_NAME[coach.tone]}</p>}
-          <p class="coach__title">{coach.title}</p>
+          <div class="coach__head">
+            <p class="coach__title">{coach.title}</p>
+            <SpeakButton
+              text={
+                coach.tone === 'neutral' ? '' : [coach.title, coach.text].filter(Boolean).join(' ')
+              }
+              auto
+            />
+          </div>
           {coach.text && <p class="coach__text">{coach.text}</p>}
           {((coach.points?.length ?? 0) > 0 || (coach.tags?.length ?? 0) > 0) && (
             <details class="coach__why">

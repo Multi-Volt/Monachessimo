@@ -1829,3 +1829,30 @@ a.chip:hover {
   font-size: 20px;
   font-weight: 600;
 }
+
+.speak-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin: calc(var(--s2) * -1) calc(var(--s2) * -1) 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.speak-button:hover {
+  color: var(--accent);
+}
+
+.coach__head,
+.learn__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2);
+}

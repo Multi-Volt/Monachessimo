@@ -11,6 +11,15 @@ export interface AppSettings {
   analysis: AnalysisSettings;
   /** Square colors. Missing means the default olive wood. */
   board?: BoardColors;
+  /** Spoken coaching with a voice on the device. Missing means off. */
+  voice?: VoiceSettings;
+}
+
+export interface VoiceSettings {
+  /** The chosen local voice; missing means an English one. */
+  uri?: string;
+  /** Read every verdict aloud after the player's move. */
+  readAll: boolean;
 }
 
 /** Depth presets shown in Settings. "Standard" matches the build plan. */

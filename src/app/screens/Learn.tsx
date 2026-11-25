@@ -46,6 +46,7 @@ import {
 import type { LessonProgress } from '../../store/db';
 import { arrow, ring } from '../../ui/badges';
 import { Board } from '../../ui/Board';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { useAsync, useServices } from '../../ui/hooks';
 import { TypedMove } from '../drills/ConversionDrill';
 import { href } from '../router';
@@ -372,9 +373,12 @@ function InfoView({ step, text }: ViewProps<InfoStep>) {
   }, [step]);
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       {fen && (
         <Board
           fen={fen}
@@ -417,9 +421,12 @@ function StarsView({ step, text, onSolved, onFlaw }: ViewProps<StarsStep>) {
   if (hint) shapes.push(arrow(state.at, hint, 'green'));
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       <Board
         fen={state.fen}
         orientation={orientationOf(step)}
@@ -550,9 +557,12 @@ function SquareView({ step, text, onSolved, onFlaw }: ViewProps<SquareStep>) {
   ];
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       <Board
         fen={fen}
         orientation={orientationOf(step)}
@@ -642,9 +652,12 @@ function MoveView({ step, text, t, onSolved, onFlaw }: ViewProps<MoveStep>) {
   const pos = board(fen);
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       <Board
         key={attempt}
         fen={fen}
@@ -744,9 +757,12 @@ function PlayView({ step, text, onSolved, onFlaw }: ViewProps<PlayStep>) {
   const pos = board(fen);
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       <Board
         fen={fen}
         orientation={step.orientation ?? me}
@@ -794,9 +810,12 @@ function QuizView({ step, text, t, onSolved, onFlaw }: ViewProps<QuizStep>) {
   const right = picked.includes(step.answer);
   return (
     <>
-      <p class="learn__text">
-        <Rich text={text} />
-      </p>
+      <div class="learn__head">
+        <p class="learn__text">
+          <Rich text={text} />
+        </p>
+        <SpeakButton text={text} />
+      </div>
       {step.fen && (
         <Board
           fen={step.fen}

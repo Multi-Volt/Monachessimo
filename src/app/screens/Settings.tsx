@@ -6,6 +6,60 @@ import { href } from '../router';
 import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors } from '../../ui/boardTheme';
+import { pickVoice, speak, useLocalVoices } from '../../ui/speech';
+
+/** Spoken coaching. Shown only when the device has a voice of its own. */
+function VoicePanel() {
+  const services = useServices()!;
+  const voices = useLocalVoices();
+  const [v, setV] = useState(services.settings.voice ?? { readAll: false });
+  if (!voices.length) return null;
+  const save = async (next: typeof v) => {
+    setV(next);
+    await services.saveSettings({ ...services.settings, voice: next });
+  };
+  const chosen = pickVoice(voices, v.uri);
+  return (
+    <div class="panel">
+      <h2>Spoken coaching</h2>
+      <p class="hint">
+        Only voices that run on this device are listed, so no text leaves it. Sound plays only after
+        you tap a speak button or make a move.
+      </p>
+      <div class="field">
+        <label for="voice">Voice</label>
+        <select
+          id="voice"
+          value={chosen?.voiceURI}
+          onChange={(e) => void save({ ...v, uri: e.currentTarget.value })}
+        >
+          {voices.map((x) => (
+            <option key={x.voiceURI} value={x.voiceURI}>
+              {x.name} ({x.lang})
+            </option>
+          ))}
+        </select>
+      </div>
+      <label class="choice">
+        <input
+          type="checkbox"
+          checked={v.readAll}
+          onChange={(e) => void save({ ...v, readAll: e.currentTarget.checked })}
+        />
+        <span>Read every verdict aloud in practice games</span>
+      </label>
+      <div class="row">
+        <button
+          type="button"
+          class="button"
+          onClick={() => speak('Nf3 develops the knight and attacks e5.', chosen)}
+        >
+          Try the voice
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function BoardPanel() {
   const services = useServices()!;
@@ -229,6 +283,8 @@ export function Settings() {
       </div>
 
       <BoardPanel />
+
+      <VoicePanel />
 
       <InstallPanel />
 
