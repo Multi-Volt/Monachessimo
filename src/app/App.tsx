@@ -2,6 +2,8 @@ import { About } from './screens/About';
 import { Dashboard } from './screens/Dashboard';
 import { Train } from './screens/Train';
 import { Play } from './screens/Play';
+import { Lab } from './screens/Lab';
+import { hashToFen } from '../lab/position';
 import { PracticeReview } from './screens/PracticeReview';
 import { WeaknessDetail } from './screens/WeaknessDetail';
 import type { TagName } from '../detectors';
@@ -20,8 +22,8 @@ const NAV = [
   { route: '', label: 'Home' },
   { route: 'train', label: 'Train' },
   { route: 'play', label: 'Play' },
+  { route: 'lab', label: 'Lab' },
   { route: 'games', label: 'Games' },
-  { route: 'settings', label: 'Settings' },
 ];
 
 export function App() {
@@ -55,6 +57,9 @@ export function App() {
           }
         />
       );
+      break;
+    case 'lab':
+      screen = <Lab initialFen={hashToFen(arg)} />;
       break;
     case 'train':
       screen = <Train tag={arg ? (arg as TagName) : undefined} />;
@@ -100,7 +105,16 @@ export function App() {
         <a class="topbar__name" href={href()}>
           Monachessimo
         </a>
-        {!online && <span class="topbar__offline">Offline</span>}
+        <span class="topbar__end">
+          {!online && <span class="topbar__offline">Offline</span>}
+          <a
+            class={`topbar__link${head === 'settings' ? ' is-active' : ''}`}
+            href={href('settings')}
+            aria-current={head === 'settings' ? 'page' : undefined}
+          >
+            Settings
+          </a>
+        </span>
       </header>
       {pwa.needRefresh && (
         <div class="update-banner" role="status">

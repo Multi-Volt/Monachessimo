@@ -61,7 +61,7 @@ export async function typeMove(page: Page, move: string): Promise<void> {
   const input = page.getByLabel('Type a move', { exact: true });
   if (!(await input.isVisible())) await page.getByText('Type a move instead').click();
   await input.fill(move);
-  await page.getByRole('button', { name: 'Play' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
 }
 
 /** Waits until the board accepts a move again (after a wrong move or an engine reply). */

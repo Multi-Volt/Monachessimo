@@ -10,6 +10,7 @@ for (const [route, heading] of [
   ['#/analysis', 'Import and analysis'],
   ['#/progress', 'Your progress'],
   ['#/train', 'Daily practice'],
+  ['#/lab', 'Lab'],
 ] as const) {
   test(`${route} renders at phone width without errors`, async ({ page }) => {
     const errors = collectErrors(page);
