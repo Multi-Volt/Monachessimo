@@ -1,13 +1,43 @@
+import type { TagName } from '../detectors';
 import type { ExplanationRecord } from './record';
 
 /**
+ * The names a coach teaches, for the tactics a move walked into: the
+ * cause's pattern, then the detector tags that say what punished the move.
+ * Positional tags, trapped pieces and missed tactics are left out: they
+ * rarely explain the punishment, and the coach never names a better move.
+ */
+const PATTERN_NAME: Partial<Record<TagName | 'fork' | 'pin' | 'skewer', string>> = {
+  fork: 'a fork',
+  pin: 'a pin',
+  skewer: 'a skewer',
+  forkAllowed: 'a fork',
+  pinAllowed: 'a pin',
+  skewerAllowed: 'a skewer',
+  discoveredAttack: 'a discovered attack',
+  backRank: 'a back rank mate',
+  mateAllowed: 'a forced mate',
+  hangingPiece: 'a hanging piece',
+};
+
+/** The tactics of a record by name: the cause's first, then the tags, at most two. */
+export function patternNames(r: ExplanationRecord): string[] {
+  const kinds = [...(r.cause ? [r.cause.kind] : []), ...r.tags] as (keyof typeof PATTERN_NAME)[];
+  const names = kinds.map((k) => PATTERN_NAME[k]).filter((n): n is string => !!n);
+  return [...new Set(names)].slice(0, 2);
+}
+
+/**
  * The input of the phrasing model, and the only facts its text may use: the
- * template sentences of a record, in reading order. Training and the app
+ * template sentences of a record in reading order, with the names of the
+ * patterns the detectors found. Training and the app
  * build it with this one function.
  */
 export function factSheet(r: ExplanationRecord): string {
   const out = [r.sentences.headline];
   if (r.sentences.cause) out.push(`Why: ${r.sentences.cause}`);
+  const patterns = patternNames(r);
+  if (patterns.length) out.push(`Patterns: ${patterns.join(', ')}.`);
   for (const p of r.sentences.points) {
     if (p === r.sentences.cause) continue;
     out.push(`Fact: ${opponentVoice(p).replace(/: [^:]*\.$/, '.')}`);

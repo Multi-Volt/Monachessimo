@@ -33,6 +33,7 @@ Rules:
 - Keep who did what exactly as in the notes. A piece the notes call "my" stays "my", a piece they call "your" stays "your". "You play" is the player's move, "I play" is the opponent's.
 - Say a move is forced only when the notes say "You have to". Say who is ahead in material only as the notes say it.
 - Plain words, one idea per sentence. Write every move in words, never in notation: "rook to h8", "knight takes e5", "queen takes on f7, with check", "pawn to d5", "castles". Squares stay as they are, like e5.
+- If the notes list patterns, name the most important one once, the way a coach teaches it, and show it on the board: "That is a fork: my knight attacks your king and your rook at once." Never name a pattern the notes do not list.
 - Lead with what goes wrong, then what happens next, then the long-term cost if the notes give one. Pick the facts that matter most; you do not need all of them.
 - Never name a better move for the player.
 - No dashes, no parentheses, no exclamation marks, no lists, no filler words such as "great", "simply", "crucial" or "unfortunately".
@@ -58,15 +59,17 @@ const EXAMPLES: [string, string][] = [
   [
     `Bg5 is a blunder: it costs about 3.1 pawns.
 Why: Your bishop on g5 can be taken by my pawn for free.
+Patterns: a hanging piece.
 Fact: I answer hxg5, taking your bishop on g5.
 What happens next:
 - You play Bg5.
 - My pawn takes your bishop on g5.
 Long term: 6 moves later you have 3 pawns less material than after a better move.`,
-    `Bishop to g5 puts your bishop where my pawn can take it for free, and I do: pawn takes g5. Six moves on, you have three pawns less than after a better move.`,
+    `Bishop to g5 leaves your bishop hanging: my pawn can take it for free, and I do with pawn takes g5. Six moves on, you have three pawns less than after a better move.`,
   ],
   [
     `exf6 is a blunder: it turns the game around.
+Patterns: a forced mate.
 Fact: It allows mate in 2.
 What happens next:
 - Your pawn takes my rook on f6.
@@ -79,6 +82,7 @@ Long term: My pieces head for your king: Re1+, Rf1#, and it ends in checkmate.`,
   [
     `Ba4 is an inaccuracy: it costs about 1.6 pawns.
 Why: My rook pins your bishop on a4 to your rook behind it.
+Patterns: a pin.
 Fact: I answer Ra3, attacking your pawn on a2, which has no safe square.
 Fact: In the line that follows you lose a pawn.
 What happens next:
@@ -89,7 +93,7 @@ What happens next:
 - Your rook now attacks my pawn on b6.
 - My rook moves to the open d-file.
 Long term: Nothing can defend your pawn on c2 with a pawn, so it becomes a target.`,
-    `Bishop to a4 lets my rook pin your bishop on a4 to your rook behind it. I answer rook to a3, attacking your pawn on a2, which has no safe square, and I take it next. Your pawn on c2 becomes a target because nothing can defend it with a pawn.`,
+    `Bishop to a4 walks into a pin: my rook pins your bishop on a4 to your rook behind it. I answer rook to a3, attacking your pawn on a2, which has no safe square, and I take it next. Your pawn on c2 becomes a target because nothing can defend it with a pawn.`,
   ],
   [
     `Ne7 is a mistake: it costs about 1.3 pawns.
@@ -122,7 +126,7 @@ function args() {
     limit: Number(get('--limit') ?? Infinity),
     /** Tier two: write only records whose text in this file fails the checker or is missing. */
     onlyFailed: get('--only-failed'),
-    /** Skip records that already have a passing text in this file, written from the current notes. */
+    /** Skip records that already have a passing text in these files (comma separated), from the current notes. */
     skip: get('--skip'),
     tries: Number(get('--tries') ?? 3),
     /** Let the writer reason before it answers: slower, and checked to be more accurate. */
@@ -189,14 +193,41 @@ interface TargetLine {
  * the record's current notes and accepted by the current checker. The
  * checker grows stricter over time, so its old verdicts are not trusted.
  */
-function passing(file: string, sheets: Map<string, string>): Set<string> {
+function passing(files: string, sheets: Map<string, string>): Set<string> {
   const ok = new Set<string>();
-  for (const l of readFileSync(file, 'utf8').split('\n')) {
-    if (!l) continue;
-    const t = JSON.parse(l) as TargetLine;
-    if (t.sheet === sheets.get(t.id) && !checkPhrasing(t.sheet, t.text).length) ok.add(t.id);
+  for (const file of files.split(',')) {
+    // The last text written for a record is the one that counts.
+    const last = new Map<string, TargetLine>();
+    for (const l of readFileSync(file, 'utf8').split('\n'))
+      if (l) last.set((JSON.parse(l) as TargetLine).id, JSON.parse(l) as TargetLine);
+    for (const t of last.values())
+      if (t.sheet === sheets.get(t.id) && !targetProblems(t.sheet, t.text).length) ok.add(t.id);
   }
   return ok;
+}
+
+/** Words that show a text named a pattern from the notes' "Patterns:" line. */
+const PATTERN_WORD: Record<string, RegExp> = {
+  'a fork': /\bfork/i,
+  'a pin': /\bpin(s|ned|ning)?\b/i,
+  'a skewer': /\bskewer/i,
+  'a discovered attack': /\bdiscovered\b/i,
+  'a back rank mate': /\bback rank\b/i,
+  'a forced mate': /\bmate\b|\bcheckmate/i,
+  'a hanging piece': /\bhanging\b|\bfor free\b|\bunprotected\b/i,
+};
+
+/**
+ * The checker's problems, plus one that only matters for training: when the
+ * notes name a pattern, a target names it too, so the phone model learns to
+ * teach tactics by name. A text without it goes to the larger writer.
+ */
+function targetProblems(sheet: string, text: string): string[] {
+  const problems = checkPhrasing(sheet, text);
+  const first = /^Patterns: ([^,.\n]+)/m.exec(sheet)?.[1];
+  const word = first ? PATTERN_WORD[first] : undefined;
+  if (word && !word.test(text)) problems.push(`pattern not named: ${first}`);
+  return problems;
 }
 
 /** The writer's second reading: undefined when the text is faithful, else what is wrong. */
@@ -229,16 +260,19 @@ async function reviewOnly(o: ReturnType<typeof args>) {
 async function main() {
   const o = args();
   if (o.reviewOnly) return reviewOnly(o);
-  const done = new Set<string>();
-  if (existsSync(o.out)) {
-    for (const l of readFileSync(o.out, 'utf8').split('\n'))
-      if (l) done.add((JSON.parse(l) as { id: string }).id);
-  } else writeFileSync(o.out, '');
+  if (!existsSync(o.out)) writeFileSync(o.out, '');
   const records = readFileSync(o.input, 'utf8')
     .split('\n')
     .filter(Boolean)
     .map((l) => JSON.parse(l) as { id: string; record: ExplanationRecord });
   const sheets = new Map(records.map((r) => [r.id, factSheet(r.record)]));
+  // Done means written from the record's current notes; changed notes are written again.
+  const done = new Set<string>();
+  for (const l of readFileSync(o.out, 'utf8').split('\n')) {
+    if (!l) continue;
+    const t = JSON.parse(l) as TargetLine;
+    if (t.sheet === sheets.get(t.id)) done.add(t.id);
+  }
   const skip = o.skip ? passing(o.skip, sheets) : new Set<string>();
   const firstTier = o.onlyFailed ? passing(o.onlyFailed, sheets) : new Set<string>();
   const todo = records
@@ -261,7 +295,7 @@ async function main() {
       while (tries < o.tries) {
         tries++;
         ({ text, model } = await complete(o.server, sheet, 0.6 + 0.1 * (tries - 1), o.think));
-        problems = checkPhrasing(sheet, text);
+        problems = targetProblems(sheet, text);
         if (!problems.length) break;
       }
       // The review is stored, not used to retry: it also rejects good texts.
