@@ -21,6 +21,15 @@ describe('speech', () => {
     expect(sanToWords('Qg1+!!')).toBe('queen g1, check');
   });
 
+  it('keeps a move that ends a sentence', () => {
+    expect(speakable('Find a better move than Qh4. Stuck? Tap Hint.')).toBe(
+      'Find a better move than queen h4. Stuck? Tap Hint.',
+    );
+    expect(speakable('After 12. Nf3 and 12... e5 it costs about 8.3 pawns.')).toBe(
+      'After knight f3 and e5 it costs about 8.3 pawns.',
+    );
+  });
+
   it('turns coach text into plain speech', () => {
     expect(speakable('With **Nf6**, I threaten Nxe4, taking your pawn on e4.')).toBe(
       'With knight f6, I threaten knight takes e4, taking your pawn on e4.',

@@ -87,7 +87,8 @@ const SAN = /\b(?:O-O(?:-O)?|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?[
 export function speakable(text: string): string {
   return text
     .replace(/\*\*/g, '')
-    .replace(/(\d+)\.(\.\.)?\s?(?=[KQRBNO a-h])/g, '')
+    // Move numbers such as "12." or "12...", but not the rank that ends "Qh4." in a sentence.
+    .replace(/(?<![\w.])\d+\.(?:\.\.)?\s?(?=[KQRBNOa-h])/g, '')
     .replace(/…/g, '')
     .replace(SAN, (s) => {
       // A bare square such as "e4" in a sentence is read as it is.

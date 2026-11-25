@@ -717,22 +717,26 @@ function Session(props: {
               </p>
             )}
             {tryAgain && (phase.kind === 'wrong' || phase.kind === 'solving') && (
-              <div class="panel panel--mistake" role="status">
+              <div class="panel panel--mistake learn__head" role="status">
                 <p>
                   <strong>Not this one.</strong> {tryAgain} Try another move.
                 </p>
+                <SpeakButton text={`Not this one. ${tryAgain} Try another move.`} />
               </div>
             )}
             {phase.kind === 'solved' && (
-              <div class="panel panel--good" role="status">
+              <div class="panel panel--good learn__head" role="status">
                 <p>
                   <strong>{phase.how === 'partial' ? 'Good effort.' : 'Well played.'}</strong>{' '}
                   {outcomeText(phase.how, yourMoves, fromFen(drill.fen), shownPosition)}
                 </p>
+                <SpeakButton
+                  text={`${phase.how === 'partial' ? 'Good effort.' : 'Well played.'} ${outcomeText(phase.how, yourMoves, fromFen(drill.fen), shownPosition)}`}
+                />
               </div>
             )}
             {phase.kind === 'shown' && (
-              <div class="panel panel--mistake" role="status">
+              <div class="panel panel--mistake learn__head" role="status">
                 <p>
                   <strong>The move here was {bestSan}.</strong>{' '}
                   {drill.solution ? 'Solution' : 'Engine line'} from here:{' '}
@@ -743,6 +747,7 @@ function Session(props: {
                   ).join(' ')}
                   .
                 </p>
+                <SpeakButton text={`The move here was ${bestSan}.`} />
               </div>
             )}
           </div>
@@ -816,7 +821,7 @@ function Session(props: {
         <div class="panel">
           <div class="learn__head">
             <h2>Why</h2>
-            <SpeakButton text={drill.explanation.join(' ')} />
+            <SpeakButton text={drill.explanation.join(' ')} auto={false} />
           </div>
           {drill.explanation.map((p) => (
             <p key={p}>{p}</p>

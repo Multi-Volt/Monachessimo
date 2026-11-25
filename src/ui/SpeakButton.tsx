@@ -5,16 +5,17 @@ import { canSpeak, pickVoice, speak, stopSpeaking, useVoices } from './speech';
 /**
  * A button that reads `text` aloud, shown when the browser can speak. If
  * the player turned on "read aloud automatically", the text is also read
- * when it appears and whenever it changes. Browsers refuse speech before the
+ * when it appears and whenever it changes, unless `auto` is false: a
+ * second button that appears together with the main one would cut it off. Browsers refuse speech before the
  * first tap on a page, so a freshly loaded page stays silent.
  */
-export function SpeakButton({ text }: { text: string }) {
+export function SpeakButton({ text, auto = true }: { text: string; auto?: boolean }) {
   const services = useServices();
   const voices = useVoices();
   const settings = services?.settings.voice;
   const voice = pickVoice(voices, settings?.uri);
   useEffect(() => {
-    if (settings?.readAll && text) speak(text, voice);
+    if (auto && settings?.readAll && text) speak(text, voice);
   }, [text]);
   useEffect(() => () => stopSpeaking(), []);
   if (!canSpeak() || !text) return null;
