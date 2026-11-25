@@ -14,6 +14,7 @@ import {
   see,
 } from '../detectors/board';
 import { describeChanges } from '../strategy/explain';
+import { worseNotes } from '../strategy/details';
 import { causeText, findCause, type Cause } from './cause';
 import { nullMoveFen, type Threat } from '../engine/threat';
 import { features } from '../strategy/features';
@@ -254,7 +255,17 @@ export function compareLines(
   const oppDev = undeveloped(best, opposite(me)) - undeveloped(played, opposite(me));
   if (oppDev > 0)
     out.push(`Your opponent has ${oppDev} more ${oppDev === 1 ? 'piece' : 'pieces'} developed.`);
-  out.push(...describeChanges(features(best, me), features(played, me)));
+  // Features with their squares and long-term cost, then the counted
+  // changes that no named note covers.
+  const notes = worseNotes(best, played, me);
+  const named = new Set(notes.map((n) => n.key));
+  const covered = (t: string) =>
+    (named.has('isolatedPawn') && t.includes('isolated')) ||
+    (named.has('doubledPawns') && t.includes('doubled')) ||
+    (named.has('backwardPawn') && t.includes('backward')) ||
+    (named.has('openFileNearKing') && /files? beside your king/.test(t));
+  out.push(...notes.map((n) => n.text));
+  out.push(...describeChanges(features(best, me), features(played, me)).filter((t) => !covered(t)));
   return out;
 }
 
