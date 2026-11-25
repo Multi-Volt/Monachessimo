@@ -1521,3 +1521,22 @@ input[aria-invalid='true'] {
   align-items: center;
   gap: var(--s2);
 }
+
+.stepper__lines {
+  list-style: none;
+  margin: 0 0 var(--s3);
+  padding: 0;
+  display: grid;
+  gap: var(--s2);
+  color: var(--text-2);
+}
+
+.stepper__lines li.is-current {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.stepper__san {
+  font-weight: 700;
+  margin-right: var(--s1);
+}

@@ -101,8 +101,8 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   await page.getByRole('button', { name: 'Show what happens' }).click();
   await expect(page.locator('.stepper')).toContainText('You play b5.');
   await page.getByRole('button', { name: 'Forward' }).click();
-  await expect(page.locator('.stepper')).toContainText('You play b5, then Bxb5');
-  await expect(page.locator('.stepper')).toContainText('1 down');
+  // Each move of the line gets one sentence in the coach's voice.
+  await expect(page.locator('.stepper')).toContainText('My bishop takes your pawn on b5');
   await page.getByRole('button', { name: 'Try again' }).click();
 
   // Qf6 gives up a pawn too. Winning chances alone called this an inaccuracy.

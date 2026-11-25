@@ -12,6 +12,7 @@ import {
 } from '../../ui/badges';
 import { positions } from '../../play/review';
 import { causeMarks, type Mark } from '../../play/cause';
+import { enrichLine, narrateLine, type LineStep } from '../../play/narrate';
 import { findThreat, type Threat } from '../../engine/threat';
 import { fromFen } from '../../detectors/board';
 import type { TagName } from '../../detectors';
@@ -52,7 +53,7 @@ import {
 } from '../../play/data';
 import { buildIndex, yourVisits, type Visit } from '../../play/positions';
 import { praiseMove, type Praise } from '../../play/praise';
-import { balance, playLine } from '../../detectors/board';
+import { playLine } from '../../detectors/board';
 import {
   compareLines,
   explainMove,
@@ -763,6 +764,25 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   );
   const replaying =
     replayStep !== undefined && (phase.kind === 'your-move' || phase.kind === 'refused');
+
+  // One sentence per move of the refuting line: from the board at once,
+  // then forced replies and quiet threats from short engine searches.
+  const [lineSteps, setLineSteps] = useState<LineStep[]>([]);
+  useEffect(() => {
+    if (!refutation) {
+      setLineSteps([]);
+      return;
+    }
+    let live = true;
+    const steps = narrateLine(pos, replayLine, game.you);
+    setLineSteps(steps);
+    void enrichLine(pos, replayLine, steps, (r) => services.pool.search(r)).then((rich) => {
+      if (live) setLineSteps(rich);
+    });
+    return () => {
+      live = false;
+    };
+  }, [refutation, fen]);
   const shownFen = (() => {
     if (replaying && replayPositions[replayStep])
       return makeFen(replayPositions[replayStep]!.toSetup());
@@ -975,22 +995,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
 
       {replaying && (
         <div class="panel stepper">
-          <p class="num">
-            {(() => {
-              const sans = pvToSan(fen, replayLine, replayStep);
-              const mine = sans[0];
-              const then = sans.slice(1);
-              const at = replayPositions[replayStep]!;
-              const diff = balance(at, game.you) - balance(pos, game.you);
-              return `You play ${mine}${then.length ? `, then ${then.join(' ')}` : ''}. Material: ${
-                diff === 0
-                  ? 'even, as before your move'
-                  : diff > 0
-                    ? `you are ${diff} up`
-                    : `you are ${-diff} down`
-              }.${at.isCheckmate() ? ' Checkmate.' : ''}`;
-            })()}
-          </p>
+          <ol class="stepper__lines">
+            {lineSteps.slice(0, replayStep).map((st, k) => (
+              <li key={st.uci + k} class={k === replayStep - 1 ? 'is-current' : ''}>
+                <span class="stepper__san num">{st.san}</span> {st.text}
+              </li>
+            ))}
+          </ol>
           {refutation && replayStep === replayPositions.length - 1 && (
             <div class="stepper__why">
               <p>
