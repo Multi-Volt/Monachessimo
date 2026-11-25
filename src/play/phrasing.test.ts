@@ -13,8 +13,14 @@ const sheet = [
 describe('phrasing check', () => {
   it('passes a text that uses only the facts', () => {
     const text =
-      'Bg5 puts your bishop where my pawn can take it for free. After hxg5 you are three pawns down.';
+      'Bishop to g5 puts your bishop where my pawn can take it for free. After pawn takes g5 you are three pawns down.';
     expect(checkPhrasing(sheet + '\n- I play hxg5.', text)).toEqual([]);
+  });
+
+  it('wants moves in words, not notation', () => {
+    expect(checkPhrasing(sheet, 'Bg5 puts your bishop on g5. My pawn takes it for free.')).toEqual([
+      'notation: Bg5',
+    ]);
   });
 
   it('flags a square, move, piece, number or pattern not in the facts', () => {
@@ -39,15 +45,23 @@ describe('phrasing check', () => {
       '- I play h4, threatening Bg5.',
       '- Now my pawn attacks your bishop on g4.',
     ].join('\n');
-    expect(checkPhrasing(notes, 'Nh6 lets me play h4. I threaten Bg5 with my bishop.')).toEqual([]);
     expect(
-      checkPhrasing(notes, 'Nh6 lets me play h4. That threatens your bishop on g5.'),
+      checkPhrasing(notes, 'Knight to h6 lets me play pawn to h4. I threaten bishop to g5.'),
+    ).toEqual([]);
+    expect(
+      checkPhrasing(
+        notes,
+        'Knight to h6 lets me play pawn to h4. That threatens your bishop on g5.',
+      ),
     ).toContain('owner: your bishop g5');
-    expect(checkPhrasing(notes, 'Nh6 lets me play h4. Your queen is in danger.')).toEqual(
-      expect.arrayContaining(['owner: your queen']),
-    );
     expect(
-      checkPhrasing(notes, 'Nh6 lets me play h4. Sixteen moves later you are worse.'),
+      checkPhrasing(notes, 'Knight to h6 lets me play pawn to h4. Your queen is in danger.'),
+    ).toEqual(expect.arrayContaining(['owner: your queen']));
+    expect(
+      checkPhrasing(
+        notes,
+        'Knight to h6 lets me play pawn to h4. Sixteen moves later you are worse.',
+      ),
     ).toContain('numbers: 16');
   });
 

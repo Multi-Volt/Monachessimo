@@ -193,8 +193,8 @@ function owned(text: string, sheet: boolean): { pairs: Set<string>; triples: Set
 
 /**
  * Checks a phrasing of a record. The text may name only moves, squares,
- * numbers, pieces and patterns found in the fact sheet, and must follow the
- * copy rules: two to four sentences, no dashes, no exclamation marks, no
+ * numbers, pieces and patterns found in the fact sheet, says moves in words
+ * rather than notation, and must follow the copy rules: two to four sentences, no dashes, no exclamation marks, no
  * parentheses, no filler. Returns the problems; an empty list passes.
  */
 export function checkPhrasing(sheet: string, text: string): string[] {
@@ -205,6 +205,8 @@ export function checkPhrasing(sheet: string, text: string): string[] {
     [...said[kind]].filter((x) => !facts[kind].has(x)).map((x) => `${kind}: ${x}`);
   for (const k of ['sans', 'squares', 'numbers', 'pieces', 'patterns'] as const)
     problems.push(...extra(k));
+  // Moves are said in words, "rook to h8"; notation is for the board, not for speech.
+  for (const san of said.sans) problems.push(`notation: ${san}`);
   // Whose piece: a claim the facts contradict, or an owner they never give.
   const known = owned(sheet, true);
   const claims = owned(text, false);

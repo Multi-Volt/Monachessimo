@@ -25,10 +25,10 @@ Rules:
 - Speak as the opponent: "I" and "my" are the opponent, "you" and "your" are the player.
 - Keep who did what exactly as in the notes. A piece the notes call "my" stays "my", a piece they call "your" stays "your". "You play" is the player's move, "I play" is the opponent's.
 - Say a move is forced only when the notes say "You have to". Say who is ahead in material only as the notes say it.
-- Plain words, one idea per sentence. Name pieces in words. A move in notation comes with words, like "Nxe5, taking your pawn".
+- Plain words, one idea per sentence. Write every move in words, never in notation: "rook to h8", "knight takes e5", "queen takes on f7, with check", "pawn to d5", "castles". Squares stay as they are, like e5.
 - Lead with what goes wrong, then what happens next, then the long-term cost if the notes give one. Pick the facts that matter most; you do not need all of them.
 - Never name a better move for the player.
-- No dashes except in the castling notation O-O, no parentheses, no exclamation marks, no lists, no filler words such as "great", "simply", "crucial" or "unfortunately".
+- No dashes, no parentheses, no exclamation marks, no lists, no filler words such as "great", "simply", "crucial" or "unfortunately".
 - Reply with the sentences only.`;
 
 export const REVIEW = `You check a chess coach's text against the coach's notes. The notes are the only truth.
@@ -45,7 +45,7 @@ Reply with OK, or with WRONG and the wrong claim in a few words.`;
 /**
  * Worked examples, notes then answer. The first was written by hand; the
  * others by DeepSeek V4.1 Flash (MIT), which kept closest to the notes of
- * the writers compared.
+ * the writers compared, with their moves then put in words by hand.
  */
 const EXAMPLES: [string, string][] = [
   [
@@ -56,7 +56,7 @@ What happens next:
 - You play Bg5.
 - My pawn takes your bishop on g5.
 Long term: 6 moves later you have 3 pawns less material than after a better move.`,
-    `Bg5 puts your bishop on a square my pawn controls. I take it for free with hxg5, and you get nothing back. Six moves on, you have three pawns less than after a better move.`,
+    `Bishop to g5 puts your bishop where my pawn can take it for free, and I do: pawn takes g5. Six moves on, you have three pawns less than after a better move.`,
   ],
   [
     `exf6 is a blunder: it turns the game around.
@@ -67,7 +67,7 @@ What happens next:
 - Your king now attacks my rook on e1.
 - Rf1#. Checkmate.
 Long term: My pieces head for your king: Re1+, Rf1#, and it ends in checkmate.`,
-    `exf6, taking my rook, turns the game around. It allows mate in two. My rook checks on e1, so you have no time for anything else, and Rf1 is checkmate.`,
+    `Pawn takes f6 wins my rook, but it turns the game around. It allows mate in two. My rook checks on e1, so you have no time for anything else, and rook to f1 is checkmate.`,
   ],
   [
     `Ba4 is an inaccuracy: it costs about 1.6 pawns.
@@ -82,7 +82,7 @@ What happens next:
 - Your rook now attacks my pawn on b6.
 - My rook moves to the open d-file.
 Long term: Nothing can defend your pawn on c2 with a pawn, so it becomes a target.`,
-    `Ba4 lets my rook pin your bishop on a4 to your rook behind it. I answer Ra3, attacking your pawn on a2, which has no safe square, and I take it next. Your pawn on c2 becomes a target because nothing can defend it with a pawn.`,
+    `Bishop to a4 lets my rook pin your bishop on a4 to your rook behind it. I answer rook to a3, attacking your pawn on a2, which has no safe square, and I take it next. Your pawn on c2 becomes a target because nothing can defend it with a pawn.`,
   ],
   [
     `Ne7 is a mistake: it costs about 1.3 pawns.
@@ -97,7 +97,7 @@ What happens next:
 - You play d5. You have to: anything else loses about 1.9 pawns.
 - My bishop takes your pawn on g6.
 Long term: 10 moves later you have 1 pawn less material than after a better move.`,
-    `Ne7 ignores my threat of e5. I play e5, attacking your pawn on d6 and your pawn on f6. You then have to play d5, since anything else loses about 1.9 pawns, and my bishop takes your pawn on g6.`,
+    `Knight to e7 ignores my threat of pawn to e5. I play it, attacking your pawn on d6 and your pawn on f6. You then have to play pawn to d5, since anything else loses about 1.9 pawns, and my bishop takes your pawn on g6.`,
   ],
 ];
 
