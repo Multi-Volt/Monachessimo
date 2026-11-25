@@ -4,6 +4,7 @@
 // lesson's move is the best one is checked with Stockfish in
 // tests/unit/lessons.node.test.ts.
 
+import { parseSquare } from 'chessops/util';
 import { describe, expect, it } from 'vitest';
 import { checkFen } from '../lab/position';
 import basics from './content/basics.json';
@@ -24,6 +25,7 @@ import {
   moveStepDone,
   moveStepStart,
   piecesOf,
+  playerSide,
   play,
   sideToMove,
   solveStars,
@@ -241,6 +243,16 @@ function replay(step: MoveStep, name: string): string {
 }
 
 describe('move tasks', () => {
+  it('names the side that moves first, after the setup move', () => {
+    // The task text fills {{side}} from the position the player sees.
+    for (const s of ofType('move')) {
+      const start = moveStepStart(s.step).fen;
+      const first = s.step.line[0]!.slice(0, 2);
+      const owner = board(start).board.get(parseSquare(first)!)?.color;
+      expect(playerSide(s.step), label(s)).toBe(owner);
+    }
+  });
+
   it('are real positions whose lines are legal and end with your move', () => {
     for (const s of ofType('move')) {
       strictFen(s.step.fen, label(s));

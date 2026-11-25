@@ -7,7 +7,7 @@ import { makeFen, parseFen } from 'chessops/fen';
 import { makeSan } from 'chessops/san';
 import type { NormalMove, Square } from 'chessops/types';
 import { makeSquare, parseSquare, parseUci, roleToChar } from 'chessops/util';
-import type { MoveStep, PlayStep, Side, Sq, StarsStep } from './types';
+import type { MoveStep, PlayStep, Side, Sq, StarsStep, StepDef } from './types';
 
 // ---- Positions ---------------------------------------------------------------
 
@@ -224,6 +224,15 @@ export function moveStepStart(step: MoveStep): { fen: string; lastMove?: [Sq, Sq
   if (!step.pre) return { fen: step.fen };
   const r = play(step.fen, step.pre)!;
   return { fen: r.fen, lastMove: [r.from, r.to] };
+}
+
+/**
+ * The side the player moves in a step: in a puzzle step, the side after the
+ * opponent's `pre` move, not the side to move in the stored position.
+ */
+export function playerSide(step: StepDef): Side | undefined {
+  if (step.type === 'move') return sideToMove(moveStepStart(step).fen);
+  return 'fen' in step && step.fen ? sideToMove(step.fen) : undefined;
 }
 
 /** Is `uci`, played in `fen` at line index `index`, a right answer? */

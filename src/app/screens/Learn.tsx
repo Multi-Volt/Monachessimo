@@ -23,6 +23,7 @@ import {
   lessonStars,
   moveStepDone,
   moveStepStart,
+  playerSide,
   play,
   shortestStars,
   sideToMove,
@@ -192,8 +193,7 @@ function LessonPlayer({ content, lref }: { content: LearnContent; lref: LessonRe
   }, [services]);
 
   const step = steps[index]!;
-  const t = (key: string) =>
-    lessonText(content.texts, lesson.id, key, step.fen ? sideToMove(step.fen) : undefined);
+  const t = (key: string) => lessonText(content.texts, lesson.id, key, playerSide(step));
   const stepText = step.type === 'move' && step.src && !t(step.id) ? t('task') : t(step.id);
   const tasks = steps.filter(isTask).length;
 
