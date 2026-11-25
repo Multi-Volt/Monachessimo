@@ -19,6 +19,7 @@
 // is kept with its problems. The output is appended to and resumes after a
 // stop. --skip FILE leaves out records that already have a passing text there.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { appendFile } from 'node:fs/promises';
 import { checkPhrasing, factSheet } from '../src/play/phrasing';
 import type { ExplanationRecord } from '../src/play/record';
@@ -182,7 +183,7 @@ async function complete(
   return { text: text.trim(), model: body.model };
 }
 
-interface TargetLine {
+export interface TargetLine {
   id: string;
   sheet: string;
   text: string;
@@ -193,7 +194,7 @@ interface TargetLine {
  * the record's current notes and accepted by the current checker. The
  * checker grows stricter over time, so its old verdicts are not trusted.
  */
-function passing(files: string, sheets: Map<string, string>): Set<string> {
+export function passing(files: string, sheets: Map<string, string>): Set<string> {
   const ok = new Set<string>();
   for (const file of files.split(',')) {
     // The last text written for a record is the one that counts.
@@ -222,7 +223,7 @@ const PATTERN_WORD: Record<string, RegExp> = {
  * notes name a pattern, a target names it too, so the phone model learns to
  * teach tactics by name. A text without it goes to the larger writer.
  */
-function targetProblems(sheet: string, text: string): string[] {
+export function targetProblems(sheet: string, text: string): string[] {
   const problems = checkPhrasing(sheet, text);
   const first = /^Patterns: ([^,.\n]+)/m.exec(sheet)?.[1];
   const word = first ? PATTERN_WORD[first] : undefined;
@@ -326,4 +327,5 @@ async function main() {
   console.log(`Wrote ${n} texts in ${min.toFixed(1)} min, ${passed} pass the checker.`);
 }
 
-await main();
+// Run only as a script, so the merge step can reuse the checks above.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await main();
