@@ -34,6 +34,7 @@ import { praiseMove } from '../../play/praise';
 import { buildRecord } from '../../play/record';
 import { arrow, LABEL_NAME, LABEL_SYMBOL, type MoveLabel } from '../../ui/badges';
 import { Board } from '../../ui/Board';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { formatScore } from '../../ui/format';
 import { useServices } from '../../ui/hooks';
@@ -297,7 +298,12 @@ export function Lab({ initialFen }: { initialFen?: string | undefined }) {
             {shownTried.tone !== 'neutral' && (
               <p class="coach__label">{LABEL_NAME[shownTried.tone]}</p>
             )}
-            <p class="coach__title">{shownTried.title}</p>
+            <div class="coach__head">
+              <p class="coach__title">{shownTried.title}</p>
+              <SpeakButton
+                text={[shownTried.title, shownTried.points[0]].filter(Boolean).join(' ')}
+              />
+            </div>
             {shownTried.points.length > 0 && (
               <ul class="verdict__points">
                 {shownTried.points.map((p) => (

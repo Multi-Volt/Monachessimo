@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors } from './support';
+import { collectErrors, typeMove } from './support';
 
 /**
  * A fake speech engine that records what is spoken. Its voices: a cloud
@@ -104,4 +104,37 @@ test('a device voice reads on a tap, and reads by itself only when asked', async
   await expect(page.getByRole('heading', { level: 1, name: 'The rook' })).toBeVisible();
   await expect.poll(async () => (await spoken(page)).slice(2)).toEqual([lesson]);
   expect(errors).toEqual([]);
+});
+
+test('with automatic reading, every task and every answer in a lesson is read', async ({
+  page,
+}) => {
+  await fakeSpeech(page, 'both');
+  await page.goto('./#/settings');
+  await page.getByLabel(/Read aloud automatically/).check();
+  await page.goto('./#/learn/checkmate');
+  const cont = page.getByRole('button', { name: 'Continue' });
+  await cont.click();
+  await page.getByRole('button', { name: "Yes, that's checkmate" }).click();
+  await page.getByRole('button', { name: 'No, the king can escape' }).click();
+  await cont.click();
+  await page.getByRole('button', { name: "Yes, that's checkmate" }).click();
+  await cont.click();
+  await typeMove(page, 'Ra7');
+  await typeMove(page, 'Ra8#');
+  await expect(page.getByText('Checkmate. Well done.')).toBeVisible();
+  // In order, after the opening explanation: question, wrong, right, and so on.
+  const said = async () => (await spoken(page)).slice(1).map((s) => s.replace(/^device: /, ''));
+  await expect
+    .poll(said)
+    .toEqual([
+      'Is Black checkmated?',
+      'Not quite. Try another answer.',
+      'Right, no mate. The king can escape to h7.',
+      'And this one, is Black checkmated?',
+      'Right. The queen gives check, the white king protects her, and every square around the black king is covered.',
+      'Checkmate the black king in one move.',
+      'Not that move. Try again.',
+      'Checkmate. Well done.',
+    ]);
 });

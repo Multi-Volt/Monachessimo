@@ -11,6 +11,7 @@ import { negate, winningChances, type Score } from '../../engine/eval';
 import { workerTransport } from '../../engine/worker';
 import type { Drill, Grade } from '../../drills/types';
 import { Board } from '../../ui/Board';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { formatScore } from '../../ui/format';
 import { useServices } from '../../ui/hooks';
 
@@ -144,7 +145,10 @@ export function ConversionDrill({ drill, onDone }: { drill: Drill; onDone: (g: G
             class={`panel ${state.grade === 'fail' ? 'panel--mistake' : 'panel--good'}`}
             role="status"
           >
-            <p>{state.text}</p>
+            <div class="learn__head">
+              <p>{state.text}</p>
+              <SpeakButton text={state.text} />
+            </div>
           </div>
         )}
       </div>

@@ -227,7 +227,18 @@ function LessonPlayer({ content, lref }: { content: LearnContent; lref: LessonRe
       <section class="screen" aria-labelledby="lesson-title">
         <h1 id="lesson-title">{t('title')}</h1>
         <div class="panel learn__done" role="status">
-          <p class="learn__done-title">Lesson complete</p>
+          <div class="learn__head">
+            <p class="learn__done-title">Lesson complete</p>
+            <SpeakButton
+              text={`Lesson complete. ${
+                finished === 3
+                  ? 'Every task without a mistake, a hint or the solution.'
+                  : finished === 2
+                    ? 'A few slips. Repeat the lesson for the third star.'
+                    : 'Done. With fewer slips there are more stars next time.'
+              }`}
+            />
+          </div>
           <Stars n={finished} />
           <p>
             {finished === 3
@@ -336,12 +347,19 @@ const orientationOf = (step: StepDef) =>
 function wordsOf(c: ComponentChildren): string {
   if (typeof c === 'string' || typeof c === 'number') return String(c);
   if (Array.isArray(c)) return c.map(wordsOf).join('');
-  if (c && typeof c === 'object' && 'props' in c)
-    return wordsOf((c.props as { children?: ComponentChildren }).children);
+  if (c && typeof c === 'object' && 'props' in c) {
+    // A Rich text carries its words in `text`; other elements in their children.
+    const props = c.props as { text?: unknown; children?: ComponentChildren };
+    return typeof props.text === 'string' ? props.text : wordsOf(props.children);
+  }
   return '';
 }
 
-/** Feedback on a task, read aloud like the task text. `repeat` reads it again unchanged. */
+/**
+ * Feedback on a task. Feedback is read aloud automatically like the task
+ * text, and `repeat` reads it again unchanged; a neutral running count
+ * such as "Moves: 3" is read only on a tap.
+ */
 function Note({
   tone,
   children,
@@ -354,7 +372,7 @@ function Note({
   return (
     <div class={`learn__note learn__note--${tone} learn__head`} role="status" aria-live="polite">
       <p>{children}</p>
-      <SpeakButton text={wordsOf(children)} repeat={repeat} />
+      <SpeakButton text={wordsOf(children)} repeat={repeat} auto={tone !== 'neutral'} />
     </div>
   );
 }

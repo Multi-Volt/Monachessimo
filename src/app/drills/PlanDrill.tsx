@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { acceptable } from '../../drills/answers';
 import type { Drill, Grade } from '../../drills/types';
 import { Board } from '../../ui/Board';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { formatScore } from '../../ui/format';
 
 /**
@@ -63,7 +64,10 @@ export function PlanDrill({ drill, onDone }: { drill: Drill; onDone: (g: Grade) 
         </fieldset>
       ) : (
         <div class="panel" role="status">
-          <h2>How each move scored</h2>
+          <div class="learn__head">
+            <h2>How each move scored</h2>
+            <SpeakButton text={planSummary(choices, picked, best)} />
+          </div>
           <ul class="plan__results">
             {[...choices]
               .sort((a, b) =>
@@ -100,4 +104,17 @@ function castleRookSquare(uci: string): string[] {
 
 function castleMatches(uci: string, orig: string, dest: string): boolean {
   return uci.slice(0, 2) === orig && castleRookSquare(uci)[0] === dest;
+}
+
+/** The result in one or two sentences, for reading aloud. */
+function planSummary(
+  choices: readonly { uci: string; san: string; score: Parameters<typeof formatScore>[0] }[],
+  picked: string | undefined,
+  best: { uci: string; san: string; score: Parameters<typeof formatScore>[0] },
+): string {
+  const mine = choices.find((c) => c.uci === picked);
+  if (!mine) return '';
+  if (mine.uci === best.uci)
+    return `You chose ${mine.san}, the best move, at ${formatScore(mine.score)}.`;
+  return `You chose ${mine.san}, at ${formatScore(mine.score)}. The best was ${best.san}, at ${formatScore(best.score)}.`;
 }

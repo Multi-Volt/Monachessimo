@@ -712,9 +712,14 @@ function Session(props: {
               <p class="notice">Checking {uciToSan(fenNow, phase.uci)}…</p>
             )}
             {phase.kind === 'replying' && (
-              <p class="notice">
-                {uciToSan(fenNow, phase.uci)} is good. Your opponent replies. Keep going.
-              </p>
+              <div class="learn__head">
+                <p class="notice">
+                  {uciToSan(fenNow, phase.uci)} is good. Your opponent replies. Keep going.
+                </p>
+                <SpeakButton
+                  text={`${uciToSan(fenNow, phase.uci)} is good. Your opponent replies. Keep going.`}
+                />
+              </div>
             )}
             {tryAgain && (phase.kind === 'wrong' || phase.kind === 'solving') && (
               <div class="panel panel--mistake learn__head" role="status">
@@ -753,11 +758,14 @@ function Session(props: {
           </div>
 
           {!done && hintsUsed > 0 && (
-            <ol class="hint-list">
-              {stepHints.slice(0, hintsUsed).map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ol>
+            <div class="learn__head">
+              <ol class="hint-list">
+                {stepHints.slice(0, hintsUsed).map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ol>
+              <SpeakButton text={stepHints[hintsUsed - 1] ?? ''} />
+            </div>
           )}
 
           <div class="row row--actions">
