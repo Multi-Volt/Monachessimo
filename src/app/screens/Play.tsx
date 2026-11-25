@@ -11,8 +11,9 @@ import {
   type MoveLabel,
 } from '../../ui/badges';
 import { positions } from '../../play/review';
-import { causeMarks, type Mark } from '../../play/cause';
+import type { Mark } from '../../play/cause';
 import { longTermReason, REASON_PLIES } from '../../play/reason';
+import { buildRecord, toJsonl, withLine, type ExplanationRecord } from '../../play/record';
 import { enrichLine, narrateLine, type LineStep } from '../../play/narrate';
 import { findThreat, type Threat } from '../../engine/threat';
 import { fromFen } from '../../detectors/board';
@@ -472,7 +473,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const services = useServices()!;
   const [game, setGame] = useState(initial);
   const [phase, setPhase] = useState<Phase>({ kind: initial.end ? 'over' : 'thinking' });
-  const [refusal, setRefusal] = useState<{ cls: MoveClass; why: MoveExplanation }>();
+  const [refusal, setRefusal] = useState<{ cls: MoveClass; record: ExplanationRecord }>();
   /** The last refused move and the opponent's best line after it. */
   const [refutation, setRefutation] = useState<{
     uci: string;
@@ -637,7 +638,17 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
 
     if (refuses(game.strictness, best, played)) {
       const text = why ? explanationText(why).join(' ') : `${san} is a ${verdict.class}.`;
-      setRefusal({ cls: verdict.class!, why: why! });
+      setRefusal({
+        cls: verdict.class!,
+        record: buildRecord({
+          before: pos,
+          uci,
+          reply,
+          verdict,
+          explanation: why!,
+          threat: threatRef.current,
+        }),
+      });
       setRefutation({
         uci,
         reply: reply.slice(0, 5),
@@ -794,6 +805,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       live = false;
     };
   }, [refutation, fen]);
+  // The record the coach renders: the verdict, then the narrated line and
+  // the long-term reason once they are known.
+  const record = refusal ? withLine(refusal.record, lineSteps, reason) : undefined;
   const shownFen = (() => {
     if (replaying && replayPositions[replayStep])
       return makeFen(replayPositions[replayStep]!.toSetup());
@@ -848,10 +862,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   if (phase.kind === 'refused' && refusal && !replaying) {
     const [, to] = uciSquares(phase.uci);
     shapes.push(badge(to, refusal.cls));
-    const reply = squares(refutation?.reply[0]);
-    const cause = refusal.why.cause;
-    if (cause) shapes.push(...causeMarks(cause).map(markShape));
-    else if (reply) shapes.push(arrow(reply[0], reply[1], 'red'));
+    shapes.push(...refusal.record.marks.map(markShape));
   } else if (replaying && replayStep! < replayLine.length) {
     const next = squares(replayLine[replayStep!]);
     if (next) shapes.push(arrow(next[0], next[1], 'red'));
@@ -890,10 +901,10 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (refusal && (phase.kind === 'refused' || replaying))
       return {
         tone: refusal.cls,
-        title: refusal.why.headline,
-        ...(refusal.why.points[0] ? { text: refusal.why.points[0] } : {}),
-        points: refusal.why.points.slice(1),
-        tags: refusal.why.tags,
+        title: record!.sentences.headline,
+        ...(record!.sentences.points[0] ? { text: record!.sentences.points[0] } : {}),
+        points: record!.sentences.points.slice(1),
+        tags: record!.tags,
       };
     if (refusal)
       return {
@@ -1001,6 +1012,15 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
                   Show what happens
                 </button>
               )}
+              {import.meta.env.DEV && record && (
+                <button
+                  type="button"
+                  class="button"
+                  onClick={() => void navigator.clipboard.writeText(toJsonl([record]))}
+                >
+                  Copy record (dev)
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1009,7 +1029,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       {replaying && (
         <div class="panel stepper">
           <ol class="stepper__lines">
-            {lineSteps.slice(0, replayStep).map((st, k) => (
+            {record!.line.slice(0, replayStep).map((st, k) => (
               <li key={st.uci + k} class={k === replayStep - 1 ? 'is-current' : ''}>
                 <span class="stepper__san num">{st.san}</span> {st.text}
               </li>
@@ -1018,7 +1038,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           {refutation && replayStep === replayPositions.length - 1 && (
             <div class="stepper__why">
               <p>
-                <strong>Why this is worse.</strong> {reason?.text}
+                <strong>Why this is worse.</strong> {record?.sentences.reason}
               </p>
               <p class="hint">
                 The engine rates your position about {(refutation.cost / 100).toFixed(1)} pawns
