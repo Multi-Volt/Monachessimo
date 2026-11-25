@@ -5,20 +5,59 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Daily check for a new Lichess puzzle database. The run stops after the
+  # freshness job unless Lichess has published a new file.
+  schedule:
+    - cron: '23 5 * * *'
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # A push cancels an older run; a scheduled run never cancels a push.
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 env:
   # GitHub Pages serves this project at https://<owner>.github.io/<repo>/.
   BASE_PATH: /${{ github.event.repository.name }}/
 
 jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    outputs:
+      key: ${{ steps.puzzles.outputs.key }}
+      build: ${{ steps.decide.outputs.build }}
+    steps:
+      - name: Find the current puzzle database version
+        id: puzzles
+        # Only the headers, never the file.
+        run: |
+          modified=$(curl -sfI -A 'Monachessimo build (github.com/Multi-Volt/Monachessimo)' https://database.lichess.org/lichess_db_puzzle.csv.zst | grep -i '^last-modified:' | cut -d' ' -f2- | tr -dc 'A-Za-z0-9')
+          if [ -z "$modified" ]; then echo "Could not read the database version"; exit 1; fi
+          echo "key=lichess-puzzles-${modified}" >> "$GITHUB_OUTPUT"
+      - name: Look for this version in the cache
+        id: cached
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.cache/monachessimo
+          key: ${{ steps.puzzles.outputs.key }}
+          lookup-only: true
+      - name: Decide whether to build
+        id: decide
+        # A scheduled run builds only when the cache has never seen this
+        # version, which means the deployed site does not have it either.
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.cached.outputs.cache-hit }}" = "true" ]; then
+            echo "Puzzle database unchanged; nothing to do."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
   check:
+    needs: freshness
+    if: needs.freshness.outputs.build == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -31,15 +70,10 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
-      - name: Find the current puzzle database version
-        id: puzzles
-        run: |
-          modified=$(curl -sfI https://database.lichess.org/lichess_db_puzzle.csv.zst | grep -i '^last-modified:' | cut -d' ' -f2- | tr -dc 'A-Za-z0-9')
-          echo "key=lichess-puzzles-${modified}" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: ~/.cache/monachessimo
-          key: ${{ steps.puzzles.outputs.key }}
+          key: ${{ needs.freshness.outputs.key }}
       - name: Download the puzzle database
         run: |
           f=~/.cache/monachessimo/lichess_db_puzzle.csv.zst
@@ -80,7 +114,7 @@ jobs:
 
   deploy:
     needs: check
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.check.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       pages: write
