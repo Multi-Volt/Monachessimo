@@ -492,8 +492,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   }>();
   /** Step in "Show what happens": 1 is the refused move, then the reply line. */
   const [replayStep, setReplayStep] = useState<number>();
-  /** A short note about an accepted but imperfect move. */
-  const [note, setNote] = useState<{ cls: MoveClass; why: MoveExplanation }>();
+  /**
+   * A short note about an accepted but imperfect move, with the notes for
+   * the wording model once the narrated line is complete.
+   */
+  const [note, setNote] = useState<{ cls: MoveClass; why: MoveExplanation; sheet?: string }>();
   /** What a good move did, shown until the next move. */
   const [praise, setPraise] = useState<Praise>();
   const [hints, setHints] = useState(0);
@@ -694,7 +697,33 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     setRefutation(undefined);
     setReplayStep(undefined);
     // A move the coach lets through can still be imperfect: say so.
-    setNote(why && verdict.class ? { cls: verdict.class, why } : undefined);
+    const noted = why && verdict.class ? { cls: verdict.class, why } : undefined;
+    setNote(noted);
+    if (noted && services.settings.coachModel) {
+      // The same record a refusal gets, for the wording model.
+      const rec = buildRecord({
+        before: pos,
+        uci,
+        reply,
+        verdict,
+        explanation: noted.why,
+        threat: threatRef.current,
+      });
+      const shown = [uci, ...reply.slice(0, 5)];
+      const reason = longTermReason(
+        pos,
+        game.you,
+        [uci, ...reply.slice(0, REASON_PLIES)],
+        t.lines[0]?.pv ?? [],
+      );
+      void enrichLine(pos, shown, narrateLine(pos, shown, game.you), (r) =>
+        services.pool.search(r),
+      ).then((rich) =>
+        setNote((n) =>
+          n === noted ? { ...noted, sheet: factSheet(withLine(rec, rich, reason)) } : n,
+        ),
+      );
+    }
     const praise = praiseMove({ before: pos, uci, lines: t.lines, played, verdict });
     setPraise(praise);
     const label: MoveLabel | undefined = praise?.label ?? verdict.class ?? undefined;
@@ -823,7 +852,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   // The on-device model's wording of the same record, when the player turned
   // it on, from the finished notes.
   const phrased = usePhrased(
-    record && lineDone && phase.kind === 'refused' ? factSheet(record) : undefined,
+    record && lineDone && phase.kind === 'refused' ? factSheet(record) : note?.sheet,
     !!services.settings.coachModel,
   );
   const shownFen = (() => {
@@ -911,6 +940,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         return {
           tone: note.cls,
           title: `Accepted, but ${note.why.headline.charAt(0).toLowerCase()}${note.why.headline.slice(1)}`,
+          ...(phrased && note.sheet ? { text: phrased } : {}),
           points: note.why.points,
           tags: note.why.tags,
         };
@@ -943,6 +973,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       return {
         tone: note.cls,
         title: `Accepted, but ${note.why.headline.charAt(0).toLowerCase()}${note.why.headline.slice(1)}`,
+        ...(phrased && note.sheet ? { text: phrased } : {}),
         points: note.why.points,
         tags: note.why.tags,
       };

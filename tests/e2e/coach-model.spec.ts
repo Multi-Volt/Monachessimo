@@ -28,3 +28,27 @@ test('the coach model rewrites a refused move in plain sentences @model', async 
   );
   expect(errors).toEqual([]);
 });
+
+test('the coach model also words the note on an accepted inaccuracy @model', async ({ page }) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto('./#/settings');
+  await page.getByLabel("Word the coach's explanations with the model").check();
+  await expect(page.getByText(/The model is ready/)).toBeVisible({ timeout: 180_000 });
+
+  // After 1.e4 e5 2.d4 exd4 3.Nf3 Nc6 4.Nxd4 Nxd4 5.Qxd4: c5 costs about a pawn,
+  // an inaccuracy or a mistake depending on the search, and is accepted.
+  const fen = 'r1bqkbnr/pppp1ppp/8/8/3QP3/8/PPP2PPP/RNB1KB1R b KQkq - 0 5';
+  await page.goto(`./#/play/fen/${encodeURIComponent(fen)}`);
+  await page.getByLabel('Refuse blunders only').check();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
+  await typeMove(page, 'c5');
+  const coach = page.locator('.coach');
+  await expect(coach).toContainText(/Accepted, but c5 is an? (inaccuracy|mistake)/, {
+    timeout: 30_000,
+  });
+  await expect(coach.locator('.coach__text')).toContainText(/[Pp]awn to c5/, { timeout: 120_000 });
+  console.log('Note text:', await coach.locator('.coach__text').textContent());
+  expect(errors).toEqual([]);
+});
