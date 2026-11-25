@@ -73,6 +73,50 @@ describe('phrasing check', () => {
     );
   });
 
+  it('flags a capture told as a plain move, or a move given to the wrong side', () => {
+    const notes = [
+      'Ne7 is a mistake: it costs about 1.3 pawns.',
+      'Fact: This move ignores my threat of e5.',
+      'What happens next:',
+      '- You play Ne7.',
+      '- Your pawn takes my pawn on e5.',
+      '- I take back on e5, and material is even.',
+    ].join('\n');
+    const good =
+      'Knight to e7 ignores my threat of pawn to e5. Your pawn takes e5, and I take back.';
+    expect(checkPhrasing(notes, good)).toEqual([]);
+    expect(
+      checkPhrasing(
+        notes,
+        'Knight to e7 ignores my threat. After you play pawn to e5, I take back.',
+      ),
+    ).toContain('move: your pawn to e5');
+    // A capture may be told as "to e5, taking your pawn".
+    expect(
+      checkPhrasing(notes, 'Knight to e7 is a mistake. I play pawn to e5, taking nothing yet.'),
+    ).toEqual([]);
+  });
+
+  it('flags a forced move turned around and check signs read as words', () => {
+    expect(
+      checkPhrasing(sheet, 'Bishop to g5 is a blunder. You have to play something else.'),
+    ).toContain('forced: inverted');
+    expect(checkPhrasing(sheet, 'Bishop to g5 is a blunder. My pawn takes g5 plus.')).toContain(
+      'notation: sign in words',
+    );
+  });
+
+  it('reads mates, promotions and pawn moves in the notes as facts', () => {
+    const notes =
+      'b8=Q is a blunder: it costs about 5.5 pawns.\nWhat happens next:\n- I play h5, threatening Qg7#.';
+    expect(
+      checkPhrasing(
+        notes,
+        'Promoting is a blunder here. My pawn goes to h5, threatening checkmate.',
+      ),
+    ).toEqual([]);
+  });
+
   it('flags the copy rules', () => {
     expect(checkPhrasing(sheet, 'Bg5 loses the bishop — badly! Great.')).toEqual(
       expect.arrayContaining(['dash', 'exclamation mark', 'filler: great']),

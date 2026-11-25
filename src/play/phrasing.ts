@@ -187,8 +187,119 @@ function owned(text: string, sheet: boolean): { pairs: Set<string>; triples: Set
     // The headline starts with the player's move.
     if (raw === text.split('\n')[0] && sans[0]) fromSan('your', sans[0]);
     for (const m of line.matchAll(/my threat of (\S+?)[.,]?(?:\s|$)/g)) fromSan('my', m[1]!);
+    // A bare square played as a move is a pawn move: "I play h5", "I answer e5".
+    for (const m of line.matchAll(
+      /\b(You play|I play|I answer|My best answer is|my threat of) ([a-h][1-8])\b/g,
+    ))
+      add(m[1]!.startsWith('You') ? 'your' : 'my', 'pawn', m[2]);
   }
   return { pairs, triples };
+}
+
+/** A move as "your pawn x e5" or "my knight - h6"; owner or role "*" when unknown. */
+type MoveFact = { owner: Owner | '*'; role: string; capture: boolean; dest: string };
+
+const ROLE_WORDS = 'pawn|knight|bishop|rook|queen|king';
+
+/** A SAN move as a fact; undefined for castling. */
+function sanFact(owner: Owner | '*', san: string): MoveFact | undefined {
+  const s = stripCheck(san).replace(/=[QRBN]$/, '');
+  if (s.startsWith('O-O') || !/[a-h][1-8]$/.test(s)) return undefined;
+  return { owner, role: ROLE_OF[s[0]!] ?? 'pawn', capture: s.includes('x'), dest: s.slice(-2) };
+}
+
+/**
+ * The moves the fact sheet states, with who made them and whether each
+ * took something: the headline move, "You play" and "I play" lines, answers
+ * and threats, and narrated captures such as "Your pawn takes my pawn on e5".
+ */
+function sheetMoves(sheet: string): MoveFact[] {
+  const out: MoveFact[] = [];
+  const push = (f: MoveFact | undefined) => f && out.push(f);
+  const lines = sheet.split('\n');
+  push(sanFact('your', lines[0]!.split(' ')[0]!));
+  for (const raw of lines) {
+    const line = raw.replace(/^(- |Fact: |Why: |Long term: )/, '');
+    const subject: Owner | '*' = /^(You|Your)\b/.test(line)
+      ? 'your'
+      : /^(I|My)\b/.test(line)
+        ? 'my'
+        : '*';
+    for (const m of line.matchAll(/\b(?:You|I) play (\S+?)[.,]?(?=\s|$)/g))
+      push(sanFact(subject, m[1]!));
+    for (const m of line.matchAll(
+      /\b(?:I answer|My best answer is|my threat of) (\S+?)[.,]?(?=\s|$)/g,
+    ))
+      push(sanFact('my', m[1]!));
+    for (const m of line.matchAll(/\bthreatening (\S+?)[.,]?(?=\s|$)/g))
+      push(sanFact(subject, m[1]!));
+    for (const m of line.matchAll(
+      new RegExp(`\\b(my|your) (${ROLE_WORDS}) takes (?:my|your) \\w+ on ([a-h][1-8])`, 'gi'),
+    ))
+      out.push({
+        owner: m[1]!.toLowerCase() as Owner,
+        role: m[2]!.toLowerCase(),
+        capture: true,
+        dest: m[3]!,
+      });
+    for (const m of line.matchAll(/\b(You|I) take back on ([a-h][1-8])/g))
+      out.push({ owner: m[1] === 'You' ? 'your' : 'my', role: '*', capture: true, dest: m[2]! });
+    for (const m of line.matchAll(
+      new RegExp(`Check from (my|your) (${ROLE_WORDS}) on ([a-h][1-8])`, 'g'),
+    ))
+      out.push({ owner: m[1] as Owner, role: m[2]!, capture: false, dest: m[3]! });
+    const lead = /^([KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)\./.exec(line);
+    if (lead) push(sanFact('*', lead[1]!));
+  }
+  return out;
+}
+
+/**
+ * Moves a text states in words, "you play pawn to e5" or "my knight takes on
+ * b5", with the owner read from the nearest "you", "your", "I", "me" or
+ * "my" before it in the same clause.
+ */
+function textMoves(text: string): MoveFact[] {
+  const out: MoveFact[] = [];
+  for (const sentence of text.toLowerCase().split(/[.;:?]/)) {
+    const re = new RegExp(`\\b(${ROLE_WORDS}) (to|takes(?: on)?) ([a-h][1-8])\\b`, 'g');
+    for (const m of sentence.matchAll(re)) {
+      // The owner comes from the same clause; a comma starts a new one.
+      const clause = sentence.slice(sentence.lastIndexOf(',', m.index) + 1, m.index);
+      const before = clause.match(/\b(you|your|i|me|my)\b/g)?.at(-1);
+      const owner: Owner | '*' = !before
+        ? '*'
+        : before === 'you' || before === 'your'
+          ? 'your'
+          : 'my';
+      // "Rook to g8, taking your rook" tells a capture too.
+      const after = sentence.slice(m.index + m[0].length);
+      const capture = m[2] !== 'to' || /^,?\s*(taking|capturing)\b/.test(after);
+      out.push({ owner, role: m[1]!, capture, dest: m[3]! });
+    }
+  }
+  return out;
+}
+
+/**
+ * A stated move the sheet contradicts: the sheet has that piece arriving on
+ * that square, but never in the way the text says, or never by that side.
+ */
+function wrongMoves(sheet: string, text: string): string[] {
+  const facts = sheetMoves(sheet);
+  const out: string[] = [];
+  for (const t of textMoves(text)) {
+    const same = facts.filter((f) => f.dest === t.dest && (f.role === '*' || f.role === t.role));
+    if (!same.length) continue;
+    const fits = same.some(
+      (f) => f.capture === t.capture && (f.owner === '*' || t.owner === '*' || f.owner === t.owner),
+    );
+    if (!fits)
+      out.push(
+        `move: ${t.owner === '*' ? '' : `${t.owner} `}${t.role} ${t.capture ? 'takes' : 'to'} ${t.dest}`,
+      );
+  }
+  return out;
 }
 
 /**
@@ -199,6 +310,12 @@ function owned(text: string, sheet: boolean): { pairs: Set<string>; triples: Set
  */
 export function checkPhrasing(sheet: string, text: string): string[] {
   const facts = named(sheet);
+  // Notation in the sheet names things a text may say in words: "Qg7#" a
+  // checkmate, "b8=Q" a promotion, and a bare "f3" played as a move a pawn.
+  if (/[a-h][1-8]#/.test(sheet)) facts.patterns.add('mate').add('checkmate');
+  if (/=[QRBN]/.test(sheet)) facts.patterns.add('promot');
+  if (/(^|\b(?:play|answer|answer is|threat of|threatening) )[a-h][1-8]\b/m.test(sheet))
+    facts.pieces.add('pawn');
   const said = named(text);
   const problems: string[] = [];
   const extra = (kind: keyof PhrasingFacts) =>
@@ -207,6 +324,13 @@ export function checkPhrasing(sheet: string, text: string): string[] {
     problems.push(...extra(k));
   // Moves are said in words, "rook to h8"; notation is for the board, not for speech.
   for (const san of said.sans) problems.push(`notation: ${san}`);
+  // A move given to the wrong side, or a capture told as a plain move.
+  problems.push(...wrongMoves(sheet, text));
+  // "You have to" means this move and no other; "something else" turns it around.
+  // Check signs read out as words: "pawn to e6 plus".
+  if (/\b(plus|hash|sharp)\b/i.test(text)) problems.push('notation: sign in words');
+  if (/\b(have to|must) (play|find|make) (something|anything) else\b/i.test(text))
+    problems.push('forced: inverted');
   // Whose piece: a claim the facts contradict, or an owner they never give.
   const known = owned(sheet, true);
   const claims = owned(text, false);

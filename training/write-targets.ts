@@ -1,16 +1,23 @@
 // Writes a target text for each exported record with a local model served
 // by llama.cpp's llama-server, and keeps only texts that pass the checker.
 //
-//   llama-server -m writer.gguf --jinja -ngl 99 -c 32768 -np 8 --port 8091
+// Two tiers: a small fast model writes everything, then a larger one
+// rewrites only what the small one got wrong, as the checker sees it.
+//
+//   llama-server -m small.gguf --jinja -ngl 99 -c 32768 -np 16 --port 8091
 //   node --experimental-transform-types --import ./training/register.mjs \
 //     training/write-targets.ts --in training/data/records.jsonl \
-//     --out training/data/targets.jsonl --parallel 8
+//     --out training/data/targets-tier1.jsonl --parallel 16
+//   (restart llama-server with the larger model)
+//   ... write-targets.ts --in training/data/records.jsonl \
+//     --only-failed training/data/targets-tier1.jsonl \
+//     --out training/data/targets-tier2.jsonl --parallel 8
 //
-// Each line of the output holds the record id, the fact sheet, the text,
-// the checker's problems and, with --review, the writer's own review. A text
-// with problems is retried twice; the last try is kept with its problems,
-// so the filter step can count them. The
-// output is appended to and resumes after a stop.
+// Each line of the output holds the record id, the model that wrote it, the
+// fact sheet, the text, the checker's problems and, with --review, the
+// writer's own review. A text with problems is retried twice; the last try
+// is kept with its problems. The output is appended to and resumes after a
+// stop. --skip FILE leaves out records that already have a passing text there.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
 import { checkPhrasing, factSheet } from '../src/play/phrasing';
@@ -113,6 +120,10 @@ function args() {
     server: get('--server') ?? 'http://127.0.0.1:8091',
     parallel: Number(get('--parallel') ?? 8),
     limit: Number(get('--limit') ?? Infinity),
+    /** Tier two: write only records whose text in this file fails the checker or is missing. */
+    onlyFailed: get('--only-failed'),
+    /** Skip records that already have a passing text in this file, written from the current notes. */
+    skip: get('--skip'),
     tries: Number(get('--tries') ?? 3),
     /** Let the writer reason before it answers: slower, and checked to be more accurate. */
     think: a.includes('--think'),
@@ -142,7 +153,7 @@ async function complete(
   sheet: string,
   temperature: number,
   think: boolean,
-): Promise<string> {
+): Promise<{ text: string; model: string }> {
   const res = await post(`${server}/v1/chat/completions`, {
     messages: [
       { role: 'system', content: SYSTEM },
@@ -159,8 +170,33 @@ async function complete(
     chat_template_kwargs: { enable_thinking: think },
   });
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-  const body = (await res.json()) as { choices: { message: { content: string } }[] };
-  return (body.choices[0]?.message.content ?? '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  const body = (await res.json()) as {
+    model: string;
+    choices: { message: { content: string } }[];
+  };
+  const text = (body.choices[0]?.message.content ?? '').replace(/<think>[\s\S]*?<\/think>/g, '');
+  return { text: text.trim(), model: body.model };
+}
+
+interface TargetLine {
+  id: string;
+  sheet: string;
+  text: string;
+}
+
+/**
+ * The texts in a targets file that still pass, by record id: written from
+ * the record's current notes and accepted by the current checker. The
+ * checker grows stricter over time, so its old verdicts are not trusted.
+ */
+function passing(file: string, sheets: Map<string, string>): Set<string> {
+  const ok = new Set<string>();
+  for (const l of readFileSync(file, 'utf8').split('\n')) {
+    if (!l) continue;
+    const t = JSON.parse(l) as TargetLine;
+    if (t.sheet === sheets.get(t.id) && !checkPhrasing(t.sheet, t.text).length) ok.add(t.id);
+  }
+  return ok;
 }
 
 /** The writer's second reading: undefined when the text is faithful, else what is wrong. */
@@ -198,12 +234,17 @@ async function main() {
     for (const l of readFileSync(o.out, 'utf8').split('\n'))
       if (l) done.add((JSON.parse(l) as { id: string }).id);
   } else writeFileSync(o.out, '');
-  const todo = readFileSync(o.input, 'utf8')
+  const records = readFileSync(o.input, 'utf8')
     .split('\n')
     .filter(Boolean)
-    .map((l) => JSON.parse(l) as { id: string; record: ExplanationRecord })
-    .filter((r) => !done.has(r.id))
+    .map((l) => JSON.parse(l) as { id: string; record: ExplanationRecord });
+  const sheets = new Map(records.map((r) => [r.id, factSheet(r.record)]));
+  const skip = o.skip ? passing(o.skip, sheets) : new Set<string>();
+  const firstTier = o.onlyFailed ? passing(o.onlyFailed, sheets) : new Set<string>();
+  const todo = records
+    .filter((r) => !done.has(r.id) && !skip.has(r.id) && !firstTier.has(r.id))
     .slice(0, o.limit);
+  if (o.onlyFailed) console.log(`${todo.length} records failed or are missing in ${o.onlyFailed}.`);
 
   const started = Date.now();
   let n = 0;
@@ -212,13 +253,14 @@ async function main() {
   const worker = async () => {
     while (next < todo.length) {
       const { id, record } = todo[next++]!;
-      const sheet = factSheet(record);
+      const sheet = sheets.get(id) ?? factSheet(record);
       let text = '';
+      let model = '';
       let problems: string[] = [];
       let tries = 0;
       while (tries < o.tries) {
         tries++;
-        text = await complete(o.server, sheet, 0.6 + 0.1 * (tries - 1), o.think);
+        ({ text, model } = await complete(o.server, sheet, 0.6 + 0.1 * (tries - 1), o.think));
         problems = checkPhrasing(sheet, text);
         if (!problems.length) break;
       }
@@ -229,6 +271,7 @@ async function main() {
       if (!problems.length) passed++;
       const line = {
         id,
+        writer: model,
         sheet,
         text,
         problems,
