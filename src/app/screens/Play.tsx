@@ -12,6 +12,7 @@ import {
 } from '../../ui/badges';
 import { positions } from '../../play/review';
 import { causeMarks, type Mark } from '../../play/cause';
+import { longTermReason, REASON_PLIES } from '../../play/reason';
 import { enrichLine, narrateLine, type LineStep } from '../../play/narrate';
 import { findThreat, type Threat } from '../../engine/threat';
 import { fromFen } from '../../detectors/board';
@@ -476,6 +477,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const [refutation, setRefutation] = useState<{
     uci: string;
     reply: string[];
+    /** The longer reply, for reading a plan from the opponent's moves. */
+    full: string[];
     /** The engine's line from the same position, to compare the end against. */
     best: string[];
     /** Centipawns the move cost. */
@@ -638,6 +641,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       setRefutation({
         uci,
         reply: reply.slice(0, 5),
+        full: reply.slice(0, REASON_PLIES),
         best: t.lines[0]?.pv ?? [],
         cost: verdict.cpLoss,
       });
@@ -762,6 +766,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     () => (refutation ? playLine(pos, replayLine, replayLine.length) : []),
     [refutation, fen],
   );
+  const reason = useMemo(
+    () =>
+      refutation
+        ? longTermReason(pos, game.you, [refutation.uci, ...refutation.full], refutation.best)
+        : undefined,
+    [refutation, fen],
+  );
   const replaying =
     replayStep !== undefined && (phase.kind === 'your-move' || phase.kind === 'refused');
 
@@ -844,6 +855,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   } else if (replaying && replayStep! < replayLine.length) {
     const next = squares(replayLine[replayStep!]);
     if (next) shapes.push(arrow(next[0], next[1], 'red'));
+  } else if (replaying && reason && replayStep === replayPositions.length - 1) {
+    shapes.push(...reason.marks.map(markShape));
   } else if (phase.kind === 'thinking' && lastMine === game.moves.length - 1) {
     const l = labels.get(lastMine);
     if (l) shapes.push(badge(uciSquares(game.moves[lastMine]!)[1], l));
@@ -1005,9 +1018,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           {refutation && replayStep === replayPositions.length - 1 && (
             <div class="stepper__why">
               <p>
-                <strong>Why this is worse.</strong> At the end of this line the engine rates your
-                position about {(refutation.cost / 100).toFixed(1)} pawns lower than after a better
-                move. Compared with that line:
+                <strong>Why this is worse.</strong> {reason?.text}
+              </p>
+              <p class="hint">
+                The engine rates your position about {(refutation.cost / 100).toFixed(1)} pawns
+                lower than after a better move. Compared with that line:
               </p>
               {(() => {
                 const diffs = compareLines(pos, game.you, replayLine, refutation.best);
