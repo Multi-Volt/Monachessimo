@@ -43,6 +43,7 @@ import {
   skillLabel,
   STRICTNESS_TEXT,
   type Strictness,
+  withArticle,
 } from '../../play/coach';
 import {
   addSummary,
@@ -639,7 +640,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       : undefined;
 
     if (refuses(game.strictness, best, played)) {
-      const text = why ? explanationText(why).join(' ') : `${san} is a ${verdict.class}.`;
+      const text = why
+        ? explanationText(why).join(' ')
+        : `${san} is ${withArticle(verdict.class!)}.`;
       setRefusal({
         cls: verdict.class!,
         record: buildRecord({

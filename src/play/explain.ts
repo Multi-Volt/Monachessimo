@@ -21,7 +21,7 @@ import { features } from '../strategy/features';
 import { tagMove, type TagName } from '../detectors';
 import type { Score } from '../engine/eval';
 import type { Line } from '../engine/uci';
-import type { Verdict } from './coach';
+import { withArticle, type Verdict } from './coach';
 
 /** Tags that describe a tactic: when one is present, it is the lesson. */
 const TACTICAL: TagName[] = [
@@ -113,7 +113,9 @@ export function explainMove(args: {
     verdict.cpLoss >= 1000
       ? 'turns the game around'
       : `costs about ${(verdict.cpLoss / 100).toFixed(1)} pawns`;
-  const headline = verdict.class ? `${san} is a ${verdict.class}: it ${cost}.` : `${san} ${cost}.`;
+  const headline = verdict.class
+    ? `${san} is ${withArticle(verdict.class)}: it ${cost}.`
+    : `${san} ${cost}.`;
   const points: string[] = [];
   if (!after) return { headline, points, tags: [] };
 

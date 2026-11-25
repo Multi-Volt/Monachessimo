@@ -3,10 +3,15 @@ import { makeFen } from 'chessops/fen';
 import { fromFen, playUci } from '../detectors/board';
 import { positionKey } from '../engine/uci';
 import { makeGame } from '../../tests/support/games';
-import { gameEnd, judgeMove, refuses, skillFor } from './coach';
+import { gameEnd, judgeMove, refuses, skillFor, withArticle } from './coach';
 import { buildIndex, yourVisits } from './positions';
 
 describe('coach', () => {
+  it('names a class with the right article', () => {
+    expect(withArticle('inaccuracy')).toBe('an inaccuracy');
+    expect(withArticle('mistake')).toBe('a mistake');
+  });
+
   it('refuses a move by strictness', () => {
     const best = { kind: 'cp' as const, value: 50 };
     const muchWorse = { kind: 'cp' as const, value: -300 };

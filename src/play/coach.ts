@@ -6,6 +6,9 @@ import type { Side } from '../import/types';
 
 export type MoveClass = 'inaccuracy' | 'mistake' | 'blunder';
 
+/** The class with its article: "an inaccuracy", "a mistake". */
+export const withArticle = (c: MoveClass): string => `${c === 'inaccuracy' ? 'an' : 'a'} ${c}`;
+
 /** How strict the coach is: the mildest class of move it refuses. */
 export const STRICTNESS = {
   blunders: 'blunder',

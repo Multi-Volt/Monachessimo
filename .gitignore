@@ -14,3 +14,6 @@ a11y-results/
 CLAUDE.md
 BUILD_PLAN.md
 COACH_PLAN.md
+
+# Training inputs and outputs: large, rebuilt from public sources
+training/data/
