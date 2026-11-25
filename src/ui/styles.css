@@ -1795,6 +1795,10 @@ a.chip:hover {
   border-left: 4px solid var(--hairline-strong);
 }
 
+.learn__note > p {
+  margin: 0;
+}
+
 .learn__note--good {
   border-left-color: var(--good);
 }

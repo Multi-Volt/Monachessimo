@@ -981,7 +981,10 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
             <p class="coach__title">{coach.title}</p>
             <SpeakButton
               text={
-                coach.tone === 'neutral' ? '' : [coach.title, coach.text].filter(Boolean).join(' ')
+                // Status lines such as "Your move." are not read; verdicts and threats are.
+                coach.tone === 'neutral' && coach.title !== threat
+                  ? ''
+                  : [coach.title, coach.text].filter(Boolean).join(' ')
               }
             />
           </div>

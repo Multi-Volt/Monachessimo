@@ -98,19 +98,47 @@ export function speakable(text: string): string {
   );
 }
 
-/** Reads text aloud; without a voice, with the device's default voice. */
-export function speak(text: string, voice: SpeechSynthesisVoice | undefined): void {
+/**
+ * The utterance being read. Holding it keeps Chrome from collecting it
+ * mid-sentence, which silently ends the speech.
+ */
+let current: SpeechSynthesisUtterance | undefined;
+let queued: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Reads text aloud, cutting off what was being read; without a voice, with
+ * the device's default voice. Returns the utterance, so its owner can stop it.
+ */
+export function speak(
+  text: string,
+  voice: SpeechSynthesisVoice | undefined,
+): SpeechSynthesisUtterance | undefined {
   const s = synth();
-  if (!s) return;
-  s.cancel();
+  if (!s) return undefined;
   const u = new SpeechSynthesisUtterance(speakable(text));
   if (voice) {
     u.voice = voice;
     u.lang = voice.lang;
   } else u.lang = 'en';
-  s.speak(u);
+  u.onend = () => {
+    if (current === u) current = undefined;
+  };
+  current = u;
+  clearTimeout(queued);
+  if (s.speaking || s.pending) {
+    // Chrome drops a speak() that follows cancel() at once, so wait a moment.
+    s.cancel();
+    queued = setTimeout(() => {
+      if (current === u) s.speak(u);
+    }, 100);
+  } else s.speak(u);
+  return u;
 }
 
-export function stopSpeaking(): void {
+/** Stops reading: everything, or only `mine` if it is still being read. */
+export function stopSpeaking(mine?: SpeechSynthesisUtterance): void {
+  if (mine && mine !== current) return;
+  clearTimeout(queued);
+  current = undefined;
   synth()?.cancel();
 }

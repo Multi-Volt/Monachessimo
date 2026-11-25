@@ -332,17 +332,30 @@ function stepShapes(step: StepDef): DrawShape[] {
 const orientationOf = (step: StepDef) =>
   step.orientation ?? (step.fen ? sideToMove(step.fen) : 'white');
 
+/** The words of a note: its strings and numbers, without markup. */
+function wordsOf(c: ComponentChildren): string {
+  if (typeof c === 'string' || typeof c === 'number') return String(c);
+  if (Array.isArray(c)) return c.map(wordsOf).join('');
+  if (c && typeof c === 'object' && 'props' in c)
+    return wordsOf((c.props as { children?: ComponentChildren }).children);
+  return '';
+}
+
+/** Feedback on a task, read aloud like the task text. `repeat` reads it again unchanged. */
 function Note({
   tone,
   children,
+  repeat,
 }: {
   tone: 'good' | 'bad' | 'hint' | 'neutral';
   children: ComponentChildren;
+  repeat?: unknown;
 }) {
   return (
-    <p class={`learn__note learn__note--${tone}`} role="status" aria-live="polite">
-      {children}
-    </p>
+    <div class={`learn__note learn__note--${tone} learn__head`} role="status" aria-live="polite">
+      <p>{children}</p>
+      <SpeakButton text={wordsOf(children)} repeat={repeat} />
+    </div>
   );
 }
 
@@ -689,7 +702,11 @@ function MoveView({ step, text, t, onSolved, onFlaw }: ViewProps<MoveStep>) {
         }}
         label={`Lesson board. ${me === 'white' ? 'White' : 'Black'} to move.`}
       />
-      {note && <Note tone={note.tone}>{note.text}</Note>}
+      {note && (
+        <Note tone={note.tone} repeat={note}>
+          {note.text}
+        </Note>
+      )}
       {step.src && <p class="hint">Puzzle {step.src} from the Lichess puzzle database (CC0).</p>}
       <TypedMove disabled={done || busy} fen={fen} onMove={tryMove} />
       {!done && (

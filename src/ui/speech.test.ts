@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { pickVoice, sanToWords, speakable } from './speech';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { pickVoice, sanToWords, speak, speakable, stopSpeaking } from './speech';
 
 const voice = (voiceURI: string, lang: string, isDefault = false, localService = true) =>
   ({
@@ -48,5 +48,59 @@ describe('speech', () => {
     expect(pickVoice(voices, undefined)?.voiceURI).toBe('device');
     expect(pickVoice(voices, 'cloud')?.voiceURI).toBe('cloud');
     expect(pickVoice([voice('cloud', 'en-US', true, false)], undefined)?.voiceURI).toBe('cloud');
+  });
+});
+
+describe('speaking', () => {
+  /** A fake engine: `busy` says whether something is being read. */
+  function fakeEngine(busy: boolean) {
+    const log: string[] = [];
+    vi.stubGlobal(
+      'SpeechSynthesisUtterance',
+      class {
+        voice: unknown = null;
+        lang = '';
+        onend: (() => void) | null = null;
+        constructor(public text: string) {}
+      },
+    );
+    vi.stubGlobal('window', {
+      speechSynthesis: {
+        speaking: busy,
+        pending: false,
+        speak: (u: { text: string }) => log.push(`speak ${u.text}`),
+        cancel: () => log.push('cancel'),
+      },
+    });
+    return log;
+  }
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('speaks at once when nothing is being read', () => {
+    const log = fakeEngine(false);
+    speak('Correct.', undefined);
+    expect(log).toEqual(['speak Correct.']);
+  });
+
+  it('waits a moment after cutting off speech, as Chrome needs', () => {
+    vi.useFakeTimers();
+    const log = fakeEngine(true);
+    speak('Not that move.', undefined);
+    expect(log).toEqual(['cancel']);
+    vi.advanceTimersByTime(150);
+    expect(log).toEqual(['cancel', 'speak Not that move.']);
+  });
+
+  it('lets a button stop only its own speech', () => {
+    const log = fakeEngine(false);
+    const first = speak('Black to move.', undefined);
+    speak('Well played.', undefined);
+    stopSpeaking(first);
+    expect(log).toEqual(['speak Black to move.', 'speak Well played.']);
+    stopSpeaking();
+    expect(log.at(-1)).toBe('cancel');
   });
 });
