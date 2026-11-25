@@ -7,7 +7,7 @@
 //     --out training/data/targets.jsonl --parallel 8
 //
 // Each line of the output holds the record id, the fact sheet, the text,
-// the checker's problems and the writer's own review of the text. A text
+// the checker's problems and, with --review, the writer's own review. A text
 // with problems is retried twice; the last try is kept with its problems,
 // so the filter step can count them. The
 // output is appended to and resumes after a stop.
@@ -118,7 +118,23 @@ function args() {
     think: a.includes('--think'),
     /** Only review texts already written in --in, which then holds target lines. */
     reviewOnly: a.includes('--review-only'),
+    /** Review each text right after writing it. Slower: the slots lose their cached prompt. */
+    review: a.includes('--review'),
   };
+}
+
+/** Posts to the server, waiting out a server that is loading or briefly down. */
+async function post(url: string, body: unknown): Promise<Response> {
+  for (let wait = 2_000; ; wait = Math.min(wait * 2, 60_000)) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch(() => undefined);
+    if (res && res.status !== 503) return res;
+    console.error(`Server not ready (${res?.status ?? 'no connection'}), retrying.`);
+    await new Promise((r) => setTimeout(r, wait));
+  }
 }
 
 async function complete(
@@ -127,24 +143,20 @@ async function complete(
   temperature: number,
   think: boolean,
 ): Promise<string> {
-  const res = await fetch(`${server}/v1/chat/completions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: SYSTEM },
-        ...EXAMPLES.flatMap(([notes, text]) => [
-          { role: 'user', content: notes },
-          { role: 'assistant', content: text },
-        ]),
-        { role: 'user', content: sheet },
-      ],
-      temperature,
-      top_p: 0.95,
-      top_k: 20,
-      max_tokens: think ? 6000 : 300,
-      chat_template_kwargs: { enable_thinking: think },
-    }),
+  const res = await post(`${server}/v1/chat/completions`, {
+    messages: [
+      { role: 'system', content: SYSTEM },
+      ...EXAMPLES.flatMap(([notes, text]) => [
+        { role: 'user', content: notes },
+        { role: 'assistant', content: text },
+      ]),
+      { role: 'user', content: sheet },
+    ],
+    temperature,
+    top_p: 0.95,
+    top_k: 20,
+    max_tokens: think ? 6000 : 300,
+    chat_template_kwargs: { enable_thinking: think },
   });
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   const body = (await res.json()) as { choices: { message: { content: string } }[] };
@@ -153,18 +165,14 @@ async function complete(
 
 /** The writer's second reading: undefined when the text is faithful, else what is wrong. */
 async function review(server: string, sheet: string, text: string): Promise<string | undefined> {
-  const res = await fetch(`${server}/v1/chat/completions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: REVIEW },
-        { role: 'user', content: `Notes:\n${sheet}\n\nText:\n${text}` },
-      ],
-      temperature: 0,
-      max_tokens: 60,
-      chat_template_kwargs: { enable_thinking: false },
-    }),
+  const res = await post(`${server}/v1/chat/completions`, {
+    messages: [
+      { role: 'system', content: REVIEW },
+      { role: 'user', content: `Notes:\n${sheet}\n\nText:\n${text}` },
+    ],
+    temperature: 0,
+    max_tokens: 60,
+    chat_template_kwargs: { enable_thinking: false },
   });
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   const body = (await res.json()) as { choices: { message: { content: string } }[] };
@@ -215,10 +223,18 @@ async function main() {
         if (!problems.length) break;
       }
       // The review is stored, not used to retry: it also rejects good texts.
-      const verdict = problems.length ? undefined : await review(o.server, sheet, text);
+      const verdict =
+        o.review && !problems.length ? await review(o.server, sheet, text) : undefined;
       n++;
       if (!problems.length) passed++;
-      const line = { id, sheet, text, problems, tries, review: verdict ?? 'OK' };
+      const line = {
+        id,
+        sheet,
+        text,
+        problems,
+        tries,
+        ...(o.review ? { review: verdict ?? 'OK' } : {}),
+      };
       await appendFile(o.out, JSON.stringify(line) + '\n');
       if (n % 25 === 0) {
         const s = (Date.now() - started) / 1000;
