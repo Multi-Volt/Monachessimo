@@ -13,6 +13,8 @@ export interface AppSettings {
   board?: BoardColors;
   /** Spoken coaching with a voice on the device. Missing means off. */
   voice?: VoiceSettings;
+  /** Word the coach's explanations with the on-device model. Missing means off. */
+  coachModel?: boolean;
 }
 
 export interface VoiceSettings {

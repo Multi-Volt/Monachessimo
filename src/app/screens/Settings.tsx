@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { deleteEverything } from '../../store/db';
 import { useServices } from '../../ui/hooks';
 import { DEPTH_PRESETS } from '../services';
@@ -7,6 +7,13 @@ import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors } from '../../ui/boardTheme';
 import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
+import {
+  deleteModel,
+  getManifest,
+  loadModel,
+  modelState,
+  type ModelManifest,
+} from '../../play/coachModel';
 
 /** Spoken coaching. Shown when the browser can speak. */
 function VoicePanel() {
@@ -64,6 +71,53 @@ function VoicePanel() {
           Try the voice
         </button>
       </div>
+    </div>
+  );
+}
+
+const mb = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
+
+/** The on-device wording model. Shown when this build ships one. */
+function CoachModelPanel() {
+  const services = useServices()!;
+  const [manifest, setManifest] = useState<ModelManifest>();
+  const [on, setOn] = useState(!!services.settings.coachModel);
+  const { state } = useStore(modelState);
+  useEffect(() => {
+    void getManifest().then(setManifest);
+  }, []);
+  if (!manifest) return null;
+  const save = async (next: boolean) => {
+    setOn(next);
+    await services.saveSettings({ ...services.settings, coachModel: next });
+    if (next) void loadModel().catch(() => undefined);
+    else await deleteModel();
+  };
+  return (
+    <div class="panel">
+      <h2>Coach wording</h2>
+      <p class="hint">
+        A small language model on this device rewrites the coach's notes on a refused move into
+        plain sentences. The notes still appear first, and the model's text replaces them only when
+        it matches every fact. It is an experiment and slow for now: on a phone the sentences can
+        take half a minute. It downloads {mb(manifest.bytes)} once and works offline after that.
+        Turning it off deletes it from this device.
+      </p>
+      <label class="choice">
+        <input type="checkbox" checked={on} onChange={(e) => void save(e.currentTarget.checked)} />
+        <span>Word the coach's explanations with the model</span>
+      </label>
+      {on && (
+        <p class="hint" role="status">
+          {state.kind === 'loading'
+            ? `Downloading the model: ${mb(state.loaded)} of ${mb(state.total)}.`
+            : state.kind === 'ready'
+              ? `The model is ready. Version ${manifest.version}.`
+              : state.kind === 'failed'
+                ? `The model could not load, so the coach uses its notes. ${state.message}`
+                : 'The model loads when you next play.'}
+        </p>
+      )}
     </div>
   );
 }
@@ -292,6 +346,7 @@ export function Settings() {
       <BoardPanel />
 
       <VoicePanel />
+      <CoachModelPanel />
 
       <InstallPanel />
 

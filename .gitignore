@@ -6,6 +6,7 @@ test-results/
 *.local
 .DS_Store
 public/puzzles/
+public/models/
 dist-offline/
 a11y-results/
 

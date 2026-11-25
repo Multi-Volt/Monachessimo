@@ -85,7 +85,9 @@ export default defineConfig(({ mode }) => {
               includeAssets: ['icons/placeholder-180.png'],
               workbox: {
                 globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg}'],
-                globIgnores: ['puzzles/**'],
+                // The coach model and its 10 MB runtime are fetched only by players who
+                // turn the model on; wllama keeps the model in its own cache.
+                globIgnores: ['puzzles/**', 'models/**', 'assets/wllama-*.wasm'],
                 // The engine's WASM is 1.8 MB.
                 maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
                 navigateFallback: 'index.html',
@@ -95,6 +97,11 @@ export default defineConfig(({ mode }) => {
                     urlPattern: ({ url }) => url.pathname.includes('/puzzles/'),
                     handler: 'StaleWhileRevalidate',
                     options: { cacheName: 'puzzles', expiration: { maxEntries: 600 } },
+                  },
+                  {
+                    urlPattern: ({ url }) => /\/assets\/wllama-[^/]+\.wasm$/.test(url.pathname),
+                    handler: 'CacheFirst',
+                    options: { cacheName: 'coach-model-runtime', expiration: { maxEntries: 2 } },
                   },
                 ],
               },

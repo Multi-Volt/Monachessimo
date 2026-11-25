@@ -10,7 +10,8 @@ const gz = (f) => gzipSync(readFileSync(`${dir}/${f}`)).length / 1024;
 const html = readFileSync('dist/index.html', 'utf8');
 const entry = /src="[^"]*assets\/(index-[^"]+\.js)"/.exec(html)?.[1];
 const css = files.filter((f) => f.endsWith('.css'));
-const wasm = files.filter((f) => f.endsWith('.wasm'));
+// The coach model's runtime loads only when the player turns the model on.
+const wasm = files.filter((f) => f.endsWith('.wasm') && !f.startsWith('wllama-'));
 
 const results = [
   ['Entry JS, gzip KB', entry ? gz(entry) : Infinity, budget.entryJsGzipKb],

@@ -69,6 +69,8 @@ import {
 import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
+import { usePhrased } from '../../ui/usePhrased';
+import { factSheet } from '../../play/phrasing';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
@@ -795,7 +797,10 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   // One sentence per move of the refuting line: from the board at once,
   // then forced replies and quiet threats from short engine searches.
   const [lineSteps, setLineSteps] = useState<LineStep[]>([]);
+  /** The short searches have finished, so the line will not change. */
+  const [lineDone, setLineDone] = useState(false);
   useEffect(() => {
+    setLineDone(false);
     if (!refutation) {
       setLineSteps([]);
       return;
@@ -804,7 +809,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     const steps = narrateLine(pos, replayLine, game.you);
     setLineSteps(steps);
     void enrichLine(pos, replayLine, steps, (r) => services.pool.search(r)).then((rich) => {
-      if (live) setLineSteps(rich);
+      if (!live) return;
+      setLineSteps(rich);
+      setLineDone(true);
     });
     return () => {
       live = false;
@@ -813,6 +820,12 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   // The record the coach renders: the verdict, then the narrated line and
   // the long-term reason once they are known.
   const record = refusal ? withLine(refusal.record, lineSteps, reason) : undefined;
+  // The on-device model's wording of the same record, when the player turned
+  // it on, from the finished notes.
+  const phrased = usePhrased(
+    record && lineDone && phase.kind === 'refused' ? factSheet(record) : undefined,
+    !!services.settings.coachModel,
+  );
   const shownFen = (() => {
     if (replaying && replayPositions[replayStep])
       return makeFen(replayPositions[replayStep]!.toSetup());
@@ -904,13 +917,22 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       return { tone: 'neutral', title: 'Your opponent is thinking.' };
     }
     if (refusal && (phase.kind === 'refused' || replaying))
-      return {
-        tone: refusal.cls,
-        title: record!.sentences.headline,
-        ...(record!.sentences.points[0] ? { text: record!.sentences.points[0] } : {}),
-        points: record!.sentences.points.slice(1),
-        tags: record!.tags,
-      };
+      return phrased
+        ? {
+            // The model's sentences, with every point of the notes under "Why?".
+            tone: refusal.cls,
+            title: record!.sentences.headline,
+            text: phrased,
+            points: record!.sentences.points,
+            tags: record!.tags,
+          }
+        : {
+            tone: refusal.cls,
+            title: record!.sentences.headline,
+            ...(record!.sentences.points[0] ? { text: record!.sentences.points[0] } : {}),
+            points: record!.sentences.points.slice(1),
+            tags: record!.tags,
+          };
     if (refusal)
       return {
         tone: refusal.cls,
@@ -986,6 +1008,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
                   ? ''
                   : [coach.title, coach.text].filter(Boolean).join(' ')
               }
+              // The template was read when it appeared; the model's later
+              // wording replaces it quietly, to be read on a tap.
+              auto={!phrased}
             />
           </div>
           {coach.text && <p class="coach__text">{coach.text}</p>}

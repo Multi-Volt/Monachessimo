@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@fontsource-variable/figtree": "^5.3.0",
+    "@wllama/wllama": "3.13.0",
     "chessground": "^9.2.1",
     "chessops": "^0.15.1",
     "idb": "^8.0.4",

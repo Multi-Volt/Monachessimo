@@ -8,6 +8,8 @@ const base = process.env.BASE_PATH ?? '/';
 export default defineConfig({
   testDir: 'tests/e2e',
   forbidOnly: !!process.env.CI,
+  // Tests tagged @model run the 386 MB coach model: only with COACH_MODEL_E2E=1.
+  ...(process.env.COACH_MODEL_E2E ? {} : { grepInvert: /@model/ }),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
