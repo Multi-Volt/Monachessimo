@@ -18,8 +18,6 @@ One short entry per non-obvious choice. Newest entries go at the bottom of each 
 
 **2026-11-24. `eval.ts` came early.** The winning-chances conversion from section 6.2 is the first unit under test, so the test setup checks real code. A mate score is converted to plus or minus 10,000 centipawns. Mate 0 counts as a win for the reporting side.
 
-**2026-11-24. Dev machine setup.** The maintainer's machine runs Fedora Kinoite, which had no Node.js. Node 26.13.1 LTS was installed from nodejs.org into `~/.local/share/node`, with links in `~/.local/bin`. The SHA-256 checksum was verified. Playwright does not officially support Fedora and uses its Ubuntu 24.04 Chromium build, which runs the tests correctly.
-
 ## Phase 1
 
 **2026-11-24. Lichess game export rejects non-browser user agents.** `/api/games/user/{name}` is wrapped in `NoCrawlers` in lila's `Game.scala`, so curl and headless Chromium get an HTML 404. Real browsers pass. The endpoint, its parameters and the NDJSON shape match the official spec. CORS allows any origin (`Access-Control-Allow-Origin: *`). Tests mock this endpoint instead of calling it. The deployed app must still be checked once from a real phone with a real username.
