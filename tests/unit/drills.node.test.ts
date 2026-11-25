@@ -102,11 +102,11 @@ describe('buildSession', () => {
     expect(s.map((d) => d.id)).toEqual(['e', 'a', 'c', 'd']);
   });
 
-  it('brings back a failed drill once its ten minutes pass', () => {
+  it('brings back a failed drill the next day, not within minutes', () => {
     const failed = schedule(newReview('c', now), 'fail', now);
     const reviews = new Map([['c', failed]]);
-    const soon = buildSession(drills, reviews, now + 60_000, { priority: [], maxNew: 0 });
-    const later = buildSession(drills, reviews, now + 11 * 60_000, { priority: [], maxNew: 0 });
+    const soon = buildSession(drills, reviews, now + 11 * 60_000, { priority: [], maxNew: 0 });
+    const later = buildSession(drills, reviews, now + 21 * 3_600_000, { priority: [], maxNew: 0 });
     expect(soon).toEqual([]);
     expect(later.map((d) => d.id)).toEqual(['c']);
   });
@@ -152,5 +152,29 @@ describe('capSlowDrills', () => {
       'plan:2',
       'conversion:3',
     ]);
+  });
+});
+
+describe('no repeated positions', () => {
+  const now = 1_800_000_000_000;
+  it('serves one drill per position in a session', () => {
+    const a = drill('replay:k1', []);
+    const b = { ...drill('practice:k1', []), createdAt: 2 };
+    const c = drill('replay:k2', []);
+    const s = buildSession([a, b, c], new Map(), now, { priority: [] });
+    expect(s.filter((d) => d.id.endsWith(':k1'))).toHaveLength(1);
+    expect(s.map((d) => d.id)).toContain('replay:k2');
+  });
+
+  it('holds a new drill of a position seen today', () => {
+    const move = drill('replay:k1', []);
+    const conv = { ...drill('conversion:k1', []), type: 'conversion' as const };
+    // Solved twice: the move drill is next due in three days.
+    const twice = schedule(schedule(newReview('replay:k1', now), 'good', now), 'good', now);
+    const seen = new Map([['replay:k1', twice]]);
+    const ids = (t: number) =>
+      buildSession([move, conv], seen, t, { priority: [] }).map((d) => d.id);
+    expect(ids(now + 60_000)).not.toContain('conversion:k1');
+    expect(ids(now + 2 * 86_400_000)).toContain('conversion:k1');
   });
 });

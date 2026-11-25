@@ -251,7 +251,7 @@ function Session(props: {
   onRestart: () => void;
 }) {
   const services = useServices()!;
-  const [queue, setQueue] = useState(props.drills);
+  const [queue] = useState(props.drills);
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>({ kind: 'solving' });
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -383,8 +383,6 @@ function Session(props: {
     await saveRating(services.repo, r, now);
     setOutcomes((o) => [...o, { id: drill.id, grade }]);
     // A miss comes back once more at the end of this session.
-    if (grade === 'fail' && !queue.slice(index + 1).some((q) => q.id === drill.id))
-      setQueue((q) => [...q, drill]);
   };
 
   const step = applied.length;
@@ -858,7 +856,7 @@ function SessionEnd(props: {
         </li>
       </ul>
       {count('fail') > 0 && (
-        <p>Missed positions come back in ten minutes, and again tomorrow until you solve them.</p>
+        <p>Missed positions come back tomorrow, and keep coming back until you solve them.</p>
       )}
       {days && (
         <div class="streak">

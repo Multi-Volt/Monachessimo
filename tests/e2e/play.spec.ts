@@ -46,8 +46,12 @@ test('a practice game sends a blunder back and saves the position as a drill', a
 
   // The game move hangs the queen; the coach refuses it without giving the answer.
   await typeMove(page, 'Qh4');
-  await expect(page.getByRole('status')).toContainText('Not good enough.', { timeout: 30_000 });
-  await expect(page.getByRole('status')).not.toContainText('Nc6');
+  const coach = page.locator('.coach');
+  await expect(coach).toContainText('Qh4 is a blunder', { timeout: 30_000 });
+  await expect(coach).not.toContainText('Nc6');
+  // The refused move stays on the board with a badge until the player tries again.
+  await expect(page.locator('.board .cg-custom-svgs svg')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible();
 
   // A sound move is accepted and the opponent answers.
@@ -78,27 +82,25 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
 
   // b5 hangs a pawn to the bishop: a blunder, with the reason.
   await typeMove(page, 'b5');
-  const status = page.getByRole('status').filter({ hasText: 'Not good enough.' });
+  const status = page.locator('.coach');
   await expect(status).toContainText(/b5 is a blunder: it costs about \d\.\d pawns\./, {
     timeout: 30_000,
   });
-  // The facts come as separate points.
-  await expect(status.locator('.verdict__points li').first()).toContainText(
+  // The main fact comes first; the rest is behind Why.
+  await expect(status.locator('.coach__text')).toContainText(
     'Your opponent answers Bxb5, taking your pawn on b5.',
   );
   await expect(status).not.toContainText('Nc6');
 
   // Show what happens plays the refused move and the opponent's answer on the board.
-  await page.getByText('Type a move instead').waitFor();
   await page.getByRole('button', { name: 'Show what happens' }).click();
   await expect(page.locator('.stepper')).toContainText('You play b5.');
   await page.getByRole('button', { name: 'Forward' }).click();
   await expect(page.locator('.stepper')).toContainText('You play b5, then Bxb5');
   await expect(page.locator('.stepper')).toContainText('1 down');
-  await page.getByRole('button', { name: 'Back to your move' }).click();
+  await page.getByRole('button', { name: 'Try again' }).click();
 
   // Qf6 gives up a pawn too. Winning chances alone called this an inaccuracy.
-  await page.getByText('Type a move instead').waitFor();
   await typeMove(page, 'Qf6');
   await expect(status).toContainText('Qf6 is a mistake', { timeout: 30_000 });
   expect(errors).toEqual([]);
@@ -164,7 +166,7 @@ test('take back, check and checkmate, and reviewing a finished practice game', a
   });
   await expect(page.locator('.board--mate square.check')).toBeVisible();
   await expect(page.getByRole('img', { name: 'Final position. Checkmate.' })).toBeVisible();
-  await expect(page.getByText('Best, great or brilliant')).toBeVisible();
+  await expect(page.getByText('Accuracy on your first tries')).toBeVisible();
 
   await page.getByRole('link', { name: 'Review this game' }).click();
   await expect(page.getByRole('heading', { name: /Practice game review/ })).toBeVisible();

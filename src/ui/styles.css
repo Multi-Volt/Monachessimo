@@ -1333,3 +1333,191 @@ input[aria-invalid='true'] {
 .tag--great {
   color: var(--accent);
 }
+
+/* Practice game: status, move strip, coach bubble, actions. */
+.play__status {
+  font-size: 20px;
+  line-height: 28px;
+  margin: 0 0 var(--s2);
+}
+
+.move-strip {
+  display: flex;
+  gap: var(--s2);
+  overflow-x: auto;
+  list-style: none;
+  margin: 0 0 var(--s2);
+  padding: var(--s1) 0;
+  scrollbar-width: none;
+  white-space: nowrap;
+  font-size: 15px;
+}
+
+.move-strip li {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+}
+
+.move-strip__num {
+  color: var(--muted);
+}
+
+.move-strip__san {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.move-strip__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.coach {
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: var(--s3) var(--s4);
+  margin: var(--s3) 0;
+  min-height: 72px;
+}
+
+.coach__badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.coach--brilliant .coach__badge {
+  background: #14857a;
+  color: #fff;
+}
+.coach--great .coach__badge {
+  background: #3f6f9e;
+  color: #fff;
+}
+.coach--best .coach__badge,
+.coach--excellent .coach__badge {
+  background: #4f7a28;
+  color: #fff;
+}
+.coach--good .coach__badge {
+  background: #5f7a45;
+  color: #fff;
+}
+.coach--inaccuracy .coach__badge {
+  background: #9a7500;
+  color: #fff;
+}
+.coach--mistake .coach__badge {
+  background: #b5571a;
+  color: #fff;
+}
+.coach--blunder .coach__badge {
+  background: #b3261e;
+  color: #fff;
+}
+
+.coach__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.coach__label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  margin: 0;
+}
+
+.coach__title {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.coach__text {
+  margin: var(--s1) 0 0;
+  color: var(--text-2);
+}
+
+.coach__why {
+  margin-top: var(--s2);
+}
+
+.coach__why summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+}
+
+.coach__hints {
+  margin: var(--s2) 0 0;
+  padding-left: var(--s5);
+  color: var(--text-2);
+}
+
+.coach__actions {
+  margin-top: var(--s3);
+}
+
+.play__actions {
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+
+.play__actions > .button {
+  flex: 1 1 auto;
+}
+
+.review-card__accuracy {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  margin: 0 0 var(--s3);
+}
+
+.review-card__number {
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 700;
+}
+
+.review-card__counts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s2);
+}
+
+.review-card__counts li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: var(--s2);
+}

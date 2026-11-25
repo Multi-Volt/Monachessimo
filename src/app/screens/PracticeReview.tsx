@@ -4,7 +4,7 @@ import { cachedSearch } from '../../analysis/runner';
 import { pvToSan, uciSquares } from '../../chess/san';
 import { endText } from '../../play/coach';
 import { finishedGames, saveFinished, type PracticeGame } from '../../play/data';
-import { PRAISE_LABEL, PRAISE_SYMBOL } from '../../play/praise';
+import { LABEL_NAME, LABEL_SYMBOL } from '../../ui/badges';
 import { positions, reviewPractice } from '../../play/review';
 import { Board, kingState } from '../../ui/Board';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
@@ -176,7 +176,7 @@ function ReviewBody({ game: initial }: { game: PracticeGame }) {
         <div class="panel panel--good" role="note">
           <p>
             <span class={`tag tag--praise tag--${labels.get(pos - 1)}`}>
-              {PRAISE_SYMBOL[labels.get(pos - 1)!]} {PRAISE_LABEL[labels.get(pos - 1)!]}
+              {LABEL_SYMBOL[labels.get(pos - 1)!]} {LABEL_NAME[labels.get(pos - 1)!]}
             </span>{' '}
             {label(game.startFen, pos - 1)} {sans[pos - 1]}
           </p>
@@ -219,7 +219,7 @@ function ReviewBody({ game: initial }: { game: PracticeGame }) {
                   {cls
                     ? CLASS_SYMBOL[cls]
                     : labels.get(i) && labels.get(i) !== 'good' && labels.get(i) !== 'excellent'
-                      ? PRAISE_SYMBOL[labels.get(i)!]
+                      ? LABEL_SYMBOL[labels.get(i)!]
                       : ''}
                 </button>
               </li>

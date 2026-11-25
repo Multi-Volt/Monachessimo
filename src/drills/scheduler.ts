@@ -1,8 +1,12 @@
 import type { Grade, ReviewState } from './types';
 
 export const DAY = 24 * 60 * 60 * 1000;
-/** A failed drill comes back this soon, inside the same session if it is still running. */
-export const RELEARN_MS = 10 * 60 * 1000;
+/**
+ * A failed drill comes back the next day. Seeing the same position again
+ * within minutes felt like repetition, not learning; "Try again" covers the
+ * immediate retry.
+ */
+export const RELEARN_MS = 20 * 60 * 60 * 1000;
 export const START_EASE = 2.5;
 export const MIN_EASE = 1.3;
 
@@ -12,7 +16,7 @@ export function newReview(id: string, now: number): ReviewState {
 
 /**
  * SM-2 style update. A fail resets the streak and brings the drill back in
- * ten minutes. A pass schedules it 1 day, then 3 days, then the last
+ * next day. A pass schedules it 1 day, then 3 days, then the last
  * interval times the ease. A pass that needed a hint lowers the ease.
  */
 export function schedule(prev: ReviewState, grade: Grade, now: number): ReviewState {

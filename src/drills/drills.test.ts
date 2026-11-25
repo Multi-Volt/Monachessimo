@@ -15,7 +15,7 @@ describe('scheduler', () => {
     expect(r.interval).toBe(7.5);
   });
 
-  it('brings a failed drill back in ten minutes and resets the streak', () => {
+  it('brings a failed drill back the next day and resets the streak', () => {
     let r = schedule(schedule(newReview('d', t0), 'good', t0), 'good', t0 + DAY);
     r = schedule(r, 'fail', t0 + 4 * DAY);
     expect(r.due).toBe(t0 + 4 * DAY + RELEARN_MS);

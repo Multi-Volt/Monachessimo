@@ -29,7 +29,7 @@ export function buildSession(
 ): Drill[] {
   const size = opts.size ?? SESSION_SIZE;
   const maxNew = opts.maxNew ?? Math.ceil(size * 0.6);
-  const pool = eligible(drills, reviews).filter((d) => !opts.tag || d.tags.includes(opts.tag));
+  const pool = eligible(drills, reviews, now).filter((d) => !opts.tag || d.tags.includes(opts.tag));
   const due = pool
     .filter((d) => {
       const r = reviews.get(d.id);
@@ -63,7 +63,7 @@ export function buildSession(
       added++;
     }
   }
-  return capSlowDrills(picked);
+  return capSlowDrills(onePerPosition(picked));
 }
 
 /**
@@ -84,18 +84,45 @@ const positionOf = (id: string) => id.slice(id.indexOf(':') + 1);
  * A plan drill waits until the move drill for the same position has been
  * solved once: first fix the mistake, then compare the plans.
  */
-export function eligible(drills: Drill[], reviews: Map<string, ReviewState>): Drill[] {
+export function eligible(
+  drills: Drill[],
+  reviews: Map<string, ReviewState>,
+  now = Number.POSITIVE_INFINITY,
+): Drill[] {
   const solved = new Set<string>();
   const hasMoveDrill = new Set<string>();
+  /** Last time any drill of a position was seen. */
+  const seenAt = new Map<string, number>();
   for (const d of drills) {
-    if (d.type === 'plan') continue;
-    hasMoveDrill.add(positionOf(d.id));
-    if ((reviews.get(d.id)?.reps ?? 0) > 0) solved.add(positionOf(d.id));
+    const key = positionOf(d.id);
+    const r = reviews.get(d.id);
+    if (r?.lastSeen) seenAt.set(key, Math.max(seenAt.get(key) ?? 0, r.lastSeen));
+    if (d.type === 'plan' || d.type === 'conversion') continue;
+    hasMoveDrill.add(key);
+    if ((r?.reps ?? 0) > 0) solved.add(key);
   }
   return drills.filter((d) => {
-    if (d.type !== 'plan') return true;
     const key = positionOf(d.id);
+    // A new drill of a position seen in the last day waits, so the same board
+    // does not come back under another drill type.
+    if (!reviews.has(d.id) && now - (seenAt.get(key) ?? -Infinity) < SAME_POSITION_GAP)
+      return false;
+    if (d.type !== 'plan') return true;
     return !hasMoveDrill.has(key) || solved.has(key);
+  });
+}
+
+/** Least time between two drills of the same position. */
+export const SAME_POSITION_GAP = 20 * 60 * 60 * 1000;
+
+/** Keeps the first drill of each position. */
+export function onePerPosition(list: Drill[]): Drill[] {
+  const seen = new Set<string>();
+  return list.filter((d) => {
+    const key = positionOf(d.id);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 }
 

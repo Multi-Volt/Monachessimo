@@ -88,9 +88,7 @@ test('plan picker reveals how each candidate scored', async ({ page }) => {
   await expect(results.locator('li').first()).toContainText('O-O');
   await expect(results.locator('li').first()).toContainText('Best');
   await expect(results).toContainText('Around your king: 1 attacker against 2 defenders');
-  // A missed drill comes back once at the end of the session.
-  await page.getByRole('button', { name: 'Next drill' }).click();
-  await page.getByRole('button', { name: 'O-O' }).click();
+  // A missed drill is not repeated in the same session; it comes back tomorrow.
   await page.getByRole('button', { name: 'Finish' }).click();
   await expect(page.getByRole('heading', { name: 'Session done' })).toBeVisible();
   await expect(page.locator('.plain-list')).toContainText('Missed');

@@ -1,3 +1,18 @@
+import type { DrawShape } from 'chessground/draw';
+import { gameAccuracy } from '../../play/accuracy';
+import {
+  arrow,
+  badge,
+  LABEL_COLOR,
+  LABEL_ORDER,
+  LABEL_NAME,
+  LABEL_SYMBOL,
+  ring,
+  type MoveLabel,
+} from '../../ui/badges';
+import { positions } from '../../play/review';
+import { fromFen } from '../../detectors/board';
+import type { TagName } from '../../detectors';
 import { moveHints } from '../../chess/hints';
 import { chessgroundDests } from 'chessops/compat';
 import { makeFen } from 'chessops/fen';
@@ -34,11 +49,12 @@ import {
   type PracticeGame,
 } from '../../play/data';
 import { buildIndex, yourVisits, type Visit } from '../../play/positions';
-import { PRAISE_LABEL, PRAISE_SYMBOL, praiseMove, type Praise } from '../../play/praise';
+import { praiseMove, type Praise } from '../../play/praise';
 import { balance, playLine } from '../../detectors/board';
 import {
   compareLines,
   explainMove,
+  threatNote,
   explanationText,
   type MoveExplanation,
 } from '../../play/explain';
@@ -54,7 +70,6 @@ import { href, navigate } from '../router';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 /** How long a refused move stays on the board before it goes back. */
-const REFUSED_MS = 900;
 /** Engine time for each of the opponent's moves. */
 const OPPONENT_MS = 400;
 
@@ -478,6 +493,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const opponent = useRef<Engine | undefined>(undefined);
   const target = useRef<Promise<SearchResult> | undefined>(undefined);
   const savedHere = useRef(false);
+  /** The first try at the current move: its label and drop, for accuracy. */
+  const firstTry = useRef<{ label: MoveLabel; drop: number } | undefined>(undefined);
 
   const pos = useMemo(() => currentPosition(game), [game]);
   const fen = makeFen(pos.toSetup());
@@ -539,6 +556,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       setRefusedHere(0);
       setHints(0);
       savedHere.current = false;
+      firstTry.current = undefined;
       setPhase({ kind: 'your-move' });
       return;
     }
@@ -609,6 +627,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       });
       setReplayStep(undefined);
       setRefusedHere((n) => n + 1);
+      firstTry.current ??= { label: verdict.class!, drop: verdict.drop };
       setPhase({ kind: 'refused', uci, text });
       const record = { ply: game.moves.length, san, class: verdict.class!, tags: why?.tags ?? [] };
       let next = { ...game, refusals: [...(game.refusals ?? []), record] };
@@ -628,11 +647,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           next = { ...next, savedDrills: next.savedDrills + 1 };
         }
       }
+      // The refused move stays on the board with the reply drawn, until the
+      // player chooses to try again.
       await save(next);
-      setTimeout(
-        () => setPhase((p) => (p.kind === 'refused' && p.uci === uci ? { kind: 'your-move' } : p)),
-        REFUSED_MS,
-      );
       return;
     }
     setRefusal(undefined);
@@ -642,6 +659,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     setNote(why && verdict.class ? { cls: verdict.class, why } : undefined);
     const praise = praiseMove({ before: pos, uci, lines: t.lines, played, verdict });
     setPraise(praise);
+    const label: MoveLabel | undefined = praise?.label ?? verdict.class ?? undefined;
+    const first = firstTry.current ?? (label ? { label, drop: verdict.drop } : undefined);
     await save({
       ...game,
       moves: [...game.moves, uci],
@@ -651,7 +670,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           ply: game.moves.length,
           refused: refusedHere,
           hinted: hints > 0,
-          ...(praise ? { label: praise.label } : {}),
+          ...(label ? { label } : {}),
+          ...(first ? { first: first.label, drop: first.drop } : {}),
         },
       ],
       ...(verdict.class
@@ -706,6 +726,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
 
   // Hints come from the coach's search: the piece, then its square, then the move.
   const [hintText, setHintText] = useState<string[]>([]);
+  const [hintMove, setHintMove] = useState<string>();
   useEffect(() => {
     if (phase.kind !== 'your-move' || !target.current) return;
     let live = true;
@@ -713,6 +734,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       const best = t.lines[0]?.pv[0];
       if (!live || !best) return;
       setHintText(moveHints(fen, best, { answer: "The coach's move is" }));
+      setHintMove(best);
     });
     return () => {
       live = false;
@@ -724,7 +746,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     () => (refutation ? playLine(pos, replayLine, replayLine.length) : []),
     [refutation, fen],
   );
-  const replaying = replayStep !== undefined && phase.kind === 'your-move';
+  const replaying =
+    replayStep !== undefined && (phase.kind === 'your-move' || phase.kind === 'refused');
   const shownFen = (() => {
     if (replaying && replayPositions[replayStep])
       return makeFen(replayPositions[replayStep]!.toSetup());
@@ -747,28 +770,120 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const startPly =
     (Number(game.startFen.split(' ')[5] ?? 1) - 1) * 2 +
     (game.startFen.split(' ')[1] === 'b' ? 1 : 0);
+  const labels = new Map(game.yourMoves.filter((m) => m.label).map((m) => [m.ply, m.label!]));
 
   if (game.end) return <Summary game={game} onNew={onNew} />;
 
+  /** Back to the position before the refused move. */
+  const tryAgain = () => {
+    setReplayStep(undefined);
+    setPhase({ kind: 'your-move' });
+  };
+
+  // What the opponent's last move threatens, shown on the player's turn.
+  const lastIsTheirs = game.moves.length > 0 && moverAt(game.moves.length - 1) !== game.you;
+  const threat =
+    yourTurn && lastIsTheirs
+      ? threatNote(
+          fromFen(positions(game.startFen, game.moves.slice(0, -1)).at(-1)!),
+          game.moves.at(-1)!,
+        )
+      : undefined;
+
+  // Drawings on the board: badges for judged moves, arrows for replies and hints.
+  const shapes: DrawShape[] = [];
+  const squares = (u: string | undefined) => (u ? uciSquares(u) : undefined);
+  if (phase.kind === 'refused' && refusal && !replaying) {
+    const [, to] = uciSquares(phase.uci);
+    shapes.push(badge(to, refusal.cls));
+    const reply = squares(refutation?.reply[0]);
+    if (reply) shapes.push(arrow(reply[0], reply[1], 'red'));
+  } else if (replaying && replayStep! < replayLine.length) {
+    const next = squares(replayLine[replayStep!]);
+    if (next) shapes.push(arrow(next[0], next[1], 'red'));
+  } else if (phase.kind === 'thinking' && lastMine === game.moves.length - 1) {
+    const l = labels.get(lastMine);
+    if (l) shapes.push(badge(uciSquares(game.moves[lastMine]!)[1], l));
+  } else if (phase.kind === 'your-move' && hintText.length) {
+    const best = squares(hintMove);
+    if (best && hints >= 2) shapes.push(ring(best[0], 'green'));
+    if (best && hints >= hintText.length) shapes.push(arrow(best[0], best[1], 'green'));
+  }
+
+  // The coach bubble: one message at a time, short first, details on request.
+  const coach = ((): {
+    tone: MoveLabel | 'neutral';
+    title: string;
+    text?: string;
+    points?: string[];
+    tags?: TagName[];
+  } => {
+    if (phase.kind === 'checking')
+      return { tone: 'neutral', title: `Checking ${uciToSan(fen, phase.uci)}…` };
+    if (phase.kind === 'thinking') {
+      if (praise) return { tone: praise.label, title: praise.headline, points: praise.points };
+      if (note)
+        return {
+          tone: note.cls,
+          title: `Accepted, but ${note.why.headline.charAt(0).toLowerCase()}${note.why.headline.slice(1)}`,
+          points: note.why.points,
+          tags: note.why.tags,
+        };
+      return { tone: 'neutral', title: 'Your opponent is thinking.' };
+    }
+    if (refusal && (phase.kind === 'refused' || replaying))
+      return {
+        tone: refusal.cls,
+        title: refusal.why.headline,
+        ...(refusal.why.points[0] ? { text: refusal.why.points[0] } : {}),
+        points: refusal.why.points.slice(1),
+        tags: refusal.why.tags,
+      };
+    if (refusal)
+      return {
+        tone: refusal.cls,
+        title: `Find a better move than ${uciToSan(fen, refutation?.uci ?? '')}.`,
+        ...(refusedHere >= 2 ? { text: 'Stuck? Tap Hint.' } : {}),
+      };
+    if (note)
+      return {
+        tone: note.cls,
+        title: `Accepted, but ${note.why.headline.charAt(0).toLowerCase()}${note.why.headline.slice(1)}`,
+        points: note.why.points,
+        tags: note.why.tags,
+      };
+    // The opponent's threat is the news on the player's turn; the verdict
+    // on the player's last move moves under it.
+    if (threat)
+      return {
+        tone: 'neutral',
+        title: threat,
+        ...(praise ? { text: `Your last move: ${praise.headline}` } : {}),
+      };
+    if (praise) return { tone: praise.label, title: praise.headline, points: praise.points };
+    return { tone: 'neutral', title: 'Your move.' };
+  })();
+
   return (
-    <section class="screen screen--drill" aria-labelledby="game-title">
+    <section class="screen screen--drill screen--play" aria-labelledby="game-title">
       <p class="drill__count">
-        Practice game · {skillLabel(game.skill)} opponent, Skill Level {game.skill} ·{' '}
-        {STRICTNESS_TEXT[game.strictness]}
+        You play {game.you}
+        {game.source ? ` · from ${game.source.label}` : ''} · {skillLabel(game.skill)} opponent,
+        Skill Level {game.skill} · {STRICTNESS_TEXT[game.strictness]}
       </p>
-      <h1 id="game-title" class="drill__goal">
+      <h1 id="game-title" class="play__status">
         {phase.kind === 'your-move' || phase.kind === 'refused' || phase.kind === 'checking'
           ? 'Your move'
           : 'Your opponent is thinking'}
       </h1>
-      <p class="hint">
-        You play {game.you}
-        {game.source ? ` · from ${game.source.label}` : ''}
-      </p>
+
+      <MoveStrip sans={sans} startPly={startPly} labels={labels} />
+
       <Board
         fen={shownFen}
         orientation={game.you}
         lastMove={last}
+        shapes={shapes}
         movable={
           phase.kind === 'your-move' && !replaying
             ? { color: game.you, dests: chessgroundDests(pos) as unknown as Map<string, string[]> }
@@ -777,141 +892,165 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         onMove={onBoardMove}
         label={`Practice game, ${pos.turn} to move.`}
       />
-      {pos.isCheck() && (
+      {showEval && evalWhite && <EvalBar score={evalWhite} label="Evaluation before your move" />}
+      {pos.isCheck() && yourTurn && phase.kind === 'your-move' && (
         <p class="check-notice" role="status">
-          {yourTurn ? 'You are in check.' : 'Check. Your opponent is in check.'}
+          You are in check.
         </p>
       )}
-      {phase.kind === 'your-move' && (
-        <p class="hint board-help">Drag a piece, or tap it and then tap where it goes.</p>
-      )}
-      {showEval && evalWhite && <EvalBar score={evalWhite} label="Evaluation before your move" />}
-      <TypedMove disabled={phase.kind !== 'your-move'} fen={fen} onMove={(u) => void submit(u)} />
 
-      <div aria-live="polite">
-        {phase.kind === 'checking' && (
-          <p class="notice">The coach is checking {uciToSan(fen, phase.uci)}…</p>
-        )}
-        {refusal && (phase.kind === 'refused' || phase.kind === 'your-move') && (
-          <div class={`panel panel--${refusal.cls}`} role="status">
-            <Verdict cls={refusal.cls} why={refusal.why} lead="Not good enough." />
-            <p class="verdict__ask">Find a better move.</p>
-            {refusedHere >= 2 && (
-              <p class="hint">
-                Stuck? Tap Hint. The first hint says what kind of move to look for, the next which
-                piece to move.
-              </p>
-            )}
-          </div>
-        )}
-        {refutation && phase.kind === 'your-move' && !replaying && replayLine.length > 1 && (
-          <p>
-            <button type="button" class="button" onClick={() => setReplayStep(1)}>
-              Show what happens
-            </button>
-          </p>
-        )}
-        {replaying && (
-          <div class="panel stepper">
-            <p class="num">
-              {(() => {
-                const sans = pvToSan(fen, replayLine, replayStep);
-                const mine = sans[0];
-                const then = sans.slice(1);
-                const at = replayPositions[replayStep]!;
-                const diff = balance(at, game.you) - balance(pos, game.you);
-                return `You play ${mine}${then.length ? `, then ${then.join(' ')}` : ''}. Material: ${
-                  diff === 0
-                    ? 'even, as before your move'
-                    : diff > 0
-                      ? `you are ${diff} up`
-                      : `you are ${-diff} down`
-                }.${at.isCheckmate() ? ' Checkmate.' : ''}`;
-              })()}
-            </p>
-            {refutation && replayStep === replayPositions.length - 1 && (
-              <div class="stepper__why">
-                <p>
-                  <strong>Why this is worse.</strong> At the end of this line the engine rates your
-                  position about {(refutation.cost / 100).toFixed(1)} pawns lower than after a
-                  better move. Compared with that line:
+      <div class={`coach coach--${coach.tone}`} role="status" aria-live="polite">
+        <span class="coach__badge" aria-hidden="true">
+          {coach.tone === 'neutral' ? '♞' : LABEL_SYMBOL[coach.tone]}
+        </span>
+        <div class="coach__body">
+          {coach.tone !== 'neutral' && <p class="coach__label">{LABEL_NAME[coach.tone]}</p>}
+          <p class="coach__title">{coach.title}</p>
+          {coach.text && <p class="coach__text">{coach.text}</p>}
+          {((coach.points?.length ?? 0) > 0 || (coach.tags?.length ?? 0) > 0) && (
+            <details class="coach__why">
+              <summary>Why?</summary>
+              {(coach.points?.length ?? 0) > 0 && (
+                <ul class="verdict__points">
+                  {coach.points!.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              )}
+              {(coach.tags?.length ?? 0) > 0 && (
+                <p class="verdict__tags">
+                  {coach.tags!.map((t) => (
+                    <span key={t} class="chip">
+                      {TAG_INFO[t].label}
+                    </span>
+                  ))}
                 </p>
-                {(() => {
-                  const diffs = compareLines(pos, game.you, replayLine, refutation.best);
-                  return diffs.length ? (
-                    <ul class="verdict__points">
-                      {diffs.map((d) => (
-                        <li key={d}>{d}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p class="hint">
-                      Material and the features the coach counts are the same. The difference is in
-                      the engine's deeper search: try another move and compare.
-                    </p>
-                  );
-                })()}
-              </div>
-            )}
-            <div class="row">
-              <button
-                type="button"
-                class="button"
-                disabled={replayStep <= 1}
-                onClick={() => setReplayStep(replayStep - 1)}
-              >
-                Back
+              )}
+            </details>
+          )}
+          {hints > 0 && phase.kind === 'your-move' && (
+            <ol class="coach__hints">
+              {hintText.slice(0, hints).map((h) => (
+                <li key={h}>{h}</li>
+              ))}
+            </ol>
+          )}
+          {phase.kind === 'refused' && !replaying && (
+            <div class="row coach__actions">
+              <button type="button" class="button button--primary" onClick={tryAgain}>
+                Try again
               </button>
-              <button
-                type="button"
-                class="button"
-                disabled={replayStep >= replayPositions.length - 1}
-                onClick={() => setReplayStep(replayStep + 1)}
-              >
-                Forward
-              </button>
-              <button
-                type="button"
-                class="button button--primary stepper__done"
-                onClick={() => setReplayStep(undefined)}
-              >
-                Back to your move
-              </button>
+              {replayLine.length > 1 && (
+                <button type="button" class="button" onClick={() => setReplayStep(1)}>
+                  Show what happens
+                </button>
+              )}
             </div>
-          </div>
-        )}
-        {praise && !refusal && !note && (
-          <div class="panel panel--good" role="status">
-            <p class="verdict__head">
-              <span class={`tag tag--praise tag--${praise.label}`}>
-                {PRAISE_SYMBOL[praise.label]} {PRAISE_LABEL[praise.label]}
-              </span>{' '}
-              {praise.headline}
-            </p>
-            {praise.points.length > 0 && (
-              <ul class="verdict__points">
-                {praise.points.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-        {note && !refusal && (
-          <div class={`panel panel--${note.cls}`} role="status">
-            <Verdict cls={note.cls} why={note.why} lead="Accepted, but not the best." />
-            {canTakeBack && <p class="verdict__ask">You can take the move back and look again.</p>}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {hints > 0 && phase.kind === 'your-move' && (
-        <ol class="hint-list">
-          {hintText.slice(0, hints).map((h) => (
-            <li key={h}>{h}</li>
-          ))}
-        </ol>
+      {replaying && (
+        <div class="panel stepper">
+          <p class="num">
+            {(() => {
+              const sans = pvToSan(fen, replayLine, replayStep);
+              const mine = sans[0];
+              const then = sans.slice(1);
+              const at = replayPositions[replayStep]!;
+              const diff = balance(at, game.you) - balance(pos, game.you);
+              return `You play ${mine}${then.length ? `, then ${then.join(' ')}` : ''}. Material: ${
+                diff === 0
+                  ? 'even, as before your move'
+                  : diff > 0
+                    ? `you are ${diff} up`
+                    : `you are ${-diff} down`
+              }.${at.isCheckmate() ? ' Checkmate.' : ''}`;
+            })()}
+          </p>
+          {refutation && replayStep === replayPositions.length - 1 && (
+            <div class="stepper__why">
+              <p>
+                <strong>Why this is worse.</strong> At the end of this line the engine rates your
+                position about {(refutation.cost / 100).toFixed(1)} pawns lower than after a better
+                move. Compared with that line:
+              </p>
+              {(() => {
+                const diffs = compareLines(pos, game.you, replayLine, refutation.best);
+                return diffs.length ? (
+                  <ul class="verdict__points">
+                    {diffs.map((d) => (
+                      <li key={d}>{d}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p class="hint">
+                    Material and the features the coach counts are the same. The difference is in
+                    the engine's deeper search: try another move and compare.
+                  </p>
+                );
+              })()}
+            </div>
+          )}
+          <div class="row">
+            <button
+              type="button"
+              class="button"
+              disabled={replayStep <= 1}
+              onClick={() => setReplayStep(replayStep - 1)}
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              class="button"
+              disabled={replayStep >= replayPositions.length - 1}
+              onClick={() => setReplayStep(replayStep + 1)}
+            >
+              Forward
+            </button>
+            <button type="button" class="button button--primary stepper__done" onClick={tryAgain}>
+              Try again
+            </button>
+          </div>
+        </div>
       )}
+
+      <div class="row play__actions">
+        {phase.kind === 'your-move' && hints < hintText.length && (
+          <button type="button" class="button" onClick={() => setHints((h) => h + 1)}>
+            {hints === 0 ? 'Hint' : 'Another hint'}
+          </button>
+        )}
+        {canTakeBack && (
+          <button type="button" class="button" onClick={() => void takeBack()}>
+            Take back
+          </button>
+        )}
+        <button
+          type="button"
+          class="button"
+          aria-pressed={showEval}
+          onClick={() => {
+            setShowEval(!showEval);
+            writeShowEval(!showEval);
+          }}
+        >
+          {showEval ? 'Hide evaluation' : 'Show evaluation'}
+        </button>
+        <button
+          type="button"
+          class="button button--danger"
+          onClick={() =>
+            confirmResign ? void finish(game, { kind: 'resigned' }) : setConfirmResign(true)
+          }
+          onBlur={() => setConfirmResign(false)}
+        >
+          {confirmResign ? 'Tap again to resign' : 'Resign'}
+        </button>
+      </div>
+
+      <TypedMove disabled={phase.kind !== 'your-move'} fen={fen} onMove={(u) => void submit(u)} />
 
       {visits.length > 0 && (
         <div class="panel">
@@ -933,86 +1072,49 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           </ul>
         </div>
       )}
-
-      <div class="row row--actions">
-        <button
-          type="button"
-          class="button"
-          aria-pressed={showEval}
-          onClick={() => {
-            setShowEval(!showEval);
-            writeShowEval(!showEval);
-          }}
-        >
-          {showEval ? 'Hide evaluation' : 'Show evaluation'}
-        </button>
-        {canTakeBack && (
-          <button type="button" class="button" onClick={() => void takeBack()}>
-            Take back
-          </button>
-        )}
-        {phase.kind === 'your-move' && hints < hintText.length && (
-          <button type="button" class="button" onClick={() => setHints((h) => h + 1)}>
-            {hints === 0 ? 'Hint' : 'Another hint'}
-          </button>
-        )}
-        <button
-          type="button"
-          class="button button--danger"
-          onClick={() =>
-            confirmResign ? void finish(game, { kind: 'resigned' }) : setConfirmResign(true)
-          }
-          onBlur={() => setConfirmResign(false)}
-        >
-          {confirmResign ? 'Tap again to resign' : 'Resign'}
-        </button>
-      </div>
-
-      {sans.length > 0 && (
-        <div class="panel">
-          <h2>Moves</h2>
-          <p class="num">
-            {sans
-              .map((s, i) => {
-                const ply = startPly + i;
-                const label = ply % 2 === 0 || i === 0 ? `${moveLabel(ply)} ` : '';
-                return label + s;
-              })
-              .join(' ')}
-          </p>
-        </div>
-      )}
     </section>
   );
 }
 
-/** A coach verdict: class, headline, what happens as points, then the patterns. */
-function Verdict({ cls, why, lead }: { cls: MoveClass; why: MoveExplanation; lead: string }) {
+/** The game's moves in one scrolling line, with a badge on each judged move of the player. */
+function MoveStrip({
+  sans,
+  startPly,
+  labels,
+}: {
+  sans: string[];
+  startPly: number;
+  labels: Map<number, MoveLabel>;
+}) {
+  const ref = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    ref.current?.scrollTo({ left: ref.current.scrollWidth });
+  }, [sans.length]);
+  if (!sans.length) return null;
   return (
-    <div class="verdict">
-      <p class="verdict__head">
-        <span class={`tag tag--${cls}`}>
-          {CLASS_SYMBOL[cls]} {CLASS_LABEL[cls]}
-        </span>{' '}
-        <strong>{lead}</strong> {why.headline}
-      </p>
-      {why.points.length > 0 && (
-        <ul class="verdict__points">
-          {why.points.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
-      )}
-      {why.tags.length > 0 && (
-        <p class="verdict__tags">
-          {why.tags.map((t) => (
-            <span key={t} class="chip">
-              {TAG_INFO[t].label}
+    <ol class="move-strip num" ref={ref} aria-label="Moves">
+      {sans.map((s, i) => {
+        const ply = startPly + i;
+        const l = labels.get(i);
+        return (
+          <li key={i}>
+            {(ply % 2 === 0 || i === 0) && <span class="move-strip__num">{moveLabel(ply)}</span>}
+            <span class="move-strip__san">
+              {s}
+              {l && (
+                <span
+                  class="move-strip__badge"
+                  style={{ background: LABEL_COLOR[l] }}
+                  title={LABEL_NAME[l]}
+                >
+                  {LABEL_SYMBOL[l]}
+                </span>
+              )}
             </span>
-          ))}
-        </p>
-      )}
-    </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -1054,12 +1156,14 @@ function PatternList({ game }: { game: PracticeGame }) {
 function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
   const services = useServices()!;
   const end = game.end!;
-  const firstTry = game.yourMoves.filter((m) => m.refused === 0 && !m.hinted).length;
   const refused = game.yourMoves.filter((m) => m.refused > 0).length;
   const hinted = game.yourMoves.filter((m) => m.hinted).length;
-  const topMoves = game.yourMoves.filter(
-    (m) => m.label === 'best' || m.label === 'great' || m.label === 'brilliant',
-  ).length;
+  const accuracy = gameAccuracy(
+    game.yourMoves.filter((m) => m.drop !== undefined).map((m) => m.drop!),
+  );
+  const counts = LABEL_ORDER.map(
+    (l) => [l, game.yourMoves.filter((m) => m.first === l).length] as const,
+  );
   const finalPos = currentPosition(game);
   const finalFen = makeFen(finalPos.toSetup());
   const newGame = async () => {
@@ -1081,15 +1185,32 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
         lastMove={game.moves.length ? uciSquares(game.moves[game.moves.length - 1]!) : undefined}
         label="Final position."
       />
+      {accuracy !== undefined && (
+        <div class="panel review-card">
+          <p class="review-card__accuracy">
+            <span class="review-card__number num">{accuracy.toFixed(1)}</span>
+            <span>Accuracy on your first tries</span>
+          </p>
+          <ul class="review-card__counts">
+            {counts.map(([l, n]) => (
+              <li key={l}>
+                <span
+                  class="move-strip__badge"
+                  style={{ background: LABEL_COLOR[l] }}
+                  aria-hidden="true"
+                >
+                  {LABEL_SYMBOL[l]}
+                </span>
+                <span>{LABEL_NAME[l]}</span>
+                <span class="num">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <ul class="plain-list num">
         <li>
           <span>Your moves</span> <span>{game.yourMoves.length}</span>
-        </li>
-        <li>
-          <span>Good on the first try</span> <span>{firstTry}</span>
-        </li>
-        <li>
-          <span>Best, great or brilliant</span> <span>{topMoves}</span>
         </li>
         <li>
           <span>Sent back by the coach</span> <span>{refused}</span>

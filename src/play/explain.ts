@@ -243,3 +243,27 @@ export function compareLines(
   out.push(...describeChanges(features(best, me), features(played, me)));
   return out;
 }
+
+/**
+ * What the opponent's last move does to the player: check, a capture, or
+ * pieces it now attacks that the player would lose. Undefined when none.
+ */
+export function threatNote(before: Chess, uci: string): string | undefined {
+  const after = playUci(before, uci);
+  const m = normalMove(uci);
+  if (!after || !m) return undefined;
+  const me = after.turn;
+  const san = pvToSan(makeFen(before.toSetup()), [uci], 1)[0] ?? uci;
+  const parts: string[] = [];
+  if (isCapture(before, m))
+    parts.push(`takes your ${before.board.getRole(m.to) ?? 'pawn'} on ${makeSquare(m.to)}`);
+  const targets = [...attacksFrom(after, m.to).intersect(after.board[me])].filter((sq) => {
+    const role = after.board.getRole(sq);
+    return role !== undefined && role !== 'king' && see(after, sq, opposite(me)) > 0;
+  });
+  if (targets.length) parts.push(`attacks ${listPieces(after, targets)}`);
+  if (after.isCheck()) parts.push('gives check');
+  if (!parts.length) return undefined;
+  const text = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0];
+  return `Your opponent's ${san} ${text}.`;
+}

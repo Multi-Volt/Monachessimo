@@ -19,8 +19,12 @@ export interface PlyRecord {
   refused: number;
   /** True when the player asked for a hint on this move. */
   hinted: boolean;
-  /** Praise for a good move, as the coach gave it. */
-  label?: import('./praise').PraiseLabel;
+  /** Label of the accepted move: praise for a good move, or its class. */
+  label?: import('../ui/badges').MoveLabel;
+  /** Label of the first try at this move, for the game's accuracy and counts. */
+  first?: import('../ui/badges').MoveLabel;
+  /** Drop in winning chances of the first try. */
+  drop?: number;
 }
 
 export interface PracticeGame {
