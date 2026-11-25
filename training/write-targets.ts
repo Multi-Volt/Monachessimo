@@ -6,9 +6,10 @@
 //     training/write-targets.ts --in training/data/records.jsonl \
 //     --out training/data/targets.jsonl --parallel 8
 //
-// Each line of the output holds the record id, the fact sheet, the text and
-// the checker's problems. A text with problems is retried twice; the last
-// try is kept with its problems, so the filter step can count them. The
+// Each line of the output holds the record id, the fact sheet, the text,
+// the checker's problems and the writer's own review of the text. A text
+// with problems is retried twice; the last try is kept with its problems,
+// so the filter step can count them. The
 // output is appended to and resumes after a stop.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
@@ -27,7 +28,7 @@ Rules:
 - Plain words, one idea per sentence. Name pieces in words. A move in notation comes with words, like "Nxe5, taking your pawn".
 - Lead with what goes wrong, then what happens next, then the long-term cost if the notes give one. Pick the facts that matter most; you do not need all of them.
 - Never name a better move for the player.
-- No dashes, no parentheses, no exclamation marks, no lists, no filler words such as "great", "simply", "crucial" or "unfortunately".
+- No dashes except in the castling notation O-O, no parentheses, no exclamation marks, no lists, no filler words such as "great", "simply", "crucial" or "unfortunately".
 - Reply with the sentences only.`;
 
 export const REVIEW = `You check a chess coach's text against the coach's notes. The notes are the only truth.
@@ -41,15 +42,64 @@ Leaving facts out is fine. Plain retelling of a fact in other words is fine.
 
 Reply with OK, or with WRONG and the wrong claim in a few words.`;
 
-const EXAMPLE_NOTES = `Bg5 is a blunder: it costs about 3.1 pawns.
+/**
+ * Worked examples, notes then answer. The first was written by hand; the
+ * others by DeepSeek V4.1 Flash (MIT), which kept closest to the notes of
+ * the writers compared.
+ */
+const EXAMPLES: [string, string][] = [
+  [
+    `Bg5 is a blunder: it costs about 3.1 pawns.
 Why: Your bishop on g5 can be taken by my pawn for free.
-Fact: Your opponent answers hxg5, taking your bishop on g5.
+Fact: I answer hxg5, taking your bishop on g5.
 What happens next:
 - You play Bg5.
 - My pawn takes your bishop on g5.
-Long term: 6 moves later you have 3 pawns less material than after a better move.`;
-
-const EXAMPLE_TEXT = `Bg5 puts your bishop on a square my pawn controls. I take it for free with hxg5, and you get nothing back. Six moves on, you are still three pawns down.`;
+Long term: 6 moves later you have 3 pawns less material than after a better move.`,
+    `Bg5 puts your bishop on a square my pawn controls. I take it for free with hxg5, and you get nothing back. Six moves on, you have three pawns less than after a better move.`,
+  ],
+  [
+    `exf6 is a blunder: it turns the game around.
+Fact: It allows mate in 2.
+What happens next:
+- Your pawn takes my rook on f6.
+- Check from my rook on e1, so you have no time for anything else.
+- Your king now attacks my rook on e1.
+- Rf1#. Checkmate.
+Long term: My pieces head for your king: Re1+, Rf1#, and it ends in checkmate.`,
+    `exf6, taking my rook, turns the game around. It allows mate in two. My rook checks on e1, so you have no time for anything else, and Rf1 is checkmate.`,
+  ],
+  [
+    `Ba4 is an inaccuracy: it costs about 1.6 pawns.
+Why: My rook pins your bishop on a4 to your rook behind it.
+Fact: I answer Ra3, attacking your pawn on a2, which has no safe square.
+Fact: In the line that follows you lose a pawn.
+What happens next:
+- You play Ba4.
+- Now my rook attacks your pawn on a2.
+- You play Kg1.
+- My rook takes your pawn on a2.
+- Your rook now attacks my pawn on b6.
+- My rook moves to the open d-file.
+Long term: Nothing can defend your pawn on c2 with a pawn, so it becomes a target.`,
+    `Ba4 lets my rook pin your bishop on a4 to your rook behind it. I answer Ra3, attacking your pawn on a2, which has no safe square, and I take it next. Your pawn on c2 becomes a target because nothing can defend it with a pawn.`,
+  ],
+  [
+    `Ne7 is a mistake: it costs about 1.3 pawns.
+Fact: This move ignores my threat of e5.
+Fact: I answer e5, attacking your pawn on d6 and your pawn on f6.
+Fact: In the line that follows you lose a pawn, a pawn, and you win a pawn.
+What happens next:
+- You play Ne7.
+- Now my pawn attacks your pawn on d6 and your pawn on f6.
+- Your pawn takes my pawn on e5.
+- I take back on e5, and material is even.
+- You play d5. You have to: anything else loses about 1.9 pawns.
+- My bishop takes your pawn on g6.
+Long term: 10 moves later you have 1 pawn less material than after a better move.`,
+    `Ne7 ignores my threat of e5. I play e5, attacking your pawn on d6 and your pawn on f6. You then have to play d5, since anything else loses about 1.9 pawns, and my bishop takes your pawn on g6.`,
+  ],
+];
 
 function args() {
   const a = process.argv.slice(2);
@@ -83,8 +133,10 @@ async function complete(
     body: JSON.stringify({
       messages: [
         { role: 'system', content: SYSTEM },
-        { role: 'user', content: EXAMPLE_NOTES },
-        { role: 'assistant', content: EXAMPLE_TEXT },
+        ...EXAMPLES.flatMap(([notes, text]) => [
+          { role: 'user', content: notes },
+          { role: 'assistant', content: text },
+        ]),
         { role: 'user', content: sheet },
       ],
       temperature,
@@ -160,15 +212,14 @@ async function main() {
         tries++;
         text = await complete(o.server, sheet, 0.6 + 0.1 * (tries - 1), o.think);
         problems = checkPhrasing(sheet, text);
-        if (!problems.length) {
-          const wrong = await review(o.server, sheet, text);
-          if (wrong) problems = [`review: ${wrong}`];
-        }
         if (!problems.length) break;
       }
+      // The review is stored, not used to retry: it also rejects good texts.
+      const verdict = problems.length ? undefined : await review(o.server, sheet, text);
       n++;
       if (!problems.length) passed++;
-      await appendFile(o.out, JSON.stringify({ id, sheet, text, problems, tries }) + '\n');
+      const line = { id, sheet, text, problems, tries, review: verdict ?? 'OK' };
+      await appendFile(o.out, JSON.stringify(line) + '\n');
       if (n % 25 === 0) {
         const s = (Date.now() - started) / 1000;
         console.log(

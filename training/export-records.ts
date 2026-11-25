@@ -208,6 +208,13 @@ async function parent(o: ReturnType<typeof args>) {
   const base = without(without(without(argv, '--procs'), '--out'), '--count');
   const per = Math.ceil(o.count / o.procs);
   const started = Date.now();
+  const children: ReturnType<typeof spawn>[] = [];
+  // Stopping the parent stops the shards too.
+  for (const sig of ['SIGINT', 'SIGTERM'] as const)
+    process.on(sig, () => {
+      for (const c of children) c.kill();
+      process.exit(1);
+    });
   await Promise.all(
     Array.from({ length: o.procs }, (_, k) => {
       const child = spawn(
@@ -220,6 +227,7 @@ async function parent(o: ReturnType<typeof args>) {
         ],
         { stdio: k === 0 ? 'inherit' : ['ignore', 'ignore', 'inherit'] },
       );
+      children.push(child);
       return new Promise((done) => child.on('exit', done));
     }),
   );

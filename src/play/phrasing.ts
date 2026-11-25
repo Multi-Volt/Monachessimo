@@ -140,6 +140,8 @@ function named(text: string): PhrasingFacts {
     if (new RegExp(`\\b${w}\\b`).test(lower)) numbers.add(n);
   for (const p of PIECES) if (new RegExp(`\\b${p}s?\\b`).test(lower)) pieces.add(p);
   const patterns = new Set(PATTERNS.filter((p) => lower.includes(p)));
+  // Castling in notation names castling in words.
+  if ([...sans].some((s) => s.startsWith('O-O'))) patterns.add('castl');
   return { sans, squares, numbers, pieces, patterns };
 }
 

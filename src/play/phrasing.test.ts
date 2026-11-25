@@ -51,6 +51,14 @@ describe('phrasing check', () => {
     ).toContain('numbers: 16');
   });
 
+  it('counts O-O as castling', () => {
+    const notes =
+      'O-O is an inaccuracy: it costs about 0.6 pawns.\nWhat happens next:\n- You play O-O.';
+    expect(checkPhrasing(notes, 'Castling here is an inaccuracy. It costs you a little.')).toEqual(
+      [],
+    );
+  });
+
   it('flags the copy rules', () => {
     expect(checkPhrasing(sheet, 'Bg5 loses the bishop — badly! Great.')).toEqual(
       expect.arrayContaining(['dash', 'exclamation mark', 'filler: great']),

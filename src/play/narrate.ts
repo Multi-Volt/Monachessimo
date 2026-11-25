@@ -35,7 +35,9 @@ function listRoles(pos: Chess, squares: Square[], owner: 'your' | 'my'): string 
 function materialNote(pos: Chess, me: Chess['turn']): string {
   const d = balance(pos, me);
   if (d === 0) return 'material is even';
-  return d > 0 ? `you are ${d} up` : `you are ${-d} down`;
+  // The balance counts pawns: a pawn 1, a minor piece 3, a rook 5, a queen 9.
+  const n = Math.abs(d);
+  return `you are ${n} ${n === 1 ? 'pawn' : 'pawns'} ${d > 0 ? 'up' : 'down'}`;
 }
 
 /**

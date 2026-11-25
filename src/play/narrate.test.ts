@@ -25,7 +25,7 @@ describe('narrateLine', () => {
     });
     expect(t[1]).toMatchObject({
       kind: 'recapture',
-      text: 'You take back on d8, and you are 5 up.',
+      text: 'You take back on d8, and you are 5 pawns up.',
     });
     // Taking a piece that just moved is a capture, not a recapture.
     const b5 = fromFen('rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2');
