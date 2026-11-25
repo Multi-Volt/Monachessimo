@@ -1,0 +1,235 @@
+// The coach's notes on a judged move, in the second version: what a person
+// can see two or three moves ahead, spoken beside the player ("you", "your
+// opponent"), with the material result already worked out in points. A
+// writer model turns them into a few friendly sentences; it never has to
+// count material or look further than the notes do.
+//
+// The window runs from the move to the payoff: the last capture in the first
+// moves of the line, with any recapture that follows at once, or a mate that
+// comes soon. A line with no capture shows the move, the reply and the
+// player's answer.
+import type { Chess } from 'chessops/chess';
+import { makeFen } from 'chessops/fen';
+import type { Role } from 'chessops/types';
+import { fromFen, normalMove, playUci, VALUE } from '../detectors/board';
+import { pvToSan } from '../chess/san';
+import type { ExplanationRecord } from './record';
+import { patternNames } from './phrasing';
+
+/** Half-moves the payoff may take: the move and two moves by each side. */
+const WINDOW_PLIES = 5;
+/** A mate is shown when it comes within this many half-moves. */
+const MATE_PLIES = 9;
+/** A line with no capture shows the move, the reply and the player's answer. */
+const QUIET_PLIES = 3;
+/**
+ * A mistake whose cost is not in material within the window is followed
+ * this far, to the move where the player is first two points down.
+ */
+const LOSS_PLIES = 11;
+
+const NAME: Record<Role, string> = {
+  pawn: 'pawn',
+  knight: 'knight',
+  bishop: 'bishop',
+  rook: 'rook',
+  queen: 'queen',
+  king: 'king',
+};
+
+const points = (n: number) => `${n} point${n === 1 ? '' : 's'}`;
+
+interface Ply {
+  uci: string;
+  san: string;
+  byPlayer: boolean;
+  /** The piece this move takes, if any. */
+  took?: Role;
+  mate: boolean;
+}
+
+/** The line from the move on, played out, until it stops being legal. */
+function playOut(r: ExplanationRecord): { plies: Ply[]; start: Chess } {
+  const start = fromFen(r.fen);
+  const ucis = [r.move.uci, ...r.reply];
+  const plies: Ply[] = [];
+  let pos = start;
+  for (const [i, uci] of ucis.entries()) {
+    const m = normalMove(uci);
+    const next = playUci(pos, uci);
+    if (!m || !next) break;
+    const took =
+      pos.board.getRole(m.to) ??
+      (pos.board.getRole(m.from) === 'pawn' && m.to === pos.epSquare ? 'pawn' : undefined);
+    plies.push({
+      uci,
+      san: pvToSan(makeFen(pos.toSetup()), [uci], 1)[0] ?? uci,
+      byPlayer: i % 2 === 0,
+      ...(took ? { took } : {}),
+      mate: next.isCheckmate(),
+    });
+    pos = next;
+  }
+  return { plies, start };
+}
+
+/** How many half-moves of the line the notes show. */
+/**
+ * How many half-moves of the line the notes show. `balance[i]` is the
+ * player's material lead after i half-moves. `serious` is true for a
+ * mistake or a blunder, whose cost the notes must reach.
+ */
+export function windowLength(
+  plies: readonly Ply[],
+  balance: readonly number[],
+  serious: boolean,
+): number {
+  const mate = plies.findIndex((p) => p.mate);
+  if (mate >= 0 && mate < MATE_PLIES) return mate + 1;
+  let end = -1;
+  for (let i = 0; i < Math.min(WINDOW_PLIES, plies.length); i++) if (plies[i]!.took) end = i;
+  const n = end < 0 ? Math.min(QUIET_PLIES, plies.length) : settle(plies, end + 1);
+  if (serious && balance[n]! >= balance[0]!) {
+    for (let k = n + 1; k <= Math.min(LOSS_PLIES, plies.length); k++)
+      if (balance[k]! <= balance[0]! - 2) return settle(plies, k);
+  }
+  return n;
+}
+
+/** Extends a window that ends on a capture by the recaptures on the same square. */
+function settle(plies: readonly Ply[], n: number): number {
+  while (
+    n < plies.length &&
+    plies[n]!.took &&
+    plies[n]!.uci.slice(2, 4) === plies[n - 1]!.uci.slice(2, 4)
+  )
+    n++;
+  return n;
+}
+
+/** "a knight (3 points) and a pawn (1 point)" */
+function listPieces(roles: Role[]): string {
+  const parts = roles.map((r) => `a ${NAME[r]} (${points(VALUE[r])})`);
+  return parts.length <= 1
+    ? (parts[0] ?? '')
+    : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`;
+}
+
+/** Where the player stands in material, in words. */
+function standing(n: number): string {
+  if (n === 0) return 'even in material';
+  return `${points(Math.abs(n))} ${n > 0 ? 'ahead' : 'behind'}`;
+}
+
+/** A sentence from the narrated line, moved from the opponent's voice to the coach's. */
+export function coachVoice(text: string): string {
+  return text
+    .replace(/, and (?:you are \d+ pawns? (?:up|down)|material is even)/g, '')
+    .replace(/ You have to: anything else loses [^.]*\./g, ' You have to.')
+    .replace(/\bI take back\b/g, 'Your opponent takes back')
+    .replace(/\bI play\b/g, 'Your opponent plays')
+    .replace(/\bI answer\b/g, 'Your opponent answers')
+    .replace(/\bMy\b/g, "Your opponent's")
+    .replace(/\bmy\b/g, "your opponent's")
+    .replace(/^I\b/g, 'Your opponent')
+    .replace(/\bI\b/g, 'your opponent')
+    .replace(/\bme\b/g, 'your opponent');
+}
+
+/** One line of "What happens next", from the narration when there is one. */
+function stepText(r: ExplanationRecord, i: number, p: Ply): string {
+  const narrated = r.line[i]?.uci === p.uci ? r.line[i]!.text : undefined;
+  const who = p.byPlayer ? 'You play' : 'Your opponent plays';
+  if (!narrated) return `${who} ${p.san}.${p.mate ? ' Checkmate.' : ''}`;
+  // Narration of a mate is bare notation, "Qg7#. Checkmate."
+  const bare = narrated.startsWith(p.san) ? `${who} ${narrated}` : narrated;
+  return coachVoice(bare);
+}
+
+/** The coach's notes for a judged move. */
+export function coachNotes(r: ExplanationRecord): string {
+  const { plies, start } = playOut(r);
+  const balance = [materialOf(start, r.side)];
+  let pos = start;
+  for (const p of plies) {
+    pos = playUci(pos, p.uci) ?? pos;
+    balance.push(materialOf(pos, r.side));
+  }
+  const serious = r.verdict.class === 'mistake' || r.verdict.class === 'blunder';
+  const n = windowLength(plies, balance, serious);
+  const shown = plies.slice(0, n);
+  const out = [`Your move: ${r.move.san}. Verdict: ${article(r.verdict.class)}.`];
+
+  if (r.sentences.cause) out.push(`Why: ${coachVoice(r.sentences.cause)}`);
+  // A tactic is named only when the notes show it working: it is the explained
+  // cause, or the line ends in a mate or a real loss. A detector tag alone
+  // gives a writer nothing to show, and it makes one up.
+  const paysOff = shown.some((p) => p.mate) || balance[n]! <= balance[0]! - 2;
+  const patterns = r.cause || paysOff ? patternNames(r) : [];
+  if (patterns.length) out.push(`Patterns: ${patterns.join(', ')}.`);
+  if (r.threat && r.sentences.points.some((p) => p.startsWith('This move ignores')))
+    out.push(`Ignored threat: before your move, your opponent threatened ${r.threat.san}.`);
+
+  if (shown.length) {
+    out.push('What happens next:');
+    for (const [i, p] of shown.entries()) out.push(`- ${stepText(r, i, p)}`);
+  }
+
+  const mate = shown.find((p) => p.mate);
+  if (mate) {
+    const moves = Math.ceil(shown.length / 2);
+    out.push(
+      mate.byPlayer
+        ? 'Result: you give checkmate.'
+        : `Result: your opponent gives checkmate${moves > 1 ? ` in ${moves} moves` : ''}.`,
+    );
+    return out.join('\n');
+  }
+
+  const lost = shown.filter((p) => !p.byPlayer && p.took).map((p) => p.took!);
+  const won = shown.filter((p) => p.byPlayer && p.took).map((p) => p.took!);
+  const before = balance[0]!;
+  const after = balance[n]!;
+  const change = after - before;
+  if (!lost.length && !won.length) {
+    out.push('Result: no material changes hands.');
+    // Nothing a beginner can see goes wrong: say so rather than invent a reason.
+    if (!serious && !r.sentences.cause) {
+      out.push("Coach's take: the move is okay, just not the best; there were better options.");
+      return out.join('\n');
+    }
+  } else {
+    const parts = [
+      ...(lost.length ? [`you lose ${listPieces(lost)}`] : []),
+      ...(won.length ? [`you win ${listPieces(won)}`] : []),
+    ];
+    const net =
+      change === 0
+        ? 'so it is an even trade'
+        : `so you are ${points(Math.abs(change))} ${change < 0 ? 'down' : 'up'}`;
+    out.push(`Result: ${parts.join(' and ')}, ${net}.`);
+  }
+  if (change !== 0)
+    out.push(
+      `Where it leaves you: you were ${standing(before)}, and now you are ${standing(after)}.`,
+    );
+  else if (serious)
+    // The engine sees a cost the line does not show in material within reach.
+    out.push(
+      'Where it leaves you: material stays level for now, but your position gets much harder.',
+    );
+  return out.join('\n');
+}
+
+const article = (c: string | null) => (!c ? 'fine' : `${c === 'inaccuracy' ? 'an' : 'a'} ${c}`);
+
+/** The player's material minus the opponent's, in points. */
+function materialOf(pos: Chess, side: Chess['turn']): number {
+  let sum = 0;
+  for (const sq of pos.board.occupied) {
+    const role = pos.board.getRole(sq)!;
+    if (role === 'king') continue;
+    sum += (pos.board.getColor(sq) === side ? 1 : -1) * VALUE[role];
+  }
+  return sum;
+}
