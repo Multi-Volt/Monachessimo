@@ -135,8 +135,9 @@ test('start links from review and drills open the game', async ({ page }) => {
 test('take back, check and checkmate, and reviewing a finished practice game', async ({ page }) => {
   test.setTimeout(150_000);
   const errors = collectErrors(page);
-  // Take back from the starting position.
+  // Take back from the starting position, as White: "Either" picks a random side.
   await page.goto('./#/play');
+  await page.getByLabel('White', { exact: true }).check();
   await page.getByRole('button', { name: 'Start the game' }).click();
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
   await typeMove(page, 'e4');
