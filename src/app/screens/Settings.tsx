@@ -24,8 +24,8 @@ function VoicePanel() {
       <h2>Spoken coaching</h2>
       <p class="hint">
         Voices that run on this device come first. A voice marked “may send text online” can send
-        what it reads to the browser maker. Sound plays only after you tap a speak button or make a
-        move.
+        what it reads to the browser maker. Without automatic reading, sound plays only when you tap
+        a speak button.
       </p>
       {voices.length ? (
         <div class="field">
@@ -53,7 +53,7 @@ function VoicePanel() {
           checked={v.readAll}
           onChange={(e) => void save({ ...v, readAll: e.currentTarget.checked })}
         />
-        <span>Read every verdict aloud in practice games</span>
+        <span>Read aloud automatically: every text with a speak button, as it appears</span>
       </label>
       <div class="row">
         <button

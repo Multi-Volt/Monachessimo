@@ -650,6 +650,18 @@ function MoveView({ step, text, t, onSolved, onFlaw }: ViewProps<MoveStep>) {
   if (expected && hint >= 2)
     shapes.push(arrow(expected.slice(0, 2), expected.slice(2, 4), 'green'));
   const pos = board(fen);
+  /** Hints in words, one per tap: the piece, then where it goes. */
+  const hintText = (level: number): string | undefined => {
+    if (!expected) return undefined;
+    const from = parseSquare(expected.slice(0, 2))!;
+    const role = pos.board.getRole(from);
+    if (!role) return undefined;
+    const same = pos.board[pos.turn].intersect(pos.board[role]).size();
+    const name = role[0]!.toUpperCase() + role.slice(1);
+    if (level === 1)
+      return same > 1 ? `Move the ${role} on ${expected.slice(0, 2)}.` : `Move your ${role}.`;
+    return `${name} to ${expected.slice(2, 4)}.`;
+  };
   return (
     <>
       <div class="learn__head">
@@ -687,7 +699,10 @@ function MoveView({ step, text, t, onSolved, onFlaw }: ViewProps<MoveStep>) {
             class="button"
             onClick={() => {
               onFlaw();
-              setHint(Math.min(2, hint + 1));
+              const level = Math.min(2, hint + 1);
+              setHint(level);
+              const words = hintText(level);
+              if (words) setNote({ tone: 'hint', text: words });
             }}
           >
             {hint === 0 ? 'Hint' : 'Show the move'}

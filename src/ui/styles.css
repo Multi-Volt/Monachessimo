@@ -262,6 +262,10 @@ main {
   gap: var(--s2);
 }
 
+.row + .row {
+  margin-top: var(--s3);
+}
+
 .row--nav {
   margin-block: var(--s3) var(--s4);
 }

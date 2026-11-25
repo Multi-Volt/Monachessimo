@@ -77,7 +77,7 @@ test('a browser that lists no voices reads with the default voice', async ({ pag
   expect((await spoken(page)).at(-1)).toMatch(/^default: The rook moves/);
 });
 
-test('a device voice reads lessons and the coach, never on page load', async ({ page }) => {
+test('a device voice reads on a tap, and reads by itself only when asked', async ({ page }) => {
   const errors = collectErrors(page);
   await fakeSpeech(page, 'both');
   await page.goto('./#/settings');
@@ -85,19 +85,23 @@ test('a device voice reads lessons and the coach, never on page load', async ({ 
   // Both voices are offered, the cloud one marked, and the device voice is chosen.
   const options = await page.getByLabel('Voice').locator('option').allTextContents();
   expect(options).toEqual(['Cloud English, en-US, may send text online', 'Device English, en-GB']);
-  await page.getByLabel('Read every verdict aloud in practice games').check();
-  expect(await spoken(page)).toEqual([]);
   await page.getByRole('button', { name: 'Try the voice' }).click();
   expect(await spoken(page)).toEqual(['device: knight f3 develops the knight and attacks e5.']);
 
-  // Opening a lesson reads nothing by itself.
+  // Without automatic reading, opening a lesson reads nothing by itself.
   await page.goto('./#/learn/rook');
   await expect(page.getByRole('heading', { level: 1, name: 'The rook' })).toBeVisible();
   expect(await spoken(page)).toHaveLength(1);
   await page.getByRole('button', { name: 'Read aloud' }).click();
-  const said = (await spoken(page)).at(-1)!;
-  expect(said).toBe(
-    'device: The rook moves in straight lines: forwards, backwards, left or right, as many squares as it likes. It cannot jump over other pieces.',
-  );
+  const lesson =
+    'device: The rook moves in straight lines: forwards, backwards, left or right, as many squares as it likes. It cannot jump over other pieces.';
+  expect((await spoken(page)).at(-1)).toBe(lesson);
+
+  // With it, the lesson text is read when it appears.
+  await page.goto('./#/settings');
+  await page.getByLabel(/Read aloud automatically/).check();
+  await page.goto('./#/learn/rook');
+  await expect(page.getByRole('heading', { level: 1, name: 'The rook' })).toBeVisible();
+  await expect.poll(async () => (await spoken(page)).slice(2)).toEqual([lesson]);
   expect(errors).toEqual([]);
 });

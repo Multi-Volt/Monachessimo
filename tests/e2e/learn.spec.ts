@@ -80,9 +80,11 @@ test('quizzes and find-the-move tasks give feedback', async ({ page }) => {
   await expect(page.getByText('Checkmate. Well done.')).toBeVisible();
   await cont.click();
 
-  // m2, from a corrected position: the hint rings the piece, then shows the move.
+  // m2, from a corrected position: the hint names the piece, then the move.
   await page.getByRole('button', { name: 'Hint' }).click();
+  await expect(page.getByText('Move your queen.')).toBeVisible();
   await page.getByRole('button', { name: 'Show the move' }).click();
+  await expect(page.getByText('Queen to g8.')).toBeVisible();
   await typeMove(page, 'Qg8#');
   await expect(page.getByText('Checkmate. Well done.')).toBeVisible();
   expect(errors).toEqual([]);

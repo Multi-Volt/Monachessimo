@@ -983,7 +983,6 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
               text={
                 coach.tone === 'neutral' ? '' : [coach.title, coach.text].filter(Boolean).join(' ')
               }
-              auto
             />
           </div>
           {coach.text && <p class="coach__text">{coach.text}</p>}

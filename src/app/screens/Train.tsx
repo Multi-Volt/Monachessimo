@@ -33,6 +33,7 @@ import { balance, playLine } from '../../detectors/board';
 import { Board } from '../../ui/Board';
 import { formatDate } from '../../ui/format';
 import { useAsync, useServices } from '../../ui/hooks';
+import { SpeakButton } from '../../ui/SpeakButton';
 import { Tally } from '../../ui/Tally';
 import { href } from '../router';
 
@@ -614,9 +615,23 @@ function Session(props: {
       <p class="drill__count num">
         {props.title} · {Math.min(index + 1, queue.length)} of {queue.length}
       </p>
-      <h1 id="drill-title" class="drill__goal">
-        {drill.goal}
-      </h1>
+      <div class="learn__head">
+        <h1 id="drill-title" class="drill__goal">
+          {drill.goal}
+        </h1>
+        {!done && (
+          <SpeakButton
+            text={[
+              `${drill.side === 'white' ? 'White' : 'Black'} to move.`,
+              drill.goal,
+              goalText(goal),
+            ]
+              .filter(Boolean)
+              .map((s) => (/[.?]$/.test(s!) ? s : `${s}.`))
+              .join(' ')}
+          />
+        )}
+      </div>
       <p class="hint">
         {drill.side === 'white' ? 'White' : 'Black'} to move
         {game && opp ? ` · from your game vs ${opp.name}, ${formatDate(game.playedAt)}` : ''}
@@ -799,7 +814,10 @@ function Session(props: {
 
       {done && (
         <div class="panel">
-          <h2>Why</h2>
+          <div class="learn__head">
+            <h2>Why</h2>
+            <SpeakButton text={drill.explanation.join(' ')} />
+          </div>
           {drill.explanation.map((p) => (
             <p key={p}>{p}</p>
           ))}

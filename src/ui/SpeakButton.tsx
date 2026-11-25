@@ -1,24 +1,20 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect } from 'preact/hooks';
 import { useServices } from './hooks';
 import { canSpeak, pickVoice, speak, stopSpeaking, useVoices } from './speech';
 
 /**
- * A button that reads `text` aloud, shown when the browser can speak. With `auto`, the text is also read whenever it
- * changes, if the player turned on "read every verdict aloud". The text a
- * screen opens with is never read: sound needs a tap or a move first.
+ * A button that reads `text` aloud, shown when the browser can speak. If
+ * the player turned on "read aloud automatically", the text is also read
+ * when it appears and whenever it changes. Browsers refuse speech before the
+ * first tap on a page, so a freshly loaded page stays silent.
  */
-export function SpeakButton({ text, auto = false }: { text: string; auto?: boolean }) {
+export function SpeakButton({ text }: { text: string }) {
   const services = useServices();
   const voices = useVoices();
   const settings = services?.settings.voice;
   const voice = pickVoice(voices, settings?.uri);
-  const first = useRef(true);
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    if (auto && settings?.readAll && text) speak(text, voice);
+    if (settings?.readAll && text) speak(text, voice);
   }, [text]);
   useEffect(() => () => stopSpeaking(), []);
   if (!canSpeak() || !text) return null;
