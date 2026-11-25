@@ -14,7 +14,7 @@ import type { Role } from 'chessops/types';
 import { fromFen, normalMove, playUci, VALUE } from '../detectors/board';
 import { pvToSan } from '../chess/san';
 import type { ExplanationRecord } from './record';
-import { patternNames } from './phrasing';
+import { checkPhrasing, patternNames } from './phrasing';
 
 /** Half-moves the payoff may take: the move and two moves by each side. */
 const WINDOW_PLIES = 5;
@@ -58,9 +58,12 @@ function playOut(r: ExplanationRecord): { plies: Ply[]; start: Chess } {
     const m = normalMove(uci);
     const next = playUci(pos, uci);
     if (!m || !next) break;
-    const took =
-      pos.board.getRole(m.to) ??
-      (pos.board.getRole(m.from) === 'pawn' && m.to === pos.epSquare ? 'pawn' : undefined);
+    // Castling is the king moving onto its own rook in chessops: not a capture.
+    const own = pos.board.getColor(m.to) === pos.turn;
+    const took = own
+      ? undefined
+      : (pos.board.getRole(m.to) ??
+        (pos.board.getRole(m.from) === 'pawn' && m.to === pos.epSquare ? 'pawn' : undefined));
     plies.push({
       uci,
       san: pvToSan(makeFen(pos.toSetup()), [uci], 1)[0] ?? uci,
@@ -90,8 +93,13 @@ export function windowLength(
   for (let i = 0; i < Math.min(WINDOW_PLIES, plies.length); i++) if (plies[i]!.took) end = i;
   const n = end < 0 ? Math.min(QUIET_PLIES, plies.length) : settle(plies, end + 1);
   if (serious && balance[n]! >= balance[0]!) {
+    // Follow the line to where the player gives back two points or more.
+    const floor = Math.min(balance[0]!, balance[n]!) - 2;
+    const giveBack = balance[n]! - 2;
     for (let k = n + 1; k <= Math.min(LOSS_PLIES, plies.length); k++)
-      if (balance[k]! <= balance[0]! - 2) return settle(plies, k);
+      if (balance[k]! <= Math.max(floor, giveBack)) return settle(plies, k);
+    // No loss in reach: show the opponent's next move and the answer to it.
+    return Math.min(n + 2, plies.length);
   }
   return n;
 }
@@ -160,14 +168,27 @@ export function coachNotes(r: ExplanationRecord): string {
   const shown = plies.slice(0, n);
   const out = [`Your move: ${r.move.san}. Verdict: ${article(r.verdict.class)}.`];
 
-  if (r.sentences.cause) out.push(`Why: ${coachVoice(r.sentences.cause)}`);
+  // The engine's line is the truth: a cause that says material is lost when
+  // the line loses none is left out.
+  const loses = balance[n]! < balance[0]!;
+  const cause =
+    r.sentences.cause && (loses || !/lose material|for free/.test(r.sentences.cause))
+      ? r.sentences.cause
+      : undefined;
+  if (cause) out.push(`Why: ${coachVoice(cause)}`);
   // A tactic is named only when the notes show it working: it is the explained
   // cause, or the line ends in a mate or a real loss. A detector tag alone
   // gives a writer nothing to show, and it makes one up.
   const paysOff = shown.some((p) => p.mate) || balance[n]! <= balance[0]! - 2;
-  const patterns = r.cause || paysOff ? patternNames(r) : [];
+  const patterns = cause || paysOff ? patternNames(r) : [];
   if (patterns.length) out.push(`Patterns: ${patterns.join(', ')}.`);
-  if (r.threat && r.sentences.points.some((p) => p.startsWith('This move ignores')))
+  // Records exported before threats had to be concrete can hold a quiet
+  // "threat"; only a capture, a check or a mate is one.
+  if (
+    r.threat &&
+    /[x+#]/.test(r.threat.san) &&
+    r.sentences.points.some((p) => p.startsWith('This move ignores'))
+  )
     out.push(`Ignored threat: before your move, your opponent threatened ${r.threat.san}.`);
 
   if (shown.length) {
@@ -194,7 +215,7 @@ export function coachNotes(r: ExplanationRecord): string {
   if (!lost.length && !won.length) {
     out.push('Result: no material changes hands.');
     // Nothing a beginner can see goes wrong: say so rather than invent a reason.
-    if (!serious && !r.sentences.cause) {
+    if (!serious && !cause) {
       out.push("Coach's take: the move is okay, just not the best; there were better options.");
       return out.join('\n');
     }
@@ -209,9 +230,18 @@ export function coachNotes(r: ExplanationRecord): string {
         : `so you are ${points(Math.abs(change))} ${change < 0 ? 'down' : 'up'}`;
     out.push(`Result: ${parts.join(' and ')}, ${net}.`);
   }
+  if (!serious && change >= 0 && !cause) {
+    if (change !== 0)
+      out.push(
+        `Where it leaves you: you were ${standing(before)}, and now you are ${standing(after)}.`,
+      );
+    out.push("Coach's take: the move is okay, just not the best; there were better options.");
+    return out.join('\n');
+  }
+  const hidden = serious && change >= 0;
   if (change !== 0)
     out.push(
-      `Where it leaves you: you were ${standing(before)}, and now you are ${standing(after)}.`,
+      `Where it leaves you: you were ${standing(before)}, and now you are ${standing(after)}${hidden ? ', but your position gets much harder' : ''}.`,
     );
   else if (serious)
     // The engine sees a cost the line does not show in material within reach.
@@ -232,4 +262,86 @@ function materialOf(pos: Chess, side: Chess['turn']): number {
     sum += (pos.board.getColor(sq) === side ? 1 : -1) * VALUE[role];
   }
   return sum;
+}
+
+/**
+ * Notes or a text in the coach's voice, moved back to the opponent's voice
+ * the phrasing checker reads: "your opponent's knight" is "my knight".
+ */
+function opponentVoice(text: string): string {
+  return text
+    .replace(/^Your move: (\S+)\. Verdict: (an? \w+|fine)\./m, '$1 is $2.')
+    .replace(
+      /before your move, your opponent threatened (\S+)/g,
+      'This move ignores my threat of $1',
+    )
+    .replace(/\bYour opponent plays\b/g, 'I play')
+    .replace(/\byour opponent plays\b/g, 'I play')
+    .replace(/\b[Yy]our opponent takes back\b/g, 'I take back')
+    .replace(/\b[Yy]our opponent answers\b/g, 'I answer')
+    .replace(/\bYour opponent['’]s\b/g, 'My')
+    .replace(/\byour opponent['’]s\b/g, 'my')
+    .replace(/\bYour opponent\b/g, 'I')
+    .replace(/\byour opponent\b/g, 'me')
+    .replace(/\btheir\b/g, 'my');
+}
+
+/**
+ * Checks a coach text against its notes: the phrasing checker's rules on
+ * facts, owners, moves and copy, plus material in points, never in pawns.
+ * Returns the problems; an empty list passes.
+ */
+export function checkCoachText(notes: string, text: string): string[] {
+  // A checkmate is always of the player's king, though the notes do not say so.
+  const facts = /Checkmate\./.test(notes) ? `${notes}\nFact: your king is checkmated.` : notes;
+  const problems = checkPhrasing(opponentVoice(facts), opponentVoice(text));
+  problems.push(...wrongMaterialClaims(notes, text));
+  if (
+    /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten) pawns? (up|down|ahead|behind|of)\b/i.test(
+      text,
+    )
+  )
+    problems.push('units: pawns');
+  return problems;
+}
+
+const ROLES = 'pawn|knight|bishop|rook|queen';
+
+/** Pieces the Result line says the player loses and wins. */
+function resultRoles(notes: string): { lose: Set<string>; win: Set<string> } {
+  const line = /^Result: (.*)$/m.exec(notes)?.[1] ?? '';
+  const part = (verb: string) => {
+    const span = new RegExp(`you ${verb} (.*?)(?: and you |, so|$)`).exec(line)?.[1] ?? '';
+    return new Set([...span.matchAll(new RegExp(`\\b(${ROLES})\\b`, 'g'))].map((m) => m[1]!));
+  };
+  const lose = part('lose');
+  const win = part('win');
+  // Captures told in the line count too, as in mate notes with no tally.
+  const role = `(${ROLES})`;
+  for (const m of notes.matchAll(new RegExp(`^- Your \\w+ takes your opponent's ${role}`, 'gm')))
+    win.add(m[1]!);
+  for (const m of notes.matchAll(new RegExp(`^- Your opponent's \\w+ takes your ${role}`, 'gm')))
+    lose.add(m[1]!);
+  return { lose, win };
+}
+
+/**
+ * "Wins a queen" and "you lose a rook" in a text must match the Result line:
+ * a writer that turns "attacks your queen" into "wins a queen" is wrong.
+ */
+function wrongMaterialClaims(notes: string, text: string): string[] {
+  const { lose, win } = resultRoles(notes);
+  const out: string[] = [];
+  const t = text.toLowerCase();
+  const won = new RegExp(
+    `\\b(?:win|wins|won|winning|grabs?) (?:a|an|the|your opponent['’]s|their) (${ROLES})`,
+    'g',
+  );
+  for (const m of t.matchAll(won)) if (!win.has(m[1]!)) out.push(`claim: wins ${m[1]}`);
+  const lost = new RegExp(
+    `\\b(?:lose|loses|lost|losing|give away|gives away) (?:a|an|your) (${ROLES})`,
+    'g',
+  );
+  for (const m of t.matchAll(lost)) if (!lose.has(m[1]!)) out.push(`claim: loses ${m[1]}`);
+  return out;
 }
