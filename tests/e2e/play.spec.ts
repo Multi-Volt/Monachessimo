@@ -80,6 +80,11 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   await page.getByRole('button', { name: 'Start the game' }).click();
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
 
+  // The coach names the opponent's threat, found by a null-move search.
+  await expect(page.locator('.coach')).toContainText('I threaten Nxe5, taking your pawn on e5.', {
+    timeout: 30_000,
+  });
+
   // b5 hangs a pawn to the bishop: a blunder, with the reason.
   await typeMove(page, 'b5');
   const status = page.locator('.coach');

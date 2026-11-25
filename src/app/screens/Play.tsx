@@ -12,6 +12,7 @@ import {
 } from '../../ui/badges';
 import { positions } from '../../play/review';
 import { causeMarks, type Mark } from '../../play/cause';
+import { findThreat, type Threat } from '../../engine/threat';
 import { fromFen } from '../../detectors/board';
 import type { TagName } from '../../detectors';
 import { moveHints } from '../../chess/hints';
@@ -56,6 +57,7 @@ import {
   compareLines,
   explainMove,
   threatNote,
+  threatText,
   explanationText,
   type MoveExplanation,
 } from '../../play/explain';
@@ -494,6 +496,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const opponent = useRef<Engine | undefined>(undefined);
   const target = useRef<Promise<SearchResult> | undefined>(undefined);
   const savedHere = useRef(false);
+  /** The opponent's threat in the current position, from the null-move search. */
+  const [engineThreat, setEngineThreat] = useState<{ fen: string; threat: Threat }>();
+  const threatRef = useRef<Threat | undefined>(undefined);
   /** The first try at the current move: its label and drop, for accuracy. */
   const firstTry = useRef<{ label: MoveLabel; drop: number } | undefined>(undefined);
 
@@ -551,8 +556,16 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (yourTurn) {
       target.current = services.pool.search({ fen, depth: 14, movetime: 1500, multipv: 3 });
       const side = pos.turn;
-      void target.current.then((t) => {
-        if (t.lines[0]) setEvalWhite(whiteScore(t.lines[0].score, side));
+      setEngineThreat(undefined);
+      threatRef.current = undefined;
+      const here = fen;
+      void target.current.then(async (t) => {
+        if (!t.lines[0]) return;
+        setEvalWhite(whiteScore(t.lines[0].score, side));
+        // What the opponent would play if the player passed: the threat.
+        const threat = await findThreat((r) => services.pool.search(r), here, t.lines[0].score);
+        threatRef.current = threat;
+        setEngineThreat(threat ? { fen: here, threat } : undefined);
       });
       setRefusedHere(0);
       setHints(0);
@@ -614,6 +627,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           played,
           verdict,
           ply: game.moves.length,
+          threat: threatRef.current,
         })
       : undefined;
 
@@ -783,13 +797,19 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
 
   // What the opponent's last move threatens, shown on the player's turn.
   const lastIsTheirs = game.moves.length > 0 && moverAt(game.moves.length - 1) !== game.you;
+  const lastSan = lastIsTheirs ? sans.at(-1) : undefined;
+  const searchedThreat =
+    yourTurn && engineThreat?.fen === fen
+      ? threatText(fen, engineThreat.threat, lastSan)
+      : undefined;
   const threat =
-    yourTurn && lastIsTheirs
+    searchedThreat ??
+    (yourTurn && lastIsTheirs
       ? threatNote(
           fromFen(positions(game.startFen, game.moves.slice(0, -1)).at(-1)!),
           game.moves.at(-1)!,
         )
-      : undefined;
+      : undefined);
 
   // Drawings on the board: badges for judged moves, arrows for replies and hints.
   const shapes: DrawShape[] = [];

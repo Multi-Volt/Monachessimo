@@ -6,6 +6,7 @@ import { pvToSan } from '../chess/san';
 import {
   attacksFrom,
   balance,
+  fromFen,
   isCapture,
   normalMove,
   playLine,
@@ -14,6 +15,7 @@ import {
 } from '../detectors/board';
 import { describeChanges } from '../strategy/explain';
 import { causeText, findCause, type Cause } from './cause';
+import { nullMoveFen, type Threat } from '../engine/threat';
 import { features } from '../strategy/features';
 import { tagMove, type TagName } from '../detectors';
 import type { Score } from '../engine/eval';
@@ -99,6 +101,8 @@ export function explainMove(args: {
   played: Score;
   verdict: Verdict;
   ply: number;
+  /** The opponent's threat before the move, from the null-move search. */
+  threat?: Threat | undefined;
 }): MoveExplanation {
   const { before, uci, reply, verdict } = args;
   const me = before.turn;
@@ -180,6 +184,10 @@ export function explainMove(args: {
   }
   // The cause comes first: it says why the move allowed what follows.
   const cause = findCause(before, uci, reply);
+  if (args.threat && reply[0] === args.threat.uci && cause?.kind !== 'ignoredThreat') {
+    const threatSan = pvToSan(makeFen(after.toSetup()), [reply[0]], 1)[0];
+    if (threatSan) points.unshift(`This move ignores my threat of ${threatSan}.`);
+  }
   if (cause) points.unshift(causeText(cause));
   const tactical = tags.filter((t) => TACTICAL.includes(t));
   // A tactic is the lesson; lasting changes only explain a move without one.
@@ -272,4 +280,26 @@ export function threatNote(before: Chess, uci: string): string | undefined {
   if (!parts.length) return undefined;
   const text = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0];
   return `Your opponent's ${san} ${text}.`;
+}
+
+/**
+ * The opponent's threat in words, from the null-move search: what the move
+ * takes, or the mate it gives. `lastSan` is the opponent's last move, which
+ * set the threat up, when known.
+ */
+export function threatText(fen: string, threat: Threat, lastSan?: string): string | undefined {
+  const passed = nullMoveFen(fen);
+  if (!passed) return undefined;
+  const pos = fromFen(passed);
+  const m = normalMove(threat.uci);
+  if (!m) return undefined;
+  const san = pvToSan(passed, [threat.uci], 1)[0] ?? threat.uci;
+  const lead = lastSan ? `With ${lastSan}, I threaten ${san}` : `I threaten ${san}`;
+  if (threat.score.kind === 'mate' && threat.score.value > 0)
+    return threat.score.value === 1 ? `${lead}, and it is mate.` : `${lead}, with mate to follow.`;
+  if (isCapture(pos, m)) {
+    const role = pos.board.getRole(m.to) ?? 'pawn';
+    return `${lead}, taking your ${role} on ${makeSquare(m.to)}.`;
+  }
+  return `${lead}. Ignoring it costs about ${(threat.gain / 100).toFixed(1)} pawns.`;
 }
