@@ -34,6 +34,21 @@ function squareAt(p: THREE.Vector3): Square | undefined {
 type Pieces = Map<string, THREE.Object3D>;
 let set: Promise<Pieces> | undefined;
 
+const IVORY = '#f4e4c1';
+const tinted = new Map<THREE.Material, THREE.Material>();
+
+/** The set's white material with an ivory tint, made once and shared. */
+function ivory(material: THREE.Material | THREE.Material[]): THREE.Material | THREE.Material[] {
+  if (Array.isArray(material)) return material.map((m) => ivory(m) as THREE.Material);
+  let t = tinted.get(material);
+  if (!t) {
+    t = material.clone();
+    if ('color' in t && t.color instanceof THREE.Color) t.color.set(IVORY);
+    tinted.set(material, t);
+  }
+  return t;
+}
+
 /** One model per color and role, from the set's 32 pieces. */
 export function loadSet(): Promise<Pieces> {
   set ??= new GLTFLoader()
@@ -48,6 +63,8 @@ export function loadSet(): Promise<Pieces> {
         proto.position.set(0, 0, 0);
         proto.traverse((c) => {
           c.castShadow = true;
+          // White's pieces are warmed a little toward ivory.
+          if (m[2] === 'white' && c instanceof THREE.Mesh) c.material = ivory(c.material);
         });
         out.set(key, proto);
       });
