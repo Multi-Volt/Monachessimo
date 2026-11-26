@@ -25,7 +25,7 @@ describe('drillsFromGame', () => {
     const d = drills[0]!;
     expect(d.type).toBe('replay');
     expect(d.side).toBe('black');
-    expect(d.goal).toBe('You played 2... Qh4. Find a better move.');
+    expect(d.goal).toBe('You played 2... queen to h4 (Qh4). Find a better move.');
     expect(d.tags).toContain('hangingPiece');
     expect(d.hints[0]).toMatch(/undefended/);
     expect(d.hints.at(-1)).toMatch(/^The answer is /);

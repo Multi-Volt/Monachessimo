@@ -5,6 +5,7 @@ import { CLASS_LABEL } from '../analysis/summary';
 import { replay, moveLabel } from '../analysis/positions';
 import type { GameAnalysis, PlyReview } from '../analysis/types';
 import { pvToSan, uciToSan } from '../chess/san';
+import { moveText } from '../chess/words';
 import { fromFen, normalMove } from '../detectors/board';
 import { forkTargets } from '../detectors/motifs';
 import type { TagName, TagRecord } from '../detectors';
@@ -82,7 +83,7 @@ function goalFor(
     if (tags.includes('quietSetupMissed')) return 'Find the quiet move that sets up a tactic.';
     return 'Find the move that wins material.';
   }
-  return `You played ${label} ${playedSan}. Find a better move.`;
+  return `You played ${label} ${moveText(playedSan)}. Find a better move.`;
 }
 
 const STRATEGY_TAGS: TagName[] = ['kingSafety', 'pawnStructure', 'pieceActivity'];

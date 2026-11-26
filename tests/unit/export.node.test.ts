@@ -20,7 +20,7 @@ describe('training record pipeline with Stockfish', () => {
     expect(r?.reply[0]).toBe('d8d4');
     expect(r?.line[0]?.uci).toBe('e3e4');
     expect(r?.reason).toBeDefined();
-    expect(r?.sentences.headline).toMatch(/^Pawn to e4 is a blunder/);
+    expect(r?.sentences.headline).toMatch(/^Pawn to e4 \(e4\) is a blunder/);
   }, 60_000);
 
   it('returns nothing for a good move', async () => {

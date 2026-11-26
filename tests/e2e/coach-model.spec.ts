@@ -18,7 +18,7 @@ test('the coach model rewrites a refused move in plain sentences @model', async 
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
   await typeMove(page, 'b5');
   const coach = page.locator('.coach');
-  await expect(coach).toContainText(/Pawn to b5 is a blunder/, { timeout: 30_000 });
+  await expect(coach).toContainText(/Pawn to b5 \(b5\) is a blunder/, { timeout: 30_000 });
   // The template's first point shows at once; the model's sentences replace it.
   const started = Date.now();
   await expect(coach.locator('.coach__text')).toContainText(/[Pp]awn to b5/, { timeout: 120_000 });
@@ -45,7 +45,7 @@ test('the coach model also words the note on an accepted inaccuracy @model', asy
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
   await typeMove(page, 'c5');
   const coach = page.locator('.coach');
-  await expect(coach).toContainText(/Accepted, but pawn to c5 is an? (inaccuracy|mistake)/, {
+  await expect(coach).toContainText(/Accepted, but pawn to c5 \(c5\) is an? (inaccuracy|mistake)/, {
     timeout: 30_000,
   });
   await expect(coach.locator('.coach__text')).toContainText(/[Pp]awn to c5/, { timeout: 120_000 });

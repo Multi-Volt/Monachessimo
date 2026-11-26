@@ -30,3 +30,13 @@ export function moveWords(san: string): string {
   const w = sanWords(san);
   return w.charAt(0).toUpperCase() + w.slice(1);
 }
+
+/** The move in words with its notation after it: "queen takes h7 (Qxh7)". */
+export function moveText(san: string, mateSaid = false): string {
+  return `${sanWords(san, mateSaid)} (${san})`;
+}
+
+/** `moveText` to open a sentence: "Queen takes h7 (Qxh7)". */
+export function MoveText(san: string): string {
+  return `${moveWords(san)} (${san})`;
+}

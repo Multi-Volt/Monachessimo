@@ -29,14 +29,15 @@ const SAN = String.raw`O-O(?:-O)?|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+
  * squares ("on d5") are left alone. The checker reads the notes with the
  * notation, which keeps the exact moves.
  */
-export function spellMoves(notes: string): string {
+export function spellMoves(notes: string, withNotation = false): string {
   return notes.replace(
     new RegExp(
       String.raw`(Your move: |You play |[Yy]our opponent plays |threatening |threatened )(${SAN})(?=[ ,.]|$)(\. Checkmate\.|, and you give checkmate\.)?`,
       'gm',
     ),
     (_, lead: string, san: string, mate: string | undefined) => {
-      const words = sanWords(san, !!mate);
+      // On screen the notation follows the words; the model reads words only.
+      const words = sanWords(san, !!mate) + (withNotation ? ` (${san})` : '');
       // "You play castles" reads as "You castle".
       if (words.startsWith('castles') && /play |plays /.test(lead))
         return `${lead.replace(/ plays? $/, '')} ${lead.startsWith('You play') ? 'castle' : 'castles'}${words.slice(7)}${mate ?? ''}`;

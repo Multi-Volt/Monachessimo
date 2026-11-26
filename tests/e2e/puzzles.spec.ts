@@ -65,14 +65,18 @@ test('theme puzzles load only the shards the session needs', async ({ page }) =>
 
   // A wrong first move is rejected without an engine check.
   await typeMove(page, 'Qxg7');
-  await expect(page.getByRole('status')).toContainText('Qxg7 is not the solution.');
+  await expect(page.getByRole('status')).toContainText(
+    'Queen takes g7 (Qxg7) is not the solution.',
+  );
   await waitForMoveTurn(page);
 
   await typeMove(page, 'Be6+');
   // The opponent's reply Kd8 is played for them, then it is White's move again.
   await waitForMoveTurn(page);
   await typeMove(page, 'f7f8');
-  await expect(page.getByRole('status')).toContainText('Qf8# completes the puzzle.');
+  await expect(page.getByRole('status')).toContainText(
+    'Queen to f8 with checkmate (Qf8#) completes the puzzle.',
+  );
   await expect(page.getByText('This is Lichess puzzle 00sHx, rated 1760.')).toBeVisible();
   expect(requested).toHaveLength(3);
   expect(errors).toEqual([]);

@@ -48,7 +48,7 @@ test('a practice game sends a blunder back and saves the position as a drill', a
   // The game move hangs the queen; the coach refuses it without giving the answer.
   await typeMove(page, 'Qh4');
   const coach = page.locator('.coach');
-  await expect(coach).toContainText('Queen to h4 is a blunder', { timeout: 30_000 });
+  await expect(coach).toContainText('Queen to h4 (Qh4) is a blunder', { timeout: 30_000 });
   await expect(coach).not.toContainText('Nc6');
   // The refused move stays on the board with a badge until the player tries again.
   await expect(page.locator('.board .cg-custom-svgs svg')).toHaveCount(1);
@@ -83,7 +83,7 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
 
   // The coach names the opponent's threat, found by a null-move search.
   await expect(page.locator('.coach')).toContainText(
-    'Your opponent threatens knight takes e5, taking your pawn on e5.',
+    'Your opponent threatens knight takes e5 (Nxe5), taking your pawn on e5.',
     {
       timeout: 30_000,
     },
@@ -92,7 +92,7 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   // b5 hangs a pawn to the bishop: a blunder, with the reason.
   await typeMove(page, 'b5');
   const status = page.locator('.coach');
-  await expect(status).toContainText(/Pawn to b5 is a blunder\./, {
+  await expect(status).toContainText(/Pawn to b5 \(b5\) is a blunder\./, {
     timeout: 30_000,
   });
   // The cause comes first, in the coach's voice; the rest is behind Why.
@@ -103,7 +103,7 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
 
   // Show what happens plays the refused move and the opponent's answer on the board.
   await page.getByRole('button', { name: 'Show what happens' }).click();
-  await expect(page.locator('.stepper')).toContainText('Pawn to b5.');
+  await expect(page.locator('.stepper')).toContainText('Pawn to b5 (b5).');
   await page.getByRole('button', { name: 'Forward' }).click();
   // Each move of the line gets one sentence in the coach's voice.
   await expect(page.locator('.stepper')).toContainText(
@@ -113,7 +113,7 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
 
   // Qf6 gives up a pawn too. Winning chances alone called this an inaccuracy.
   await typeMove(page, 'Qf6');
-  await expect(status).toContainText('Queen to f6 is a mistake', { timeout: 30_000 });
+  await expect(status).toContainText('Queen to f6 (Qf6) is a mistake', { timeout: 30_000 });
   expect(errors).toEqual([]);
 });
 

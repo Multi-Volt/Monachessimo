@@ -24,9 +24,10 @@ test('a daily session from your own games brings missed positions back', async (
 
   // First drill: play the game move again, take a hint, then give up.
   const goal = (await page.locator('.drill__goal').innerText()).trim();
-  const gameMove = goal.match(/You played \d+\.+ (\S+)\./)![1]!;
+  // The goal names the move in words with its notation: "queen to h4 (Qh4)".
+  const gameMove = goal.match(/You played \d+\.+ .*\((\S+)\)\./)![1]!;
   await typeMove(page, gameMove);
-  await expect(page.getByRole('status')).toContainText(`${gameMove} is the move from your game.`);
+  await expect(page.getByRole('status')).toContainText(`(${gameMove}) is the move from your game.`);
   await waitForMoveTurn(page);
   await page.getByRole('button', { name: 'Hint' }).click();
   await expect(page.locator('.hint-list li')).toHaveCount(1);

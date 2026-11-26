@@ -7,6 +7,7 @@ import { parseSquare, parseUci } from 'chessops/util';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { standardUci } from '../../chess/uci';
 import { uciSquares, uciToSan, pvToSan } from '../../chess/san';
+import { MoveText, moveText } from '../../chess/words';
 import type { TagName } from '../../detectors';
 import { fromFen } from '../../detectors/board';
 import { negate } from '../../engine/eval';
@@ -210,21 +211,21 @@ function outcomeText(
   start: ReturnType<typeof fromFen>,
   end: ReturnType<typeof fromFen>,
 ): string {
-  const list = moves.join(', ');
+  const list = moves.map((m) => moveText(m)).join(', ');
   const gain = balance(end, start.turn) - balance(start, start.turn);
   switch (how) {
     case 'puzzle':
-      return `${moves.at(-1) ?? ''} completes the puzzle.`;
+      return `${MoveText(moves.at(-1) ?? '')} completes the puzzle.`;
     case 'mate':
       return `Checkmate in ${moves.length} ${moves.length === 1 ? 'move' : 'moves'}: ${list}.`;
     case 'won':
-      return `You won ${gain} ${gain === 1 ? 'pawn' : 'pawns'} of material: ${list}.`;
+      return `You won ${gain} ${gain === 1 ? 'point' : 'points'} of material: ${list}.`;
     case 'partial':
       return `After ${moves.length} moves the material is not won yet, but your moves held up: ${list}.`;
     default:
       return moves.length > 1
         ? `You held the position for ${moves.length} moves: ${list}.`
-        : `${list} holds the position.`;
+        : `${moves[0] ? MoveText(moves[0]) : ''} holds the position.`;
   }
 }
 
@@ -443,8 +444,8 @@ function Session(props: {
       showWrong(
         uci,
         step === 0 && drill.source?.played === uci
-          ? `${san} is the move from your game.`
-          : `${san} gives away too much here.`,
+          ? `${MoveText(san)} is the move from your game.`
+          : `${MoveText(san)} gives away too much here.`,
       );
       return;
     }
@@ -509,7 +510,7 @@ function Session(props: {
     const ok = uci === solution[step] || (last && after.isCheckmate());
     if (!ok) {
       setFailed(true);
-      showWrong(uci, `${uciToSan(fenNow, uci)} is not the solution.`);
+      showWrong(uci, `${MoveText(uciToSan(fenNow, uci))} is not the solution.`);
       return;
     }
     if (last) return complete('puzzle', uci);
@@ -714,10 +715,11 @@ function Session(props: {
             {phase.kind === 'replying' && (
               <div class="learn__head">
                 <p class="notice">
-                  {uciToSan(fenNow, phase.uci)} is good. Your opponent replies. Keep going.
+                  {MoveText(uciToSan(fenNow, phase.uci))} is good. Your opponent replies. Keep
+                  going.
                 </p>
                 <SpeakButton
-                  text={`${uciToSan(fenNow, phase.uci)} is good. Your opponent replies. Keep going.`}
+                  text={`${MoveText(uciToSan(fenNow, phase.uci))} is good. Your opponent replies. Keep going.`}
                 />
               </div>
             )}

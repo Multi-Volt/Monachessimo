@@ -70,7 +70,7 @@ import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { usePhrased } from '../../ui/usePhrased';
-import { moveWords, sanWords } from '../../chess/words';
+import { MoveText, moveText } from '../../chess/words';
 import { coachVoice, spellMoves } from '../../play/voice';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
@@ -89,7 +89,7 @@ function stepWords(text: string): string {
   const t = coachVoice(text);
   if (/^(You play|Your opponent plays) \S+\.( Checkmate\.)?$/.test(t))
     return t.endsWith('Checkmate.') ? 'Checkmate.' : '';
-  return spellMoves(t);
+  return spellMoves(t, true);
 }
 
 /** How long a refused move stays on the board before it goes back. */
@@ -1014,7 +1014,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     tags?: TagName[];
   } => {
     if (phase.kind === 'checking')
-      return { tone: 'neutral', title: `Checking ${sanWords(uciToSan(fen, phase.uci))}…` };
+      return { tone: 'neutral', title: `Checking ${moveText(uciToSan(fen, phase.uci))}…` };
     if (phase.kind === 'thinking') {
       if (praise)
         return {
@@ -1053,7 +1053,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (refusal)
       return {
         tone: refusal.cls,
-        title: `Find a better move than ${sanWords(uciToSan(fen, refutation?.uci ?? ''))}.`,
+        title: `Find a better move than ${moveText(uciToSan(fen, refutation?.uci ?? ''))}.`,
         ...(refusedHere >= 2 ? { text: 'Stuck? Tap Hint.' } : {}),
       };
     if (note)
@@ -1212,7 +1212,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           <ol class="stepper__lines">
             {record!.line.slice(0, replayStep).map((st, k) => (
               <li key={st.uci + k} class={k === replayStep - 1 ? 'is-current' : ''}>
-                <span class="stepper__san">{moveWords(st.san)}.</span> {stepWords(st.text)}
+                <span class="stepper__san">{MoveText(st.san)}.</span> {stepWords(st.text)}
               </li>
             ))}
           </ol>

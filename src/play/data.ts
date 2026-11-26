@@ -2,6 +2,7 @@ import { moveHints } from '../chess/hints';
 import { makeFen } from 'chessops/fen';
 import { parseUci } from 'chessops/util';
 import { uciToSan, pvToSan } from '../chess/san';
+import { moveText } from '../chess/words';
 import { fromFen } from '../detectors/board';
 import { acceptable } from '../drills/answers';
 import type { Drill } from '../drills/types';
@@ -128,7 +129,7 @@ export function practiceDrill(
     type: 'replay',
     fen,
     side,
-    goal: `In a practice game you tried ${san}. Find a better move.`,
+    goal: `In a practice game you tried ${moveText(san)}. Find a better move.`,
     accepted: lines
       .filter((l) => l.pv[0] && l.pv[0] !== refusedUci && acceptable(l.score, best.score))
       .map((l) => ({ uci: l.pv[0]!, score: l.score })),
