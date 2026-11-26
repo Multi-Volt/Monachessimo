@@ -6,6 +6,8 @@
 
 import { parseSquare } from 'chessops/util';
 import { describe, expect, it } from 'vitest';
+import { fromFen } from '../detectors/board';
+import { lineTactics } from '../detectors/lineTactics';
 import { checkFen } from '../lab/position';
 import basics from './content/basics.json';
 import beginner from './content/beginner.json';
@@ -332,6 +334,31 @@ describe('the explanations tell the truth', () => {
     for (const id of ['smothered', 'anastasia', 'arabian', 'mate-in-two', 'zugzwang', 'xray']) {
       const step = find(id, 'intro') as { fen: string; demo: string[] };
       expect(isCheckmate(after(step.fen, ...step.demo)), id).toBe(true);
+    }
+  });
+});
+
+// A tactic lesson teaches one idea: each puzzle's first tactic, read from its
+// solution, is the lesson's own. A pin puzzle won by a fork teaches a fork.
+const LESSON_TACTIC: Record<string, string> = {
+  fork: 'fork',
+  pin: 'pin',
+  skewer: 'skewer',
+  discovered: 'discovered attack',
+  hanging: 'hanging piece',
+  trapped: 'trapped piece',
+  'back-rank': 'back rank mate',
+  smothered: 'smothered mate',
+};
+
+describe('tactic lessons', () => {
+  it('teach their own tactic in every puzzle', () => {
+    for (const s of ofType('move')) {
+      const kind = LESSON_TACTIC[s.lesson];
+      const step = s.step as MoveStep & { pre?: string; line?: string[] };
+      if (!kind || !step.pre || !step.line) continue;
+      const found = lineTactics(fromFen(step.fen), [step.pre, ...step.line]);
+      expect(found[0]?.kind, label(s)).toBe(kind);
     }
   });
 });

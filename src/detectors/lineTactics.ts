@@ -87,6 +87,16 @@ export function lineTactics(start: Chess, pv: readonly string[], plies = pv.leng
     caps.some((c) => c.ply > k && c.ply <= k + PAYOFF_PLIES && ok(c)) ||
     caps.some((c) => c.ply === k && ok(c));
 
+  // Where the player's piece on `square` after half-move `from` stands just
+  // before half-move `until`: a pinned queen that takes the pinner and is
+  // taken back is lost on the pinner's square.
+  const follow = (square: Square, from: number, until: number) => {
+    let s = square;
+    for (let j = from + 1; j < until; j++)
+      if (j % 2 === 0 && moves[j]!.from === s) s = moves[j]!.to;
+    return s;
+  };
+
   const out: Tactic[] = [];
   const add = (t: Tactic) => {
     if (!out.some((o) => o.kind === t.kind)) out.push(t);
@@ -174,7 +184,7 @@ export function lineTactics(start: Chess, pv: readonly string[], plies = pv.leng
     // Pins and skewers the setup creates.
     const standing = k === 0 ? pins(after, them) : newMotifs(before, after, them, pins);
     for (const p of standing)
-      if (paid(k, (c) => c.to === p.front || c.to === p.back))
+      if (paid(k, (c) => c.to === p.back || c.to === follow(p.front, k, c.ply)))
         add({
           kind: 'pin',
           ply: k,
@@ -194,15 +204,19 @@ export function lineTactics(start: Chess, pv: readonly string[], plies = pv.leng
     const p = pos[c.ply]!;
     if (out.length) break;
     if (c.role === 'pawn' || c.role === 'king') continue;
-    // Taking back after the player's own capture is a trade, not a gift.
-    if (c.ply >= 1 && moves[c.ply - 1]!.to === c.to) continue;
+    // Taking back after the player's own capture is a trade, not a gift,
+    // unless the piece lost is worth more than the one it took.
+    const own = moves[c.ply - 1]!;
+    const took = own.to === c.to ? pos[c.ply - 1]!.board.getRole(c.to) : undefined;
+    if (took && VALUE[took] >= VALUE[c.role]) continue;
     // Recaptured at once, it was a trade, not a gift.
     const next = moves[c.ply + 1];
     const recaptured = !!next && next.to === c.to && c.ply + 1 < n;
     const profit = see(p, c.to, them);
     if (recaptured && profit < 2) continue;
     const prev = c.ply >= 2 ? pos[c.ply - 1] : undefined;
-    if (prev && trapped(prev, c.to, me))
+    // A trapped piece is often taken after a last move: test where it stood.
+    if (prev && trapped(prev, own.to === c.to ? own.from : c.to, me))
       add({
         kind: 'trapped piece',
         ply: c.ply - 2,
