@@ -80,8 +80,9 @@ export function loadModel(): Promise<Wllama> {
     ]);
     const file = await download(m);
     const w = new Wllama({ default: wasm }, { suppressNativeLog: true });
-    // The CPU, for now: WebGPU on phones is untested. Threads need a
-    // cross-origin isolated page, which GitHub Pages cannot serve yet.
+    // The CPU, for now: WebGPU is untested. It uses every core when the page
+    // is cross-origin isolated, which the service worker arranges
+    // (public/sw-isolation.js), and one thread otherwise.
     await w.loadModel([file], { n_ctx: 1024, n_gpu_layers: 0 });
     modelState.set({ state: { kind: 'ready' } });
     return w;

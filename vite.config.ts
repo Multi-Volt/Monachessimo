@@ -84,6 +84,8 @@ export default defineConfig(({ mode }) => {
               manifest: appManifest,
               includeAssets: ['icons/placeholder-180.png'],
               workbox: {
+                // Adds the cross-origin isolation headers: see public/sw-isolation.js.
+                importScripts: ['sw-isolation.js'],
                 globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg}'],
                 // The coach model and its 10 MB runtime are fetched only by players who
                 // turn the model on; wllama keeps the model in its own cache.
