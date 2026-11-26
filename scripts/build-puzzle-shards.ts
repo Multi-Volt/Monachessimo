@@ -2,10 +2,15 @@
 // Builds public/puzzles/ from the Lichess puzzle database (CC0).
 // https://database.lichess.org/#puzzles
 //
-// Usage:
-//   node scripts/build-puzzle-shards.ts                 download and build
-//   node scripts/build-puzzle-shards.ts --input FILE    build from a local .csv.zst
-//   node scripts/build-puzzle-shards.ts --limit 20000   stop after N rows (for a quick local set)
+// Usage (the loader lets the script use the tactic detector from src/):
+//   node --experimental-transform-types --import ./training/register.mjs \
+//     scripts/build-puzzle-shards.ts                    download and build
+//   ... --input FILE    build from a local .csv.zst
+//   ... --limit 20000   stop after N rows (for a quick local set)
+//
+// A puzzle tagged with several tactics, a pin won by a fork say, teaches the
+// one its solution uses first. For the tactics the detector knows, a shard
+// keeps only puzzles whose first tactic, read from the solution, is its own.
 //
 // Runs in CI before the site build. Output is not committed.
 import { createReadStream, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -13,6 +18,8 @@ import { createInterface } from 'node:readline';
 import { Readable } from 'node:stream';
 import { createZstdDecompress } from 'node:zlib';
 import { join } from 'node:path';
+import { fromFen } from '../src/detectors/board';
+import { lineTactics, type TacticKind } from '../src/detectors/lineTactics';
 
 const URL_CSV = 'https://database.lichess.org/lichess_db_puzzle.csv.zst';
 const OUT = 'public/puzzles';
@@ -54,6 +61,22 @@ const THEMES: Record<string, string> = {
   middlegame: 'middlegame',
   endgame: 'endgame',
 };
+
+/** Shards whose puzzles must use their tactic first, by the detector's name for it. */
+const FIRST_TACTIC: Record<string, TacticKind> = {
+  hangingPiece: 'hanging piece',
+  trappedPiece: 'trapped piece',
+  fork: 'fork',
+  pin: 'pin',
+  skewer: 'skewer',
+  discoveredAttack: 'discovered attack',
+  backRankMate: 'back rank mate',
+};
+
+/** The puzzle's solution uses `kind` before any other tactic. */
+function teaches([, fen, moves]: Row, kind: TacticKind): boolean {
+  return lineTactics(fromFen(fen), moves.split(' '))[0]?.kind === kind;
+}
 
 type Row = [
   id: string,
@@ -152,13 +175,22 @@ async function main() {
     bytes: 0,
   };
   let total = 0;
+  let dropped = 0;
   for (const [key, list] of [...shards].sort(([a], [b]) => a.localeCompare(b))) {
+    const [name, band] = key.split('/') as [string, string];
     // Most popular first, then most played.
     list.sort((a, b) => b[4] - a[4] || b[5] - a[5]);
-    const top = list
-      .slice(0, PER_SHARD)
-      .map(([id, fen, moves, rating]) => [id, fen, moves, rating]);
-    const [name, band] = key.split('/') as [string, string];
+    const kind = FIRST_TACTIC[name];
+    const chosen: Row[] = [];
+    for (const row of list) {
+      if (chosen.length >= PER_SHARD) break;
+      if (kind && !teaches(row, kind)) {
+        dropped++;
+        continue;
+      }
+      chosen.push(row);
+    }
+    const top = chosen.map(([id, fen, moves, rating]) => [id, fen, moves, rating]);
     const file = `${name}/${band}.json`;
     mkdirSync(join(OUT, name), { recursive: true });
     const body = JSON.stringify(top);
@@ -174,7 +206,7 @@ async function main() {
     throw new Error(`Puzzle data is ${total} bytes, over the 250 MB budget`);
   writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest));
   console.log(
-    `Read ${rows} rows, ${kept} passed the filter. Wrote ${shards.size} shards, ${manifest.puzzles} puzzles, ${(total / 1e6).toFixed(1)} MB.`,
+    `Read ${rows} rows, ${kept} passed the filter, ${dropped} left out of a tactic shard they do not teach first. Wrote ${shards.size} shards, ${manifest.puzzles} puzzles, ${(total / 1e6).toFixed(1)} MB.`,
   );
 }
 

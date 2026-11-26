@@ -80,7 +80,7 @@ jobs:
           mkdir -p ~/.cache/monachessimo
           [ -f "$f" ] || curl -sfL -A 'Monachessimo build (github.com/Multi-Volt/Monachessimo)' -o "$f" https://database.lichess.org/lichess_db_puzzle.csv.zst
       - name: Build puzzle shards
-        run: node scripts/build-puzzle-shards.ts --input ~/.cache/monachessimo/lichess_db_puzzle.csv.zst
+        run: node --experimental-transform-types --import ./training/register.mjs scripts/build-puzzle-shards.ts --input ~/.cache/monachessimo/lichess_db_puzzle.csv.zst
       - name: Restore the coach model
         uses: actions/cache@v6
         with:
