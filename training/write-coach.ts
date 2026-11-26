@@ -10,10 +10,11 @@
 // a trade, a quiet move), in an order fixed by a hash of the record id. A
 // text that fails the check is written again, up to --tries times; the last
 // try is kept with its problems. Each output line holds the record id, the
-// writer, the notes, the text, its problems and the number of tries.
+// writer, the notes in words, the notes with notation (facts), the text, its
+// problems and the number of tries.
 import { readFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
-import { checkCoachText, coachNotes } from '../src/play/coachNotes';
+import { checkCoachText, coachNotes, spellMoves } from '../src/play/coachNotes';
 import type { ExplanationRecord } from '../src/play/record';
 
 export const SYSTEM = `You are a friendly chess coach sitting beside a beginner. The player just made a move, and you explain in two or three short sentences what goes wrong with it, using only the facts in the notes.
@@ -91,6 +92,7 @@ function args() {
     input: get('--in') ?? 'training/data/records.jsonl',
     out: get('--out') ?? 'training/data/coach-pilot.jsonl',
     server: get('--server') ?? 'http://127.0.0.1:8091',
+    model: get('--model'),
     limit: Number(get('--limit') ?? 100),
     parallel: Number(get('--parallel') ?? 8),
     tries: Number(get('--tries') ?? 3),
@@ -114,15 +116,23 @@ function kind(r: ExplanationRecord, notes: string): string {
   return `other ${r.verdict.class}`;
 }
 
-async function complete(server: string, notes: string): Promise<{ text: string; model: string }> {
+async function complete(
+  server: string,
+  notes: string,
+  model?: string,
+): Promise<{ text: string; model: string }> {
   const messages = [{ role: 'system', content: SYSTEM }];
   for (const [n, t] of EXAMPLES)
-    messages.push({ role: 'user', content: `Notes:\n${n}` }, { role: 'assistant', content: t });
-  messages.push({ role: 'user', content: `Notes:\n${notes}` });
+    messages.push(
+      { role: 'user', content: `Notes:\n${spellMoves(n)}` },
+      { role: 'assistant', content: t },
+    );
+  messages.push({ role: 'user', content: `Notes:\n${spellMoves(notes)}` });
   const res = await fetch(`${server}/v1/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      ...(model ? { model } : {}),
       messages,
       temperature: 0.3,
       max_tokens: 220,
@@ -176,13 +186,24 @@ async function main() {
       let tries = 0;
       while (tries < o.tries) {
         tries++;
-        ({ text, model } = await complete(o.server, t.notes));
+        ({ text, model } = await complete(o.server, t.notes, o.model));
         problems = checkCoachText(t.notes, text);
         if (!problems.length) break;
       }
       n++;
       if (!problems.length) passed++;
-      const line = { id: t.id, kind: t.kind, writer: model, notes: t.notes, text, problems, tries };
+      // The writer and the phone model read the notes in words; the checker
+      // reads them with the notation, which keeps the exact moves.
+      const line = {
+        id: t.id,
+        kind: t.kind,
+        writer: model,
+        notes: spellMoves(t.notes),
+        facts: t.notes,
+        text,
+        problems,
+        tries,
+      };
       await appendFile(o.out, JSON.stringify(line) + '\n');
       if (n % 10 === 0)
         console.log(
