@@ -91,3 +91,15 @@ export async function playUntilDone(page: Page): Promise<string> {
   }
   return (await status.allInnerTexts()).join(' ');
 }
+
+/**
+ * Chooses the flat board, for tests that tap Chessground's board directly;
+ * the 3D board is the default.
+ */
+export async function flatBoard(page: Page): Promise<void> {
+  await page.goto('./#/settings');
+  await page.getByLabel('Flat', { exact: true }).check();
+  await expect(page.getByLabel('Flat', { exact: true })).toBeChecked();
+  // The choice is saved to IndexedDB; give it a moment before a reload.
+  await page.waitForTimeout(300);
+}

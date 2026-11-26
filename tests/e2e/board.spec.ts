@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, mockLichess, playUntilDone } from './support';
+import { collectErrors, mockLichess, playUntilDone, flatBoard } from './support';
 
 /** Centre of a square on the drill board, for either orientation. */
 async function squareCenter(page: Page, sq: string, orientation: 'white' | 'black') {
@@ -29,6 +29,7 @@ async function drag(page: Page, from: string, to: string, o: 'white' | 'black') 
 }
 
 test('drills are played on the board by tapping or dragging', async ({ page }) => {
+  await flatBoard(page);
   test.setTimeout(120_000);
   const errors = collectErrors(page);
   await mockLichess(page);
@@ -60,6 +61,7 @@ test('drills are played on the board by tapping or dragging', async ({ page }) =
 });
 
 test('the plan picker accepts a candidate played on the board', async ({ page }) => {
+  await flatBoard(page);
   await page.goto('./');
   await page.evaluate(async () => {
     const req = indexedDB.open('monachessimo');

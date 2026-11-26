@@ -86,17 +86,12 @@ export default defineConfig(({ mode }) => {
               workbox: {
                 // Adds the cross-origin isolation headers: see public/sw-isolation.js.
                 importScripts: ['sw-isolation.js'],
-                globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg}'],
+                // The 3D board is the default, so its pieces and wood are kept with the app.
+                globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg,gltf,bin,jpg}'],
                 // The coach model and its 10 MB runtime are fetched only by players who
-                // turn the model on; wllama keeps the model in its own cache.
-                // The 3D board, three.js and Maia's networks load only for players who choose them.
-                globIgnores: [
-                  'puzzles/**',
-                  'models/**',
-                  '3d/**',
-                  'assets/wllama-*.wasm',
-                  'assets/Board3D-*.js',
-                ],
+                // turn the model on; wllama keeps the model in its own cache. Maia's
+                // networks load only for games against it.
+                globIgnores: ['puzzles/**', 'models/**', 'maia/**', 'assets/wllama-*.wasm'],
                 // The engine's WASM is 1.8 MB.
                 maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
                 navigateFallback: 'index.html',
@@ -108,10 +103,7 @@ export default defineConfig(({ mode }) => {
                     options: { cacheName: 'puzzles', expiration: { maxEntries: 600 } },
                   },
                   {
-                    urlPattern: ({ url }) =>
-                      url.pathname.includes('/3d/') ||
-                      url.pathname.includes('/maia/') ||
-                      /\/assets\/Board3D-[^/]+\.js$/.test(url.pathname),
+                    urlPattern: ({ url }) => url.pathname.includes('/maia/'),
                     handler: 'CacheFirst',
                     options: { cacheName: 'on-demand', expiration: { maxEntries: 40 } },
                   },

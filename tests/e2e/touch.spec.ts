@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mockLichess } from './support';
+import { mockLichess, flatBoard } from './support';
 
 async function touchSquare(page: Page, sq: string, orientation: 'white' | 'black') {
   const box = (await page.locator('.board cg-board').boundingBox())!;
@@ -12,6 +12,7 @@ async function touchSquare(page: Page, sq: string, orientation: 'white' | 'black
 }
 
 test('tap to move still works after moving to the next drill', async ({ page }) => {
+  await flatBoard(page);
   test.setTimeout(120_000);
   await mockLichess(page);
   await page.goto('./');
@@ -38,6 +39,7 @@ test('tap to move still works after moving to the next drill', async ({ page }) 
 });
 
 test('taps land on the right square after the board moves down the page', async ({ page }) => {
+  await flatBoard(page);
   test.setTimeout(120_000);
   await mockLichess(page);
   await page.goto('./');

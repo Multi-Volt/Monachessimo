@@ -15,7 +15,7 @@ export interface AppSettings {
   voice?: VoiceSettings;
   /** Word the coach's explanations with the on-device model. Missing means off. */
   coachModel?: boolean;
-  /** Show boards in 3D. Missing means flat. */
+  /** Show boards in 3D. Missing means 3D; a device without WebGL shows them flat. */
   board3d?: boolean;
 }
 
@@ -64,7 +64,7 @@ export function getServices(): Promise<Services> {
       analysis: DEFAULT_SETTINGS,
     });
     applyBoardColors(settings.board);
-    boardLook.set({ three: !!settings.board3d });
+    boardLook.set({ three: settings.board3d ?? true });
     await retagIfNeeded(repo, settings.analysis);
     const pool = new EnginePool(workerTransport, settings.workers);
     const runner = new AnalysisRunner(repo, pool, settings.analysis);
@@ -78,7 +78,7 @@ export function getServices(): Promise<Services> {
         await repo.setSetting('app', next);
         pool.resize(next.workers);
         applyBoardColors(next.board);
-        boardLook.set({ three: !!next.board3d });
+        boardLook.set({ three: next.board3d ?? true });
         runner.setSettings(next.analysis);
       },
     };

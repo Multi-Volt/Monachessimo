@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, mockLichess, typeMove } from './support';
+import { collectErrors, mockLichess, typeMove, flatBoard } from './support';
 
 test('a practice game sends a blunder back and saves the position as a drill', async ({ page }) => {
+  await flatBoard(page);
   test.setTimeout(150_000);
   const errors = collectErrors(page);
   await mockLichess(page);
@@ -145,6 +146,7 @@ test('start links from review and drills open the game', async ({ page }) => {
 });
 
 test('take back, check and checkmate, and reviewing a finished practice game', async ({ page }) => {
+  await flatBoard(page);
   test.setTimeout(150_000);
   const errors = collectErrors(page);
   // Take back from the starting position, as White: "Either" picks a random side.

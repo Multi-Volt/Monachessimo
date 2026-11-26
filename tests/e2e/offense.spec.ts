@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, mockLichess, player, typeMove, waitForMoveTurn } from './support';
+import {
+  collectErrors,
+  mockLichess,
+  player,
+  typeMove,
+  waitForMoveTurn,
+  flatBoard,
+} from './support';
 
 test('conversion practice plays against a weakened engine', async ({ page }) => {
   test.setTimeout(150_000);
@@ -43,6 +50,7 @@ test('conversion practice plays against a weakened engine', async ({ page }) => 
 });
 
 test('plan picker reveals how each candidate scored', async ({ page }) => {
+  await flatBoard(page);
   const errors = collectErrors(page);
   await page.goto('./');
   await page.evaluate(async () => {

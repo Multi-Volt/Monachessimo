@@ -131,7 +131,7 @@ function BoardPanel() {
     return p.light === colors.light && p.dark === colors.dark;
   });
   const [custom, setCustom] = useState(!presetKey);
-  const [three, setThree] = useState(!!services.settings.board3d);
+  const [three, setThree] = useState(services.settings.board3d ?? true);
   const chooseStyle = async (next: boolean) => {
     setThree(next);
     await services.saveSettings({ ...services.settings, board3d: next });
