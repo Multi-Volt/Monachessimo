@@ -176,7 +176,11 @@ def generate(o):
                 )
             for r, seq in zip(part, out[:, n:]):
                 text = tok.decode(seq, skip_special_tokens=True).strip()
-                f.write(json.dumps({"id": r["id"], "sheet": r["sheet"], "text": text}) + "\n")
+                line = {"id": r["id"], "sheet": r["sheet"], "text": text}
+                # The checker reads the notes with notation, when there are any.
+                if "facts" in r:
+                    line["facts"] = r["facts"]
+                f.write(json.dumps(line) + "\n")
             print(f"{i + len(part)}/{len(held)} in {time.time() - started:.0f} s", flush=True)
 
 
