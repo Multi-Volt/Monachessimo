@@ -56,6 +56,8 @@ let manifest: Promise<ModelManifest | undefined> | undefined;
 
 /** The deployed model's manifest, or undefined when this build has none. */
 export function getManifest(): Promise<ModelManifest | undefined> {
+  // The offline file is one page with nothing beside it to fetch.
+  if (__OFFLINE__) return Promise.resolve(undefined);
   manifest ??= fetch(`${dir()}manifest.json`)
     .then((r) => (r.ok ? (r.json() as Promise<ModelManifest>) : undefined))
     .catch(() => undefined);

@@ -95,6 +95,19 @@ function Board2D(props: BoardProps) {
   useEffect(() => {
     if (!el.current) return;
     api.current = Chessground(el.current, config());
+    // Chessground scales arrows by the board's width over its height. A
+    // board that is not laid out yet, or is being removed, measures 0 by 0,
+    // and its arrows would be drawn at NaN; a 1 by 1 stand-in keeps the
+    // numbers finite on a board nobody can see.
+    const dom = api.current.state.dom;
+    const measure = dom.bounds;
+    dom.bounds = Object.assign(
+      () => {
+        const r = measure();
+        return r.width > 0 && r.height > 0 ? r : new DOMRect(r.left, r.top, 1, 1);
+      },
+      { clear: () => measure.clear() },
+    );
     // Chessground caches where the board sits on the page and refreshes that
     // only on scroll and resize. When content above the board changes height
     // (a longer question on the next drill), the board moves and taps land
