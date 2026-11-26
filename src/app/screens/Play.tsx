@@ -711,7 +711,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (refuses(game.strictness, best, played)) {
       const text = why
         ? explanationText(why).join(' ')
-        : `${san} is ${withArticle(verdict.class!)}.`;
+        : `${MoveText(san)} is ${withArticle(verdict.class!)}.`;
       setRefusal({
         cls: verdict.class!,
         record: buildRecord({

@@ -20,7 +20,7 @@ describe('compareLines', () => {
       ['d1h5', 'g8f6', 'h5f7', 'e8f7'],
       ['g1f3', 'b8c6', 'f1c4', 'g8f6'],
     );
-    expect(out[0]).toMatch(/You have \d+ pawns less material\./);
+    expect(out[0]).toMatch(/You have \d+ points less material\./);
   });
 });
 

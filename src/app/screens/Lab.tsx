@@ -40,6 +40,7 @@ import { formatScore } from '../../ui/format';
 import { useServices } from '../../ui/hooks';
 import { TypedMove } from '../drills/ConversionDrill';
 import { href, navigate } from '../router';
+import { MoveText, moveText } from '../../chess/words';
 
 const DEPTHS = [12, 16, 20] as const;
 const LINE_COUNTS = [1, 2, 3] as const;
@@ -174,7 +175,7 @@ export function Lab({ initialFen }: { initialFen?: string | undefined }) {
       const san = pvToSan(beforeFen, [uci], 1)[0] ?? uci;
       word = praise
         ? { ply: ply + 1, tone: praise.label, title: praise.headline, points: praise.points }
-        : { ply: ply + 1, tone: 'neutral', title: `${san} is fine.`, points: [] };
+        : { ply: ply + 1, tone: 'neutral', title: `${MoveText(san)} is fine.`, points: [] };
     }
     setTried((cur) => (cur?.ply === ply + 1 ? word : cur));
   };
@@ -453,12 +454,12 @@ function labThreat(fen: string, threat: Threat): string | undefined {
   const pos = fromFen(passed);
   const side = pos.turn === 'white' ? 'White' : 'Black';
   const san = pvToSan(passed, [threat.uci], 1)[0] ?? threat.uci;
-  const lead = `If it were ${side}'s move, ${side} would play ${san}`;
+  const lead = `If it were ${side}'s move, ${side} would play ${moveText(san)}`;
   if (threat.score.kind === 'mate' && threat.score.value > 0)
     return threat.score.value === 1 ? `${lead}, and it is mate.` : `${lead}, with mate to follow.`;
   if (isCapture(pos, m))
     return `${lead}, taking the ${pos.board.getRole(m.to) ?? 'pawn'} on ${makeSquare(m.to)}.`;
-  return `${lead}. Ignoring it costs about ${(threat.gain / 100).toFixed(1)} pawns.`;
+  return `${lead}.`;
 }
 
 /** Board editor: tap a piece, then squares; or type edits like Ke1. */

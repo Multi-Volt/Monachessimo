@@ -5,7 +5,7 @@ import { CLASS_LABEL } from '../analysis/summary';
 import { replay, moveLabel } from '../analysis/positions';
 import type { GameAnalysis, PlyReview } from '../analysis/types';
 import { pvToSan, uciToSan } from '../chess/san';
-import { moveText } from '../chess/words';
+import { MoveText, moveText } from '../chess/words';
 import { fromFen, normalMove } from '../detectors/board';
 import { forkTargets } from '../detectors/motifs';
 import type { TagName, TagRecord } from '../detectors';
@@ -74,7 +74,7 @@ function goalFor(
   clockLeft?: string,
 ): string {
   if (type === 'time')
-    return `With ${clockLeft} left you played ${label} ${playedSan}. Find a safer move.`;
+    return `With ${clockLeft} left you played ${label} ${moveText(playedSan)}. Find a safer move.`;
   if (type === 'setup') return 'Find the quiet move that sets up a tactic.';
   if (type === 'sacrifice') return 'Find the sacrifice that works.';
   if (type === 'missed') {
@@ -109,15 +109,15 @@ export function secondsPerMove(game: Game): (number | undefined)[] {
 function payoffText(kind: Payoff, san: string): string {
   switch (kind) {
     case 'mate':
-      return `${san} is mate.`;
+      return `${MoveText(san)} is mate.`;
     case 'fork':
-      return `${san} is a fork.`;
+      return `${MoveText(san)} is a fork.`;
     case 'pin':
-      return `${san} pins a piece.`;
+      return `${MoveText(san)} pins a piece.`;
     case 'skewer':
-      return `${san} is a skewer.`;
+      return `${MoveText(san)} is a skewer.`;
     case 'material':
-      return `${san} wins material.`;
+      return `${MoveText(san)} wins material.`;
   }
 }
 
@@ -133,8 +133,8 @@ function explain(
   const bestSan = uciToSan(fen, best.pv[0]!);
   const playedLine = pvToSan(fen, review.playedPv, 4);
   const out = [
-    `In the game you played ${review.san}${playedLine.length > 1 ? `, and the engine's answer was ${playedLine[1]}` : ''}. Your evaluation went from ${formatScore(best.score)} to ${formatScore(review.playedScore)}.`,
-    `${bestSan} keeps ${formatScore(best.score)}. Engine line: ${pvToSan(fen, best.pv, 6).join(' ')}.`,
+    `In the game you played ${moveText(review.san)}${playedLine.length > 1 ? `, and the engine's answer was ${moveText(playedLine[1]!)}` : ''}. Your evaluation went from ${formatScore(best.score)} to ${formatScore(review.playedScore)}.`,
+    `${MoveText(bestSan)} keeps ${formatScore(best.score)}. Engine line: ${pvToSan(fen, best.pv, 6).join(' ')}.`,
   ];
   const pos = fromFen(fen);
   const m = normalMove(best.pv[0]);
@@ -144,7 +144,8 @@ function explain(
     const targets = forkTargets(after, m.to).map(
       (sq) => `the ${ROLE_NAME[after.board.getRole(sq)!]} on ${makeSquare(sq)}`,
     );
-    if (targets.length >= 2) out.push(`${bestSan} attacks ${targets.join(' and ')} at once.`);
+    if (targets.length >= 2)
+      out.push(`${MoveText(bestSan)} attacks ${targets.join(' and ')} at once.`);
   }
   if (tags.includes('mateMissed') && best.score.kind === 'mate')
     out.push(`It forces mate in ${best.score.value}.`);
@@ -161,7 +162,7 @@ function explain(
     const down = Math.max(...positions.slice(1).map((p) => start - balance(p, me)));
     if (down > 0)
       out.push(
-        `In that line you are up to ${down} ${down === 1 ? 'pawn' : 'pawns'} of material down, and the engine still rates the position ${formatScore(best.score)} for you.`,
+        `In that line you are up to ${down} ${down === 1 ? 'point' : 'points'} of material down, and the engine still rates the position ${formatScore(best.score)} for you.`,
       );
   }
   if (tags.some((t) => STRATEGY_TAGS.includes(t))) {
@@ -169,7 +170,7 @@ function explain(
     const changes = describeChanges(features(pos, pos.turn), features(after, pos.turn));
     if (changes.length)
       out.push(
-        `After ${review.san}${playedLine[1] ? ` and ${playedLine[1]}` : ''}: ${changes.join(' ')}`,
+        `After ${moveText(review.san)}${playedLine[1] ? ` and ${moveText(playedLine[1])}` : ''}: ${changes.join(' ')}`,
       );
   }
   if (type === 'time') {
@@ -332,7 +333,7 @@ export function planDrillsFromGame(
       bestScore: best.score,
       choices: order,
       hints: [],
-      explanation: [`In the game you played ${moveLabel(r.ply)} ${r.san}.`],
+      explanation: [`In the game you played ${moveLabel(r.ply)} ${moveText(r.san)}.`],
       tags: tags.filter((t) => t.gameId === game.id && t.ply === r.ply).map((t) => t.tag),
       rating: (game.userColor === 'white' ? game.white : game.black).rating ?? START_RATING,
       source: { gameId: game.id, ply: r.ply, played: r.uci, playedSan: r.san },

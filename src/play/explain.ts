@@ -244,10 +244,10 @@ export function compareLines(
   const best = playLine(start, bestLine.slice(0, playedLine.length)).at(-1)!;
   const out: string[] = [];
   const mat = balance(played, me) - balance(best, me);
-  if (mat < 0) out.push(`You have ${-mat} ${mat === -1 ? 'pawn' : 'pawns'} less material.`);
+  if (mat < 0) out.push(`You have ${-mat} ${mat === -1 ? 'point' : 'points'} less material.`);
   if (mat > 0)
     out.push(
-      `You have ${mat} more ${mat === 1 ? 'pawn' : 'pawns'} of material, but the position is worse.`,
+      `You have ${mat} more ${mat === 1 ? 'point' : 'points'} of material, but the position is worse.`,
     );
   const dev = undeveloped(played, me) - undeveloped(best, me);
   if (dev > 0)
@@ -295,7 +295,7 @@ export function threatNote(before: Chess, uci: string): string | undefined {
   if (after.isCheck()) parts.push('gives check');
   if (!parts.length) return undefined;
   const text = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0];
-  return `Your opponent's ${san} ${text}.`;
+  return `Your opponent plays ${moveText(san)}, which ${text}.`;
 }
 
 /**

@@ -17,7 +17,7 @@ test('the Lab analyses a shared position, names the threat and judges a tried mo
   // Candidate lines from the on-device engine, and the threat behind the position.
   await expect(page.locator('.lab__line').first()).toBeVisible({ timeout: 60_000 });
   await expect(page.locator('.lab__threat')).toContainText(
-    "If it were Black's move, Black would play Bxd4, taking the knight on d4.",
+    "If it were Black's move, Black would play bishop takes d4 (Bxd4), taking the knight on d4.",
     {
       timeout: 60_000,
     },

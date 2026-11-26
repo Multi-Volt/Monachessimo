@@ -97,9 +97,7 @@ export function praiseMove(args: {
     );
   }
   if (label === 'great' && second)
-    points.push(
-      `It is the only good move here. The next best choice is about ${((toCp(played) - toCp(second.score)) / 100).toFixed(1)} pawns worse.`,
-    );
+    points.push('It is the only good move here. Every other move is clearly worse.');
   if (taken && !offered) {
     const role = before.board.getRole(m.to) ?? 'pawn';
     points.push(`It wins a ${role} safely.`);

@@ -745,7 +745,7 @@ function Session(props: {
             {phase.kind === 'shown' && (
               <div class="panel panel--mistake learn__head" role="status">
                 <p>
-                  <strong>The move here was {bestSan}.</strong>{' '}
+                  <strong>The move here was {moveText(bestSan)}.</strong>{' '}
                   {drill.solution ? 'Solution' : 'Engine line'} from here:{' '}
                   {pvToSan(
                     fenNow,
@@ -754,7 +754,7 @@ function Session(props: {
                   ).join(' ')}
                   .
                 </p>
-                <SpeakButton text={`The move here was ${bestSan}.`} />
+                <SpeakButton text={`The move here was ${moveText(bestSan)}.`} />
               </div>
             )}
           </div>

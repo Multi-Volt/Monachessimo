@@ -30,7 +30,7 @@ describe('drillsFromGame', () => {
     expect(d.hints[0]).toMatch(/undefended/);
     expect(d.hints.at(-1)).toMatch(/^The answer is /);
     expect(d.explanation[0]).toMatch(
-      /^In the game you played Qh4, and the engine's answer was Nxh4\./,
+      /^In the game you played queen to h4 \(Qh4\), and the engine's answer was knight takes h4 \(Nxh4\)\./,
     );
     expect(judge(d, 'd8h4')).toBe('wrong');
     expect(judge(d, d.accepted[0]!.uci)).toBe('correct');

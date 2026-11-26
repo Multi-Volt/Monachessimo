@@ -4,6 +4,7 @@ import type { Drill, Grade } from '../../drills/types';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { formatScore } from '../../ui/format';
+import { moveText } from '../../chess/words';
 
 /**
  * Plan picker: choose one of the engine's candidate moves (plus the game
@@ -115,6 +116,6 @@ function planSummary(
   const mine = choices.find((c) => c.uci === picked);
   if (!mine) return '';
   if (mine.uci === best.uci)
-    return `You chose ${mine.san}, the best move, at ${formatScore(mine.score)}.`;
-  return `You chose ${mine.san}, at ${formatScore(mine.score)}. The best was ${best.san}, at ${formatScore(best.score)}.`;
+    return `You chose ${moveText(mine.san)}, the best move, at ${formatScore(mine.score)}.`;
+  return `You chose ${moveText(mine.san)}, at ${formatScore(mine.score)}. The best was ${moveText(best.san)}, at ${formatScore(best.score)}.`;
 }

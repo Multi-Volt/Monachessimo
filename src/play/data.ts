@@ -2,7 +2,7 @@ import { moveHints } from '../chess/hints';
 import { makeFen } from 'chessops/fen';
 import { parseUci } from 'chessops/util';
 import { uciToSan, pvToSan } from '../chess/san';
-import { moveText } from '../chess/words';
+import { MoveText, moveText } from '../chess/words';
 import { fromFen } from '../detectors/board';
 import { acceptable } from '../drills/answers';
 import type { Drill } from '../drills/types';
@@ -137,8 +137,8 @@ export function practiceDrill(
     bestScore: best.score,
     hints: moveHints(fen, best.pv[0]!),
     explanation: [
-      `In a practice game on ${formatDate(now)} the coach refused ${san}. It cost about ${Math.round(drop * 50)}% of your winning chances.`,
-      `${bestSan} was the engine's choice. Engine line: ${pvToSan(fen, best.pv, 6).join(' ')}.`,
+      `In a practice game on ${formatDate(now)} the coach refused ${moveText(san)}. It cost about ${Math.round(drop * 50)}% of your winning chances.`,
+      `${MoveText(bestSan)} was the engine's choice. Engine line: ${pvToSan(fen, best.pv, 6).join(' ')}.`,
     ],
     tags: [],
     rating,

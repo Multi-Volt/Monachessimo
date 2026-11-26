@@ -91,7 +91,7 @@ export function goalText(goal: Goal): string | undefined {
     case 'mate':
       return 'Play until checkmate.';
     case 'material':
-      return `Keep going until you have won the material: ${goal.gain} ${goal.gain === 1 ? 'pawn' : 'pawns'} or more.`;
+      return `Keep going until you have won the material: ${goal.gain} ${goal.gain === 1 ? 'point' : 'points'} or more.`;
     case 'hold':
       return `Hold the position for ${goal.moves} moves.`;
     case 'solution':
