@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fromFen } from '../detectors/board';
 import { causeMarks, causeText, findCause, type Cause } from './cause';
+import { coachVoice } from './coachNotes';
 
 type Row = [name: string, fen: string, move: string, reply: string[], kind: Cause['kind'] | null];
 
@@ -249,10 +250,14 @@ describe('findCause', () => {
     });
   }
 
-  it('speaks as the opponent and names the guard that left', () => {
+  it('speaks beside the player and names the guard that left', () => {
     const c = findCause(fromFen('7k/8/3b4/4P3/8/5N2/8/7K w - - 0 1'), 'f3g5', ['d6e5'])!;
     expect(causeText(c)).toBe(
-      'Your knight was guarding the pawn on e5. Now my bishop can take it.',
+      "Your knight was guarding the pawn on e5. Now your opponent's bishop can take it.",
+    );
+    // Records written before the coach spoke beside the player give the same notes.
+    expect(coachVoice('Your knight was guarding the pawn on e5. Now my bishop can take it.')).toBe(
+      causeText(c),
     );
   });
 });

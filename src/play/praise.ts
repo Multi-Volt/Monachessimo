@@ -8,6 +8,7 @@ import { toCp, winningChances, type Score } from '../engine/eval';
 import type { Line } from '../engine/uci';
 import { features } from '../strategy/features';
 import type { Verdict } from './coach';
+import { moveWords } from '../chess/words';
 
 export type PraiseLabel = 'brilliant' | 'great' | 'best' | 'excellent' | 'good';
 
@@ -122,15 +123,16 @@ export function praiseMove(args: {
     points.push(`Your pieces reach ${f1.mobility - f0.mobility} more squares.`);
   if (f1.centerControl - f0.centerControl >= 2) points.push('It takes more control of the center.');
 
+  const words = moveWords(san);
   const headline =
     label === 'good'
-      ? `${san} is good, about ${(verdict.cpLoss / 100).toFixed(1)} pawns short of the best move.`
+      ? `${words} is good, but there was a slightly better move.`
       : label === 'excellent'
-        ? `${san} is excellent, almost as strong as the best move.`
+        ? `${words} is excellent, almost as strong as the best move.`
         : label === 'best'
-          ? `${san} is the engine's first choice.`
+          ? `${words} is the engine's first choice.`
           : label === 'great'
-            ? `${san} is a great move.`
-            : `${san} is brilliant.`;
+            ? `${words} is a great move.`
+            : `${words} is brilliant.`;
   return { label, headline, points: points.slice(0, 3) };
 }

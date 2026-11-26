@@ -65,7 +65,7 @@ export function featureNotes(pos: Chess, me: Color): FeatureNote[] {
         out.push({
           key: 'backwardPawn',
           where: makeSquare(p),
-          text: `Your pawn on ${makeSquare(p)} is backward: no pawn can support it, and my pawns control the square in front of it.`,
+          text: `Your pawn on ${makeSquare(p)} is backward: no pawn can support it, and your opponent's pawns control the square in front of it.`,
         });
     }
   }

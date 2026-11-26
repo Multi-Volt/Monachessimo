@@ -70,6 +70,8 @@ import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { usePhrased } from '../../ui/usePhrased';
+import { moveWords, sanWords } from '../../chess/words';
+import { coachVoice, spellMoves } from '../../play/voice';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
@@ -79,6 +81,17 @@ import { TypedMove } from '../drills/ConversionDrill';
 import { href, navigate } from '../router';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+/**
+ * A narrated step in the coach's voice with its moves in words. A step that
+ * only names the move, which the label already shows, keeps just a mate.
+ */
+function stepWords(text: string): string {
+  const t = coachVoice(text);
+  if (/^(You play|Your opponent plays) \S+\.( Checkmate\.)?$/.test(t))
+    return t.endsWith('Checkmate.') ? 'Checkmate.' : '';
+  return spellMoves(t);
+}
+
 /** How long a refused move stays on the board before it goes back. */
 /** Engine time for each of the opponent's moves. */
 const OPPONENT_MS = 400;
@@ -852,7 +865,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   const record = refusal ? withLine(refusal.record, lineSteps, reason) : undefined;
   // The on-device model's wording of the same record, when the player turned
   // it on, from the finished notes.
-  const phrased = usePhrased(
+  const { text: phrased, status: modelStatus } = usePhrased(
     record && lineDone && phase.kind === 'refused' ? record : note?.sheet,
     !!services.settings.coachModel,
   );
@@ -934,7 +947,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     tags?: TagName[];
   } => {
     if (phase.kind === 'checking')
-      return { tone: 'neutral', title: `Checking ${uciToSan(fen, phase.uci)}…` };
+      return { tone: 'neutral', title: `Checking ${sanWords(uciToSan(fen, phase.uci))}…` };
     if (phase.kind === 'thinking') {
       if (praise) return { tone: praise.label, title: praise.headline, points: praise.points };
       if (note)
@@ -967,7 +980,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (refusal)
       return {
         tone: refusal.cls,
-        title: `Find a better move than ${uciToSan(fen, refutation?.uci ?? '')}.`,
+        title: `Find a better move than ${sanWords(uciToSan(fen, refutation?.uci ?? ''))}.`,
         ...(refusedHere >= 2 ? { text: 'Stuck? Tap Hint.' } : {}),
       };
     if (note)
@@ -1046,6 +1059,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
             />
           </div>
           {coach.text && <p class="coach__text">{coach.text}</p>}
+          {modelStatus && coach.tone !== 'neutral' && (
+            <p class="hint coach__model">{modelStatus}</p>
+          )}
           {((coach.points?.length ?? 0) > 0 || (coach.tags?.length ?? 0) > 0) && (
             <details class="coach__why">
               <summary>Why?</summary>
@@ -1114,7 +1130,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
           <ol class="stepper__lines">
             {record!.line.slice(0, replayStep).map((st, k) => (
               <li key={st.uci + k} class={k === replayStep - 1 ? 'is-current' : ''}>
-                <span class="stepper__san num">{st.san}</span> {st.text}
+                <span class="stepper__san">{moveWords(st.san)}.</span> {stepWords(st.text)}
               </li>
             ))}
           </ol>
@@ -1123,10 +1139,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
               <p>
                 <strong>Why this is worse.</strong> {record?.sentences.reason}
               </p>
-              <p class="hint">
-                The engine rates your position about {(refutation.cost / 100).toFixed(1)} pawns
-                lower than after a better move. Compared with that line:
-              </p>
+              <p class="hint">Compared with a better move:</p>
               {(() => {
                 const diffs = compareLines(pos, game.you, replayLine, refutation.best);
                 return diffs.length ? (

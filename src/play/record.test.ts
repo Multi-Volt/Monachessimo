@@ -42,7 +42,7 @@ describe('explanation record', () => {
     expect(record.verdict.cost).toBe(150);
     expect(record.cause?.kind).toBe('defenderLeft');
     expect(record.sentences.cause).toBe(
-      'Your knight was guarding the pawn on e5. Now my bishop can take it.',
+      "Your knight was guarding the pawn on e5. Now your opponent's bishop can take it.",
     );
     expect(record.sentences.points[0]).toBe(record.sentences.cause);
     expect(record.marks).toContainEqual({ orig: 'e5', brush: 'red' });

@@ -47,7 +47,7 @@ test('a practice game sends a blunder back and saves the position as a drill', a
   // The game move hangs the queen; the coach refuses it without giving the answer.
   await typeMove(page, 'Qh4');
   const coach = page.locator('.coach');
-  await expect(coach).toContainText('Qh4 is a blunder', { timeout: 30_000 });
+  await expect(coach).toContainText('Queen to h4 is a blunder', { timeout: 30_000 });
   await expect(coach).not.toContainText('Nc6');
   // The refused move stays on the board with a badge until the player tries again.
   await expect(page.locator('.board .cg-custom-svgs svg')).toHaveCount(1);
@@ -81,33 +81,38 @@ test('the coach catches pawns given away and says why', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Your move' })).toBeVisible({ timeout: 30_000 });
 
   // The coach names the opponent's threat, found by a null-move search.
-  await expect(page.locator('.coach')).toContainText('I threaten Nxe5, taking your pawn on e5.', {
-    timeout: 30_000,
-  });
+  await expect(page.locator('.coach')).toContainText(
+    'Your opponent threatens knight takes e5, taking your pawn on e5.',
+    {
+      timeout: 30_000,
+    },
+  );
 
   // b5 hangs a pawn to the bishop: a blunder, with the reason.
   await typeMove(page, 'b5');
   const status = page.locator('.coach');
-  await expect(status).toContainText(/b5 is a blunder: it costs about \d\.\d pawns\./, {
+  await expect(status).toContainText(/Pawn to b5 is a blunder\./, {
     timeout: 30_000,
   });
-  // The cause comes first, in the opponent's voice; the rest is behind Why.
+  // The cause comes first, in the coach's voice; the rest is behind Why.
   await expect(status.locator('.coach__text')).toContainText(
-    'Your pawn on b5 can be taken by my bishop for free.',
+    "Your pawn on b5 can be taken by your opponent's bishop for free.",
   );
   await expect(status).not.toContainText('Nc6');
 
   // Show what happens plays the refused move and the opponent's answer on the board.
   await page.getByRole('button', { name: 'Show what happens' }).click();
-  await expect(page.locator('.stepper')).toContainText('You play b5.');
+  await expect(page.locator('.stepper')).toContainText('Pawn to b5.');
   await page.getByRole('button', { name: 'Forward' }).click();
   // Each move of the line gets one sentence in the coach's voice.
-  await expect(page.locator('.stepper')).toContainText('My bishop takes your pawn on b5');
+  await expect(page.locator('.stepper')).toContainText(
+    "Your opponent's bishop takes your pawn on b5",
+  );
   await page.getByRole('button', { name: 'Try again' }).click();
 
   // Qf6 gives up a pawn too. Winning chances alone called this an inaccuracy.
   await typeMove(page, 'Qf6');
-  await expect(status).toContainText('Qf6 is a mistake', { timeout: 30_000 });
+  await expect(status).toContainText('Queen to f6 is a mistake', { timeout: 30_000 });
   expect(errors).toEqual([]);
 });
 

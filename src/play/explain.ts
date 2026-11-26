@@ -3,6 +3,7 @@ import { makeFen } from 'chessops/fen';
 import type { Role, Square } from 'chessops/types';
 import { makeSquare, opposite } from 'chessops/util';
 import { pvToSan } from '../chess/san';
+import { moveWords, sanWords } from '../chess/words';
 import {
   attacksFrom,
   balance,
@@ -109,26 +110,29 @@ export function explainMove(args: {
   const me = before.turn;
   const after = playUci(before, uci);
   const san = pvToSan(makeFen(before.toSetup()), [uci], 1)[0] ?? uci;
-  const cost =
-    verdict.cpLoss >= 1000
-      ? 'turns the game around'
-      : `costs about ${(verdict.cpLoss / 100).toFixed(1)} pawns`;
+  // The coach names the move in words and leaves engine numbers out.
   const headline = verdict.class
-    ? `${san} is ${withArticle(verdict.class)}: it ${cost}.`
-    : `${san} ${cost}.`;
+    ? `${moveWords(san)} is ${withArticle(verdict.class)}.`
+    : `${moveWords(san)} is not the best move.`;
   const points: string[] = [];
   if (!after) return { headline, points, tags: [] };
 
   const replySan = reply.length ? pvToSan(makeFen(after.toSetup()), reply, 6) : [];
   const first = normalMove(reply[0]);
   if (args.played.kind === 'mate' && args.played.value < 0) {
-    points.push(`It allows mate in ${-args.played.value}: ${replySan.slice(0, 5).join(' ')}.`);
+    const n = -args.played.value;
+    points.push(
+      n === 1
+        ? `It allows checkmate: ${sanWords(replySan[0] ?? '', true)}.`
+        : `It allows your opponent to force checkmate in ${n} moves.`,
+    );
   } else if (first && replySan[0]) {
     const answered = playUci(after, reply[0]);
     if (isCapture(after, first)) {
       const role = after.board.getRole(first.to) ?? 'pawn';
+      const taker = after.board.getRole(first.from) ?? 'piece';
       points.push(
-        `Your opponent answers ${replySan[0]}, taking your ${role} on ${makeSquare(first.to)}.`,
+        `Your opponent's ${taker} takes your ${role} on ${makeSquare(first.to)}${/\+$/.test(replySan[0]) ? ' with check' : ''}.`,
       );
     } else if (answered) {
       // What the answering piece now attacks that the player stands to lose.
@@ -148,23 +152,21 @@ export function explainMove(args: {
       });
       if (trapped.length)
         points.push(
-          `Your opponent answers ${replySan[0]}, attacking ${listPieces(answered, trapped)}, which has no safe square.`,
+          `Your opponent plays ${sanWords(replySan[0])}, attacking ${listPieces(answered, trapped)}, which has no safe square.`,
         );
       else if (targets.length)
         points.push(
-          `Your opponent answers ${replySan[0]}, attacking ${listPieces(answered, targets)}.`,
+          `Your opponent plays ${sanWords(replySan[0])}, attacking ${listPieces(answered, targets)}.`,
         );
-      else if (answered.isCheck()) points.push(`Your opponent answers ${replySan[0]}, with check.`);
-      else points.push(`Your opponent's best answer is ${replySan[0]}.`);
+      else if (answered.isCheck()) points.push(`Your opponent plays ${sanWords(replySan[0])}.`);
+      else points.push(`Your opponent's best answer is ${sanWords(replySan[0])}.`);
     }
     // What changes hands in the line that follows.
     const { lost, won } = captures(after, reply.slice(0, 6), me);
     if (lost.length) {
       const lostText = lost.map(article).join(', ');
       const wonText = won.length ? `, and you win ${won.map(article).join(', ')}` : '';
-      points.push(
-        `In the line that follows you lose ${lostText}${wonText}: ${replySan.join(' ')}.`,
-      );
+      points.push(`In the line that follows you lose ${lostText}${wonText}.`);
     }
   }
 
@@ -189,7 +191,8 @@ export function explainMove(args: {
   const cause = findCause(before, uci, reply);
   if (args.threat && reply[0] === args.threat.uci && cause?.kind !== 'ignoredThreat') {
     const threatSan = pvToSan(makeFen(after.toSetup()), [reply[0]], 1)[0];
-    if (threatSan) points.unshift(`This move ignores my threat of ${threatSan}.`);
+    if (threatSan)
+      points.unshift(`This move ignores your opponent's threat of ${sanWords(threatSan)}.`);
   }
   if (cause) points.unshift(causeText(cause));
   const tactical = tags.filter((t) => TACTICAL.includes(t));
@@ -307,12 +310,16 @@ export function threatText(fen: string, threat: Threat, lastSan?: string): strin
   const m = normalMove(threat.uci);
   if (!m) return undefined;
   const san = pvToSan(passed, [threat.uci], 1)[0] ?? threat.uci;
-  const lead = lastSan ? `With ${lastSan}, I threaten ${san}` : `I threaten ${san}`;
+  const lead = lastSan
+    ? `With ${sanWords(lastSan)}, your opponent threatens ${sanWords(san, true)}`
+    : `Your opponent threatens ${sanWords(san, true)}`;
   if (threat.score.kind === 'mate' && threat.score.value > 0)
-    return threat.score.value === 1 ? `${lead}, and it is mate.` : `${lead}, with mate to follow.`;
+    return threat.score.value === 1
+      ? `${lead}, which is checkmate.`
+      : `${lead}, with checkmate to follow.`;
   if (isCapture(pos, m)) {
     const role = pos.board.getRole(m.to) ?? 'pawn';
     return `${lead}, taking your ${role} on ${makeSquare(m.to)}.`;
   }
-  return `${lead}. Ignoring it costs about ${(threat.gain / 100).toFixed(1)} pawns.`;
+  return `${lead}.`;
 }

@@ -246,21 +246,21 @@ function list(roles: Role[], squares: Square[]): string {
 export function causeText(c: Cause): string {
   switch (c.kind) {
     case 'defenderLeft':
-      return `Your ${c.defender} was guarding the ${c.victim} on ${sq(c.target)}. Now my ${c.attacker} can take it.`;
+      return `Your ${c.defender} was guarding the ${c.victim} on ${sq(c.target)}. Now your opponent's ${c.attacker} can take it.`;
     case 'movedOntoAttacked':
       return c.free
-        ? `Your ${c.piece} on ${sq(c.square)} can be taken by my ${c.attacker} for free.`
-        : `My ${c.attacker} can take your ${c.piece} on ${sq(c.square)}, and you lose material in the trade.`;
+        ? `Your ${c.piece} on ${sq(c.square)} can be taken by your opponent's ${c.attacker} for free.`
+        : `Your opponent's ${c.attacker} can take your ${c.piece} on ${sq(c.square)}, and you lose material in the trade.`;
     case 'ignoredThreat':
-      return `Your ${c.victim} on ${sq(c.target)} was already attacked by my ${c.attacker}, and this move does not save it.`;
+      return `Your ${c.victim} on ${sq(c.target)} was already attacked by your opponent's ${c.attacker}, and this move does not save it.`;
     case 'openedLine':
-      return `Moving your ${c.moved} opens the ${c.line} for my ${c.slider} to your ${c.victim} on ${sq(c.target)}.`;
+      return `Moving your ${c.moved} opens the ${c.line} for your opponent's ${c.slider} to your ${c.victim} on ${sq(c.target)}.`;
     case 'fork':
-      return `My ${c.attacker} on ${sq(c.attackerSquare)} attacks ${list(c.roles, c.targets)} at once.`;
+      return `Your opponent's ${c.attacker} on ${sq(c.attackerSquare)} attacks ${list(c.roles, c.targets)} at once.`;
     case 'pin':
-      return `My ${c.attacker} pins your ${c.frontRole} on ${sq(c.front)} to your ${c.backRole} behind it.`;
+      return `Your opponent's ${c.attacker} pins your ${c.frontRole} on ${sq(c.front)} to your ${c.backRole} behind it.`;
     case 'skewer':
-      return `My ${c.attacker} attacks your ${c.frontRole} on ${sq(c.front)}. When it moves, your ${c.backRole} behind it falls.`;
+      return `Your opponent's ${c.attacker} attacks your ${c.frontRole} on ${sq(c.front)}. When it moves, your ${c.backRole} behind it falls.`;
   }
 }
 
