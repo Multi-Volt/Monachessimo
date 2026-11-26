@@ -79,6 +79,8 @@ import { formatDate, formatScore } from '../../ui/format';
 import { useAsync, useServices } from '../../ui/hooks';
 import { TypedMove } from '../drills/ConversionDrill';
 import { href, navigate } from '../router';
+import { checkMaia2, deleteMaia2, downloadMaia2, maia2State } from '../../engine/maia2Download';
+import { useStore } from '../../ui/store';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 /**
@@ -189,7 +191,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
       moves: [],
       skill: level,
       ...(human ? { maia: maiaLevel } : {}),
-      rating: Math.min(1900, Math.max(1100, Math.round(rating / 100) * 100)),
+      rating: Math.min(2500, Math.max(400, Math.round(rating / 100) * 100)),
       strictness,
       startedAt: Date.now(),
       yourMoves: [],
@@ -321,9 +323,8 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
             />
             <p class="hint">
               Suggested from your puzzle rating of {rating}. Downloads 1.2 MB the first time.
-              {maiaLevel < 1100 &&
-                ' Maia learned from players rated 1100 and up, so below that it plays its 1100 moves less carefully: an estimate of a weaker player, not one learned from their games.'}
             </p>
+            {maiaLevel < 1100 && <Maia2Offer />}
           </div>
         ) : (
           <div class="field">
@@ -650,7 +651,9 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       // in if its network cannot load.
       const human = game.maia
         ? await import('../../engine/maiaPlayer')
-            .then((m) => m.maiaMove(game.maia!, game.startFen, game.moves))
+            .then((m) =>
+              m.maiaMove(game.maia!, game.startFen, game.moves, game.rating ?? game.maia!),
+            )
             .catch(() => undefined)
         : undefined;
       const bestmove =
@@ -1493,4 +1496,61 @@ function Summary({ game, onNew }: { game: PracticeGame; onNew: () => void }) {
       </div>
     </section>
   );
+}
+
+/**
+ * Below 1100 the networks that come with the app can only estimate a weaker
+ * player; Maia-2, a download, learned from games of players under 1100.
+ */
+function Maia2Offer() {
+  const { state } = useStore(maia2State);
+  useEffect(() => {
+    void checkMaia2();
+  }, []);
+  const mb = (n: number) => `${Math.round(n / 1e6)} MB`;
+  switch (state.kind) {
+    case 'available':
+    case 'failed':
+      return (
+        <div class="notice">
+          <p>
+            To play like a player rated under 1100, download Maia-2, which learned from their games
+            ({state.kind === 'available' ? mb(state.bytes) : 'about 21 MB'}, once). Without it, Maia
+            plays its 1100 moves less carefully, an estimate.
+          </p>
+          {state.kind === 'failed' && <p class="hint">The download did not finish. Try again.</p>}
+          <button
+            type="button"
+            class="button"
+            onClick={() => void downloadMaia2().catch(() => undefined)}
+          >
+            Download Maia-2
+          </button>
+        </div>
+      );
+    case 'loading':
+      return (
+        <p class="hint" role="status">
+          Downloading Maia-2, {Math.round((100 * state.loaded) / Math.max(1, state.total))}%.
+        </p>
+      );
+    case 'ready':
+      return (
+        <div>
+          <p class="hint">
+            Maia-2 is on this device and plays at every rating, under 1100 from real games.
+          </p>
+          <button type="button" class="button" onClick={() => void deleteMaia2()}>
+            Remove Maia-2
+          </button>
+        </div>
+      );
+    default:
+      return (
+        <p class="hint">
+          Maia learned from players rated 1100 and up, so below that it plays its 1100 moves less
+          carefully: an estimate of a weaker player, not one learned from their games.
+        </p>
+      );
+  }
 }

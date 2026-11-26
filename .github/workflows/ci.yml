@@ -88,6 +88,13 @@ jobs:
           key: coach-model-${{ hashFiles('scripts/coach-model.json') }}
       - name: Add the coach model
         run: scripts/fetch-coach-model.sh ~/.cache/monachessimo-model
+      - name: Restore Maia-2
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/monachessimo-maia2
+          key: maia2-${{ hashFiles('scripts/maia2-model.json') }}
+      - name: Add Maia-2
+        run: scripts/fetch-maia2.sh ~/.cache/monachessimo-maia2
       - run: npx vite build
       - name: Build the offline bundle
         run: |

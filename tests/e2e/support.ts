@@ -82,7 +82,9 @@ export async function playUntilDone(page: Page): Promise<string> {
     const text = (await status.allInnerTexts()).join(' ');
     if (/Well played\.|Good effort\./.test(text)) return text;
     await expect(section).toHaveAttribute('data-best', /.+/, { timeout: 30_000 });
-    const best = (await section.getAttribute('data-best'))!;
+    // The step can move on between the check and the read; read again then.
+    const best = await section.getAttribute('data-best');
+    if (!best) continue;
     await typeMove(page, best);
     await expect(section)
       .not.toHaveAttribute('data-best', best, { timeout: 30_000 })

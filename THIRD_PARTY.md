@@ -23,6 +23,7 @@ This file lists every dependency, its license, and its source. Update it wheneve
 | "Oak Veneer 01" wood texture by Jenelle van Heerden, from Poly Haven, in `public/3d/wood/`                                                                                          | CC0-1.0          | https://polyhaven.com/a/oak_veneer_01                      |
 | Maia 1100 to 1900 networks by the CSSLab, University of Toronto, release v1.0, converted into `public/maia/`                                                                        | GPL-3.0          | https://github.com/CSSLab/maia-chess                       |
 | Leela Chess Zero policy map and move list, in `public/maia/tables.json`                                                                                                             | GPL-3.0-or-later | https://github.com/LeelaChessZero/lc0                      |
+| Maia-2 rapid model by the CSSLab, University of Toronto, converted with `scripts/convert-maia2.py`, an optional download served from a release of this repository                   | MIT              | https://github.com/CSSLab/maia2                            |
 
 ## Build and test tools (not shipped)
 

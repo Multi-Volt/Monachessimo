@@ -21,3 +21,5 @@ declare module 'node:child_process' {
     opts?: { cwd?: string; stdio?: unknown },
   ): Child;
 }
+
+declare const process: { env: Record<string, string | undefined> };

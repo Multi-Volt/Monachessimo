@@ -42,7 +42,8 @@ export function About() {
         <li>
           <a href="https://github.com/CSSLab/maia-chess">Maia</a>, the human-like opponent, by the
           Computational Social Science Lab at the University of Toronto, read through tables from{' '}
-          <a href="https://lczero.org">Leela Chess Zero</a>. GPL-3.0.
+          <a href="https://lczero.org">Leela Chess Zero</a>. GPL-3.0. Maia-2, the optional download,
+          by the same lab: <a href="https://github.com/CSSLab/maia2">maia2</a>. MIT.
         </li>
         <li>
           <a href="https://database.lichess.org/#puzzles">Lichess puzzle database</a>. CC0.
