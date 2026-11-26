@@ -437,7 +437,10 @@ function wrongMoveOrOwner(notes: string, text: string): string[] {
   const spelled = spellMoves(notes);
   const said = (owner: string, role: string, square: string) =>
     new RegExp(`(?<!opponent's )\\b${owner} ${role} on ${square}\\b`, 'i').test(spelled);
-  const owners = new RegExp(`\\b(your opponent['’]s|their|your) (${ROLES}) on ([a-h][1-8])\\b`, 'g');
+  const owners = new RegExp(
+    `\\b(your opponent['’]s|their|your) (${ROLES}) on ([a-h][1-8])\\b`,
+    'g',
+  );
   for (const m of t.matchAll(owners)) {
     const [, who, role, square] = m;
     const mine = who === 'your';

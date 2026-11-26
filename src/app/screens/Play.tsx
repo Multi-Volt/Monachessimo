@@ -70,7 +70,7 @@ import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { usePhrased } from '../../ui/usePhrased';
-import { factSheet } from '../../play/phrasing';
+import { coachNotes } from '../../play/coachNotes';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
@@ -720,7 +720,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         services.pool.search(r),
       ).then((rich) =>
         setNote((n) =>
-          n === noted ? { ...noted, sheet: factSheet(withLine(rec, rich, reason)) } : n,
+          n === noted ? { ...noted, sheet: coachNotes(withLine(rec, rich, reason)) } : n,
         ),
       );
     }
@@ -852,7 +852,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   // The on-device model's wording of the same record, when the player turned
   // it on, from the finished notes.
   const phrased = usePhrased(
-    record && lineDone && phase.kind === 'refused' ? factSheet(record) : note?.sheet,
+    record && lineDone && phase.kind === 'refused' ? coachNotes(record) : note?.sheet,
     !!services.settings.coachModel,
   );
   const shownFen = (() => {

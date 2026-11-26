@@ -1,7 +1,9 @@
 // The coach's wording model: a small language model, run on the device by
-// wllama, that rewrites the notes of a refused move into plain sentences.
-// The template text shows first; the model's text replaces it only when the
-// phrasing checker accepts it, so a wrong or slow answer is never shown.
+// wllama, that rewrites the coach notes of a move into plain sentences.
+// The model reads the notes with the moves in words; the checker reads them
+// with the notation, which keeps the exact moves. The template text shows
+// first; the model's text replaces it only when the checker accepts it, so a
+// wrong or slow answer is never shown.
 //
 // The model files are not in the repository. CI downloads them from a
 // release of this project and serves them from the site under
@@ -11,7 +13,7 @@
 // file, offers no model. The parts are kept in a cache named after the
 // version, so a new model replaces the old one.
 import { createStore } from '../ui/store';
-import { checkPhrasing } from './phrasing';
+import { checkCoachText, spellMoves } from './coachNotes';
 
 export interface ModelManifest {
   /** The model's version, such as "coach-v1". */
@@ -36,11 +38,14 @@ const dir = () => `${import.meta.env.BASE_URL}models/coach/`;
 export const promptFor = (sheet: string): string =>
   `<|im_start|>user\n${sheet}<|im_end|>\n<|im_start|>assistant\n`;
 
-/** The model's text for `sheet` if the checker accepts it, else undefined. */
-export function accepted(sheet: string, text: string): string | undefined {
+/** The model's text for `notes` if the checker accepts it, else undefined. */
+export function accepted(notes: string, text: string): string | undefined {
   const t = text.trim();
-  return t && !checkPhrasing(sheet, t).length ? t : undefined;
+  return t && !checkCoachText(notes, t).length ? t : undefined;
 }
+
+/** A second try samples, so it can differ from a refused first one. */
+const TRIES = [0, 0.7];
 
 let manifest: Promise<ModelManifest | undefined> | undefined;
 
@@ -129,24 +134,28 @@ let queue: Promise<unknown> = Promise.resolve();
 const answers = new Map<string, string | undefined>();
 
 /**
- * The model's accepted text for `sheet`, or undefined when it wrote
- * something the checker refuses. Answers are kept, so the same notes are
- * written once.
+ * The model's accepted text for the coach notes `notes`, or undefined when
+ * both tries wrote something the checker refuses. Answers are kept, so the
+ * same notes are written once.
  */
-export function phrase(sheet: string, signal?: AbortSignal): Promise<string | undefined> {
-  if (answers.has(sheet)) return Promise.resolve(answers.get(sheet));
+export function phrase(notes: string, signal?: AbortSignal): Promise<string | undefined> {
+  if (answers.has(notes)) return Promise.resolve(answers.get(notes));
   const run = queue.then(async () => {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     const w = await loadModel();
-    const out = await w.createCompletion({
-      prompt: promptFor(sheet),
-      max_tokens: 160,
-      temperature: 0,
-      stop: ['<|im_end|>'],
-      ...(signal ? { abortSignal: signal } : {}),
-    });
-    const text = accepted(sheet, out.choices[0]?.text ?? '');
-    answers.set(sheet, text);
+    let text: string | undefined;
+    for (const temperature of TRIES) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      const out = await w.createCompletion({
+        prompt: promptFor(spellMoves(notes)),
+        max_tokens: 160,
+        temperature,
+        stop: ['<|im_end|>'],
+        ...(signal ? { abortSignal: signal } : {}),
+      });
+      text = accepted(notes, out.choices[0]?.text ?? '');
+      if (text) break;
+    }
+    answers.set(notes, text);
     return text;
   });
   queue = run.catch(() => undefined);

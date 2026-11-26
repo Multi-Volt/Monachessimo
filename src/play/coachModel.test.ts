@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { accepted, promptFor } from './coachModel';
 
-const sheet = `b5 is a blunder: it costs about 1.1 pawns.
-Why: Your pawn on b5 can be taken by my bishop for free.
+const notes = `Your move: Bg5. Verdict: a blunder.
+Why: Your bishop on g5 can be taken by your opponent's knight for free.
 Patterns: a hanging piece.
-Fact: I answer Bxb5, taking your pawn on b5.`;
+What happens next:
+- You play Bg5.
+- Your opponent's knight takes your bishop on g5.
+Result: you lose a bishop (3 points), so you are 3 points down.
+Where it leaves you: you were even in material, and now you are 3 points behind.`;
 
 describe('coach model', () => {
   it('prompts in the trained form, without a system prompt', () => {
@@ -13,9 +17,14 @@ describe('coach model', () => {
 
   it('accepts a faithful text and refuses one with a fact not in the notes', () => {
     const good =
-      'Pawn to b5 leaves your pawn hanging: my bishop takes it for free. I answer bishop takes b5.';
-    expect(accepted(sheet, `  ${good}\n`)).toBe(good);
-    expect(accepted(sheet, 'Pawn to b5 lets my knight take your rook on a8.')).toBeUndefined();
-    expect(accepted(sheet, '')).toBeUndefined();
+      "Bishop to g5 leaves your bishop hanging, so your opponent's knight takes it for free. You go from even to 3 points behind.";
+    expect(accepted(notes, `  ${good}\n`)).toBe(good);
+    expect(
+      accepted(
+        notes,
+        "Bishop to g5 lets your opponent's knight take your rook on a8. You are 5 points behind.",
+      ),
+    ).toBeUndefined();
+    expect(accepted(notes, '')).toBeUndefined();
   });
 });
