@@ -70,7 +70,6 @@ import { TAG_INFO } from '../../profile/labels';
 import { Board } from '../../ui/Board';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { usePhrased } from '../../ui/usePhrased';
-import { coachNotes } from '../../play/coachNotes';
 import { EvalGraph } from '../../ui/EvalGraph';
 import { EvalBar, whiteScore } from '../../ui/EvalBar';
 import { CLASS_LABEL, CLASS_SYMBOL } from '../../analysis/summary';
@@ -496,7 +495,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
    * A short note about an accepted but imperfect move, with the notes for
    * the wording model once the narrated line is complete.
    */
-  const [note, setNote] = useState<{ cls: MoveClass; why: MoveExplanation; sheet?: string }>();
+  const [note, setNote] = useState<{
+    cls: MoveClass;
+    why: MoveExplanation;
+    sheet?: ExplanationRecord;
+  }>();
   /** What a good move did, shown until the next move. */
   const [praise, setPraise] = useState<Praise>();
   const [hints, setHints] = useState(0);
@@ -719,9 +722,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
       void enrichLine(pos, shown, narrateLine(pos, shown, game.you), (r) =>
         services.pool.search(r),
       ).then((rich) =>
-        setNote((n) =>
-          n === noted ? { ...noted, sheet: coachNotes(withLine(rec, rich, reason)) } : n,
-        ),
+        setNote((n) => (n === noted ? { ...noted, sheet: withLine(rec, rich, reason) } : n)),
       );
     }
     const praise = praiseMove({ before: pos, uci, lines: t.lines, played, verdict });
@@ -852,7 +853,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   // The on-device model's wording of the same record, when the player turned
   // it on, from the finished notes.
   const phrased = usePhrased(
-    record && lineDone && phase.kind === 'refused' ? coachNotes(record) : note?.sheet,
+    record && lineDone && phase.kind === 'refused' ? record : note?.sheet,
     !!services.settings.coachModel,
   );
   const shownFen = (() => {

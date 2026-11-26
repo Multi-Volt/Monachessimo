@@ -15,16 +15,16 @@ describe('coach model', () => {
     expect(promptFor('notes')).toBe('<|im_start|>user\nnotes<|im_end|>\n<|im_start|>assistant\n');
   });
 
-  it('accepts a faithful text and refuses one with a fact not in the notes', () => {
+  it('accepts a faithful text and refuses one with a fact not in the notes', async () => {
     const good =
       "Bishop to g5 leaves your bishop hanging, so your opponent's knight takes it for free. You go from even to 3 points behind.";
-    expect(accepted(notes, `  ${good}\n`)).toBe(good);
+    expect(await accepted(notes, `  ${good}\n`)).toBe(good);
     expect(
-      accepted(
+      await accepted(
         notes,
         "Bishop to g5 lets your opponent's knight take your rook on a8. You are 5 points behind.",
       ),
     ).toBeUndefined();
-    expect(accepted(notes, '')).toBeUndefined();
+    expect(await accepted(notes, '')).toBeUndefined();
   });
 });

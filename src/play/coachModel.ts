@@ -13,7 +13,10 @@
 // file, offers no model. The parts are kept in a cache named after the
 // version, so a new model replaces the old one.
 import { createStore } from '../ui/store';
-import { checkCoachText, spellMoves } from './coachNotes';
+import type { ExplanationRecord } from './record';
+
+// The notes and their checker load with the model, not with the app.
+const notesCode = () => import('./coachNotes');
 
 export interface ModelManifest {
   /** The model's version, such as "coach-v1". */
@@ -39,9 +42,11 @@ export const promptFor = (sheet: string): string =>
   `<|im_start|>user\n${sheet}<|im_end|>\n<|im_start|>assistant\n`;
 
 /** The model's text for `notes` if the checker accepts it, else undefined. */
-export function accepted(notes: string, text: string): string | undefined {
+export async function accepted(notes: string, text: string): Promise<string | undefined> {
   const t = text.trim();
-  return t && !checkCoachText(notes, t).length ? t : undefined;
+  if (!t) return undefined;
+  const { checkCoachText } = await notesCode();
+  return checkCoachText(notes, t).length ? undefined : t;
 }
 
 /** A second try samples, so it can differ from a refused first one. */
@@ -134,12 +139,17 @@ let queue: Promise<unknown> = Promise.resolve();
 const answers = new Map<string, string | undefined>();
 
 /**
- * The model's accepted text for the coach notes `notes`, or undefined when
- * both tries wrote something the checker refuses. Answers are kept, so the
- * same notes are written once.
+ * The model's accepted text for the coach notes of `record`, or undefined
+ * when both tries wrote something the checker refuses. Answers are kept, so
+ * the same notes are written once.
  */
-export function phrase(notes: string, signal?: AbortSignal): Promise<string | undefined> {
-  if (answers.has(notes)) return Promise.resolve(answers.get(notes));
+export async function phrase(
+  record: ExplanationRecord,
+  signal?: AbortSignal,
+): Promise<string | undefined> {
+  const { coachNotes, spellMoves } = await notesCode();
+  const notes = coachNotes(record);
+  if (answers.has(notes)) return answers.get(notes);
   const run = queue.then(async () => {
     const w = await loadModel();
     let text: string | undefined;
@@ -152,7 +162,7 @@ export function phrase(notes: string, signal?: AbortSignal): Promise<string | un
         stop: ['<|im_end|>'],
         ...(signal ? { abortSignal: signal } : {}),
       });
-      text = accepted(notes, out.choices[0]?.text ?? '');
+      text = await accepted(notes, out.choices[0]?.text ?? '');
       if (text) break;
     }
     answers.set(notes, text);
