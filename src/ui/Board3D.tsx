@@ -124,6 +124,10 @@ interface View {
   ink: THREE.MeshBasicMaterial[];
   /** The side the camera was last placed for. */
   side?: 'white' | 'black';
+  /** What was last drawn, so an unchanged board is not drawn again. */
+  drawn?: string;
+  /** The position whose pieces stand on the board. */
+  piecesFen?: string;
   render: () => void;
 }
 
@@ -221,6 +225,9 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     }
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
+    // Shadows are worked out again only when pieces move.
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     el.appendChild(renderer.domElement);
 
@@ -236,7 +243,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     const sun = new THREE.DirectionalLight('#fff6e8', 1.9);
     sun.position.set(-0.4, 1.2, -0.6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -0.35, right: 0.35, top: 0.35, bottom: -0.35 });
     sun.shadow.bias = -0.0004;
     scene.add(sun);
@@ -422,6 +429,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
                 m.needsUpdate = true;
               }
           });
+        if (view.current) delete view.current.drawn;
         sync();
       })
       .catch(() => latest.current.onFail?.());
@@ -453,6 +461,19 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       shownFen.current = p.fen;
       selected.current = undefined;
     }
+    // Screens re-render often; the board is drawn again only when what it
+    // shows has changed. Drawing in software, as on some phones, is slow.
+    const sel = selected.current;
+    const key = JSON.stringify([
+      p.fen,
+      p.orientation,
+      p.lastMove,
+      p.shapes,
+      sel,
+      sel !== undefined ? p.movable?.dests.get(makeSquare(sel)) : undefined,
+    ]);
+    if (key === v.drawn) return;
+    v.drawn = key;
     // From the player's side when the game starts or the board turns over;
     // after that the camera stays where the player turned it.
     if (v.side !== p.orientation) {
@@ -464,6 +485,9 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     }
 
     void set?.then((protos) => {
+      if (v.piecesFen === p.fen) return;
+      v.piecesFen = p.fen;
+      v.renderer.shadowMap.needsUpdate = true;
       v.pieces.clear();
       const setup = parseFen(p.fen);
       if (setup.isErr) return;
@@ -501,7 +525,6 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       const king = setup.isOk ? setup.value.board.kingOf(turn) : undefined;
       if (king !== undefined) flat(king, '#d0302a', 0.6);
     }
-    const sel = selected.current;
     if (sel !== undefined) {
       flat(sel, '#14551e', 0.5);
       const setup = parseFen(p.fen);
