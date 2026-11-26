@@ -73,3 +73,34 @@ describe('Maia', () => {
     expect(legalShare).toBeGreaterThan(0.9);
   });
 });
+
+describe('Maia below 1100', () => {
+  it('plays its 1100 moves less carefully the lower the rating', async () => {
+    const { looseness } = await import('../../src/engine/maiaPlayer');
+    expect(looseness(1100)).toBe(1);
+    expect(looseness(1500)).toBe(1);
+    expect(looseness(800)).toBeCloseTo(1.5, 5);
+    expect(looseness(400)).toBeCloseTo(2.17, 2);
+  });
+});
+
+describe('Maia 400 in practice', () => {
+  it('still takes a bishop left hanging more often than any other move', async () => {
+    const { looseness } = await import('../../src/engine/maiaPlayer');
+    const share = (moves: { uci: string; p: number }[], rating: number) => {
+      const w = moves.map((m) => ({ uci: m.uci, w: m.p ** (1 / looseness(rating)) }));
+      const total = w.reduce((a, m) => a + m.w, 0);
+      return w.map((m) => ({ uci: m.uci, p: m.w / total })).sort((a, b) => b.p - a.p);
+    };
+    // 1.d4 e5 2.Bg5: the queen on d8 takes the bishop for free.
+    const { moves } = predict(load(1100), tables, line(['d2d4', 'e7e5', 'c1g5']), true);
+    const at400 = share(moves, 400);
+    const at1100 = share(moves, 1100);
+    const take = (s: { uci: string; p: number }[]) => s.find((m) => m.uci === 'd8g5')!.p;
+    console.log(
+      `takes the bishop: 1100 ${(100 * take(at1100)).toFixed(0)}%, 400 ${(100 * take(at400)).toFixed(0)}%`,
+    );
+    expect(at400[0]!.uci).toBe('d8g5');
+    expect(take(at400)).toBeLessThan(take(at1100));
+  });
+});

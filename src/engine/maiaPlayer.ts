@@ -36,10 +36,24 @@ function load(rating: number): Promise<[MaiaNet, MaiaTables]> {
   return Promise.all([net, tables]);
 }
 
+/** The lowest rating offered. Maia's networks start at 1100. */
+export const MAIA_FLOOR = 400;
+
 /**
- * Maia's move after `moves` from `startFen`. It plays one of the moves it
- * gives at least a tenth of its top move's chance, at random by those
- * chances, so it varies as people do instead of repeating one game.
+ * How much flatter than Maia 1100 a rating below 1100 plays: 1 at 1100,
+ * about 2.2 at 400. This is a guess, not fitted to games at those ratings:
+ * Maia has no network below 1100.
+ */
+export function looseness(rating: number): number {
+  return rating >= 1100 ? 1 : 1 + (1100 - rating) / 600;
+}
+
+/**
+ * Maia's move after `moves` from `startFen`. From 1100 up it plays one of
+ * the moves it gives at least a tenth of its top move's chance, at random by
+ * those chances, so it varies as people do instead of repeating one game.
+ * Below 1100 it uses the 1100 network with every legal move in play and the
+ * chances flattened by `looseness`, so weaker ratings stray more often.
  */
 export async function maiaMove(
   rating: number,
@@ -47,7 +61,7 @@ export async function maiaMove(
   moves: string[],
   random: () => number = Math.random,
 ): Promise<string | undefined> {
-  const [net, t] = await load(rating);
+  const [net, t] = await load(maiaRating(rating));
   const history: Chess[] = [fromFen(startFen)];
   for (const m of moves) {
     const next = playUci(history[history.length - 1]!, m);
@@ -57,7 +71,11 @@ export async function maiaMove(
   const { moves: ranked } = predict(net, t, history, startFen === START);
   const top = ranked[0];
   if (!top) return undefined;
-  const pool = ranked.filter((m) => m.p >= top.p / 10);
+  const loose = looseness(rating);
+  const pool =
+    loose > 1
+      ? ranked.map((m) => ({ uci: m.uci, p: m.p ** (1 / loose) }))
+      : ranked.filter((m) => m.p >= top.p / 10);
   const total = pool.reduce((a, m) => a + m.p, 0);
   let r = random() * total;
   for (const m of pool) if ((r -= m.p) <= 0) return m.uci;

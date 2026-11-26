@@ -154,7 +154,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
   const { games, mistakes, rating } = data.value;
   const level = skill ?? skillFor(rating);
   // Maia has networks from 1100 to 1900, every hundred.
-  const maiaLevel = maia ?? Math.min(1900, Math.max(1100, Math.round(rating / 100) * 100));
+  const maiaLevel = maia ?? Math.min(1900, Math.max(400, Math.round(rating / 100) * 100));
   const chosen = games.find((g) => g.id === gameId) ?? games[0];
 
   const start = async () => {
@@ -313,7 +313,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
             <input
               id="maia"
               type="range"
-              min={1100}
+              min={400}
               max={1900}
               step={100}
               value={maiaLevel}
@@ -321,6 +321,8 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
             />
             <p class="hint">
               Suggested from your puzzle rating of {rating}. Downloads 1.2 MB the first time.
+              {maiaLevel < 1100 &&
+                ' Maia learned from players rated 1100 and up, so below that it plays its 1100 moves less carefully: an estimate of a weaker player, not one learned from their games.'}
             </p>
           </div>
         ) : (
