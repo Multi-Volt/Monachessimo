@@ -35,6 +35,10 @@ export function About() {
         </li>
         <li>Chess pieces by Colin M.L. Burnett. GPL-2.0 or later.</li>
         <li>
+          The 3D pieces are <a href="https://polyhaven.com/a/chess_set">Chess Set</a> by Riley Queen
+          from Poly Haven. CC0. Drawn with <a href="https://threejs.org">three.js</a> (MIT).
+        </li>
+        <li>
           <a href="https://database.lichess.org/#puzzles">Lichess puzzle database</a>. CC0.
         </li>
         <li>

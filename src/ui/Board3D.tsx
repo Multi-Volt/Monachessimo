@@ -1,0 +1,389 @@
+// The board in 3D, drawn with three.js (MIT). The pieces are "Chess Set" by
+// Riley Queen from Poly Haven (CC0), in public/3d/chess-set; the squares are
+// drawn here in the app's board colors, so the set's own board is left out.
+// A move is made by tapping a piece, then a square, as on the flat board.
+// It takes the flat board's props, so every screen can show either.
+import { useEffect, useRef } from 'preact/hooks';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { parseFen } from 'chessops/fen';
+import { makeSquare, parseSquare } from 'chessops/util';
+import type { Square } from 'chessops/types';
+import { kingState, takenFor, type BoardProps } from './Board';
+import { MaterialRow } from './Material';
+import { boardLook, mix, type BoardColors } from './boardTheme';
+
+/** The set's square size and board height, in its own units (meters). */
+const SQ = 0.058;
+const TOP = 0.0174;
+
+/** A square's center: the a-file on White's left, rank 1 nearest White. */
+function center(sq: Square, y = TOP): THREE.Vector3 {
+  return new THREE.Vector3(3.5 * SQ - (sq % 8) * SQ, y, (Math.floor(sq / 8) - 3.5) * SQ);
+}
+
+function squareAt(p: THREE.Vector3): Square | undefined {
+  const f = Math.round(3.5 - p.x / SQ);
+  const r = Math.round(p.z / SQ + 3.5);
+  return f >= 0 && f < 8 && r >= 0 && r < 8 ? r * 8 + f : undefined;
+}
+
+type Pieces = Map<string, THREE.Object3D>;
+let set: Promise<Pieces> | undefined;
+
+/** One model per color and role, from the set's 32 pieces. */
+export function loadSet(): Promise<Pieces> {
+  set ??= new GLTFLoader()
+    .loadAsync(`${import.meta.env.BASE_URL}3d/chess-set/chess_set_1k.gltf`)
+    .then((gltf) => {
+      const out: Pieces = new Map();
+      gltf.scene.traverse((o) => {
+        const m = /^piece_(king|queen|rook|bishop|knight|pawn)_(white|black)/.exec(o.name);
+        const key = m && `${m[2]} ${m[1]}`;
+        if (!key || out.has(key)) return;
+        const proto = o.clone();
+        proto.position.set(0, 0, 0);
+        proto.traverse((c) => {
+          c.castShadow = true;
+        });
+        out.set(key, proto);
+      });
+      return out;
+    })
+    .catch((e: unknown) => {
+      set = undefined;
+      throw e;
+    });
+  return set;
+}
+
+const BRUSH: Record<string, string> = {
+  green: '#15781b',
+  red: '#882020',
+  blue: '#003088',
+  yellow: '#e68f00',
+};
+
+interface View {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  light: THREE.MeshLambertMaterial;
+  dark: THREE.MeshLambertMaterial;
+  frame: THREE.MeshLambertMaterial;
+  plane: THREE.Mesh;
+  pieces: THREE.Group;
+  marks: THREE.Group;
+  render: () => void;
+}
+
+export function Board3D(props: BoardProps & { onFail?: () => void }) {
+  const host = useRef<HTMLDivElement>(null);
+  const view = useRef<View | undefined>(undefined);
+  const latest = useRef(props);
+  latest.current = props;
+  const selected = useRef<Square | undefined>(undefined);
+  const shownFen = useRef('');
+
+  useEffect(() => {
+    const el = host.current;
+    if (!el) return;
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch {
+      latest.current.onFail?.();
+      return;
+    }
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    el.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 10);
+    // Lit so that a square facing up shows about its chosen color.
+    scene.add(new THREE.HemisphereLight('#ffffff', '#8a7a68', 1.5));
+    const sun = new THREE.DirectionalLight('#fff6e8', 1.9);
+    sun.position.set(-0.4, 1.2, -0.6);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, { left: -0.35, right: 0.35, top: 0.35, bottom: -0.35 });
+    sun.shadow.bias = -0.0005;
+    scene.add(sun);
+
+    const light = new THREE.MeshLambertMaterial();
+    const dark = new THREE.MeshLambertMaterial();
+    const frame = new THREE.MeshLambertMaterial();
+    const tile = new THREE.PlaneGeometry(SQ, SQ).rotateX(-Math.PI / 2);
+    for (let sq = 0; sq < 64; sq++) {
+      const isDark = ((sq % 8) + Math.floor(sq / 8)) % 2 === 0;
+      const m = new THREE.Mesh(tile, isDark ? dark : light);
+      m.position.copy(center(sq));
+      m.receiveShadow = true;
+      scene.add(m);
+    }
+    const base = new THREE.Mesh(new THREE.BoxGeometry(8.7 * SQ, TOP, 8.7 * SQ), frame);
+    base.position.y = TOP / 2 - 0.0002;
+    base.receiveShadow = true;
+    scene.add(base);
+    // Taps are found on this invisible plane over the squares.
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(8 * SQ, 8 * SQ).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ visible: false }),
+    );
+    plane.position.y = TOP;
+    scene.add(plane);
+    const pieces = new THREE.Group();
+    const marks = new THREE.Group();
+    scene.add(pieces, marks);
+
+    const render = () => renderer.render(scene, camera);
+    view.current = { renderer, scene, camera, light, dark, frame, plane, pieces, marks, render };
+
+    const size = () => {
+      const w = el.clientWidth;
+      renderer.setSize(w, w);
+      render();
+    };
+    const resize = new ResizeObserver(size);
+    resize.observe(el);
+    size();
+
+    const paint = (c: BoardColors) => {
+      light.color.set(c.light);
+      dark.color.set(c.dark);
+      frame.color.set(mix(c.dark, '#000000', 0.45));
+      render();
+    };
+    paint(boardLook.get().colors);
+    const offColors = boardLook.subscribe((l) => paint(l.colors));
+
+    // A tap, not a drag: the pointer goes up near where it went down.
+    let down: { x: number; y: number } | undefined;
+    const onDown = (e: PointerEvent) => {
+      down = { x: e.clientX, y: e.clientY };
+    };
+    const onUp = (e: PointerEvent) => {
+      if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 12) return;
+      down = undefined;
+      const sq = pick(e);
+      if (sq !== undefined) tap(sq);
+    };
+    const ray = new THREE.Raycaster();
+    const pick = (e: PointerEvent): Square | undefined => {
+      const r = renderer.domElement.getBoundingClientRect();
+      ray.setFromCamera(
+        new THREE.Vector2(
+          ((e.clientX - r.left) / r.width) * 2 - 1,
+          -((e.clientY - r.top) / r.height) * 2 + 1,
+        ),
+        camera,
+      );
+      const hit = ray.intersectObjects(pieces.children, true)[0];
+      let o: THREE.Object3D | null = hit?.object ?? null;
+      while (o && o.userData.square === undefined) o = o.parent;
+      const onPiece = o ? (o.userData.square as Square) : undefined;
+      const p = ray.intersectObject(plane)[0]?.point;
+      const onBoard = p ? squareAt(p) : undefined;
+      // A nearer piece's head can stand over the square the player means.
+      // With a piece selected, a legal square under the tap wins; otherwise
+      // a piece that can move wins over one in front of it.
+      const dests = latest.current.movable?.dests;
+      const from = selected.current;
+      const legal = (sq: Square | undefined) =>
+        sq !== undefined &&
+        from !== undefined &&
+        !!dests?.get(makeSquare(from))?.includes(makeSquare(sq));
+      const movable = (sq: Square | undefined) =>
+        sq !== undefined && !!dests?.get(makeSquare(sq))?.length;
+      if (legal(onBoard) && !legal(onPiece)) return onBoard;
+      if (movable(onBoard) && !movable(onPiece)) return onBoard;
+      return onPiece ?? onBoard;
+    };
+    const tap = (sq: Square) => {
+      const p = latest.current;
+      const name = makeSquare(sq);
+      p.onSelect?.(name);
+      const from = selected.current;
+      const dests = p.movable?.dests;
+      if (from !== undefined && dests?.get(makeSquare(from))?.includes(name)) {
+        selected.current = undefined;
+        p.onMove?.(makeSquare(from), name);
+      } else if (from !== sq && dests?.get(name)?.length) selected.current = sq;
+      else selected.current = undefined;
+      sync();
+    };
+    const canvas = renderer.domElement;
+    canvas.addEventListener('pointerdown', onDown);
+    canvas.addEventListener('pointerup', onUp);
+    // For tests: where a square's center is on the page.
+    Object.assign(canvas, {
+      squarePoint: (name: string) => {
+        const sq = parseSquare(name);
+        if (sq === undefined) return undefined;
+        const v = center(sq).project(camera);
+        const r = canvas.getBoundingClientRect();
+        return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+      },
+    });
+
+    let live = true;
+    void loadSet()
+      .then(() => {
+        if (live) sync();
+      })
+      .catch(() => latest.current.onFail?.());
+
+    return () => {
+      live = false;
+      offColors();
+      resize.disconnect();
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointerup', onUp);
+      renderer.dispose();
+      canvas.remove();
+      view.current = undefined;
+    };
+  }, []);
+
+  /** Puts the pieces, highlights and arrows where the props say. */
+  const sync = () => {
+    const v = view.current;
+    if (!v) return;
+    const p = latest.current;
+    if (p.fen !== shownFen.current) {
+      shownFen.current = p.fen;
+      selected.current = undefined;
+    }
+    const white = p.orientation === 'white';
+    v.camera.position.set(0, 0.86, white ? -0.66 : 0.66);
+    v.camera.lookAt(0, 0, white ? -0.012 : 0.012);
+
+    void set?.then((protos) => {
+      v.pieces.clear();
+      const setup = parseFen(p.fen);
+      if (setup.isErr) return;
+      for (const [sq, piece] of setup.value.board) {
+        const proto = protos.get(`${piece.color} ${piece.role}`);
+        if (!proto) continue;
+        const o = proto.clone();
+        o.position.copy(center(sq));
+        o.userData.square = sq;
+        v.pieces.add(o);
+      }
+      v.render();
+    });
+
+    v.marks.clear();
+    const flat = (sq: Square, color: string, opacity: number, size = SQ) => {
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }),
+      );
+      m.position.copy(center(sq, TOP + 0.0004));
+      v.marks.add(m);
+    };
+    for (const k of p.lastMove ?? []) {
+      const sq = parseSquare(k);
+      if (sq !== undefined) flat(sq, '#9bc700', 0.45);
+    }
+    const state = kingState(p.fen);
+    if (state !== 'none') {
+      const setup = parseFen(p.fen);
+      const turn = p.fen.split(' ')[1] === 'b' ? 'black' : 'white';
+      const king = setup.isOk ? setup.value.board.kingOf(turn) : undefined;
+      if (king !== undefined) flat(king, '#d0302a', 0.6);
+    }
+    const sel = selected.current;
+    if (sel !== undefined) {
+      flat(sel, '#14551e', 0.5);
+      const setup = parseFen(p.fen);
+      for (const d of p.movable?.dests.get(makeSquare(sel)) ?? []) {
+        const sq = parseSquare(d);
+        if (sq === undefined) continue;
+        const taken = setup.isOk && setup.value.board.has(sq);
+        const dot = new THREE.Mesh(
+          taken
+            ? new THREE.RingGeometry(SQ * 0.38, SQ * 0.48, 32).rotateX(-Math.PI / 2)
+            : new THREE.CircleGeometry(SQ * 0.16, 24).rotateX(-Math.PI / 2),
+          new THREE.MeshBasicMaterial({
+            color: '#14551e',
+            transparent: true,
+            opacity: 0.55,
+            depthWrite: false,
+          }),
+        );
+        dot.position.copy(center(sq, TOP + 0.0008));
+        v.marks.add(dot);
+      }
+    }
+    for (const s of p.shapes ?? []) {
+      const from = parseSquare(s.orig);
+      if (from === undefined) continue;
+      const color = BRUSH[s.brush ?? 'green'] ?? BRUSH.green!;
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const to = s.dest ? parseSquare(s.dest) : undefined;
+      if (to === undefined || to === from) {
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(SQ * 0.4, SQ * 0.47, 32).rotateX(-Math.PI / 2),
+          material,
+        );
+        ring.position.copy(center(from, TOP + 0.001));
+        v.marks.add(ring);
+        continue;
+      }
+      // A flat arrow on the board: a shaft and a head, from center to center.
+      const a = center(from, TOP + 0.001);
+      const b = center(to, TOP + 0.001);
+      const len = a.distanceTo(b);
+      const head = SQ * 0.4;
+      const shape = new THREE.Shape();
+      const w = SQ * 0.09;
+      shape.moveTo(-w, 0);
+      shape.lineTo(-w, len - head);
+      shape.lineTo(-head * 0.6, len - head);
+      shape.lineTo(0, len);
+      shape.lineTo(head * 0.6, len - head);
+      shape.lineTo(w, len - head);
+      shape.lineTo(w, 0);
+      const arrow = new THREE.Mesh(new THREE.ShapeGeometry(shape).rotateX(Math.PI / 2), material);
+      arrow.position.copy(a);
+      arrow.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
+      v.marks.add(arrow);
+    }
+    v.render();
+  };
+
+  useEffect(sync);
+
+  const taken = props.material === false ? undefined : takenFor(props.fen);
+  const top = props.orientation === 'white' ? 'black' : 'white';
+  const who = (c: 'white' | 'black') => (c === 'white' ? 'White' : 'Black');
+  const state = kingState(props.fen);
+  return (
+    <div class="board-frame">
+      {taken && <MaterialRow side={top} taken={taken[top]} label={who(top)} />}
+      <div
+        class="board board--3d"
+        role="img"
+        aria-label={`${props.label}${state === 'mate' ? ' Checkmate.' : state === 'check' ? ' Check.' : ''}`}
+      >
+        <div ref={host} class="board__3d" />
+      </div>
+      {taken && (
+        <MaterialRow
+          side={props.orientation}
+          taken={taken[props.orientation]}
+          label={who(props.orientation)}
+        />
+      )}
+    </div>
+  );
+}

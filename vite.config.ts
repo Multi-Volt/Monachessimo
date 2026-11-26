@@ -89,7 +89,14 @@ export default defineConfig(({ mode }) => {
                 globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg}'],
                 // The coach model and its 10 MB runtime are fetched only by players who
                 // turn the model on; wllama keeps the model in its own cache.
-                globIgnores: ['puzzles/**', 'models/**', 'assets/wllama-*.wasm'],
+                // The 3D board's pieces and three.js load only for players who choose it.
+                globIgnores: [
+                  'puzzles/**',
+                  'models/**',
+                  '3d/**',
+                  'assets/wllama-*.wasm',
+                  'assets/Board3D-*.js',
+                ],
                 // The engine's WASM is 1.8 MB.
                 maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
                 navigateFallback: 'index.html',
@@ -99,6 +106,13 @@ export default defineConfig(({ mode }) => {
                     urlPattern: ({ url }) => url.pathname.includes('/puzzles/'),
                     handler: 'StaleWhileRevalidate',
                     options: { cacheName: 'puzzles', expiration: { maxEntries: 600 } },
+                  },
+                  {
+                    urlPattern: ({ url }) =>
+                      url.pathname.includes('/3d/') ||
+                      /\/assets\/Board3D-[^/]+\.js$/.test(url.pathname),
+                    handler: 'CacheFirst',
+                    options: { cacheName: 'board-3d', expiration: { maxEntries: 20 } },
                   },
                   {
                     urlPattern: ({ url }) => /\/assets\/wllama-[^/]+\.wasm$/.test(url.pathname),

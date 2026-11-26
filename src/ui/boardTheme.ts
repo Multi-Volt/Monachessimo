@@ -1,3 +1,5 @@
+import { createStore } from './store';
+
 /** Square colors for every board in the app. */
 export interface BoardColors {
   light: string;
@@ -194,8 +196,15 @@ const THEME_VARS = {
 } as const satisfies Record<keyof Tokens, string>;
 
 /** Applies the colors to every board, and lets the theme follow them. */
+/** How boards look: flat or in 3D, and the square colors the 3D board paints. */
+export const boardLook = createStore<{ three: boolean; colors: BoardColors }>({
+  three: false,
+  colors: DEFAULT_BOARD,
+});
+
 export function applyBoardColors(c: BoardColors | undefined): void {
   const colors = c && isHexColor(c.light) && isHexColor(c.dark) ? c : DEFAULT_BOARD;
+  boardLook.set({ colors });
   const root = document.documentElement.style;
   root.setProperty('--sq-light', colors.light);
   root.setProperty('--sq-dark', colors.dark);

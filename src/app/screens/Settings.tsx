@@ -131,6 +131,11 @@ function BoardPanel() {
     return p.light === colors.light && p.dark === colors.dark;
   });
   const [custom, setCustom] = useState(!presetKey);
+  const [three, setThree] = useState(!!services.settings.board3d);
+  const chooseStyle = async (next: boolean) => {
+    setThree(next);
+    await services.saveSettings({ ...services.settings, board3d: next });
+  };
   const choose = async (c: BoardColors) => {
     setColors(c);
     await services.saveSettings({ ...services.settings, board: c });
@@ -146,6 +151,27 @@ function BoardPanel() {
           />
         ))}
       </div>
+      <fieldset class="field">
+        <legend>Board style</legend>
+        <label class="choice">
+          <input
+            type="radio"
+            name="board-style"
+            checked={!three}
+            onChange={() => void chooseStyle(false)}
+          />
+          <span>Flat</span>
+        </label>
+        <label class="choice">
+          <input
+            type="radio"
+            name="board-style"
+            checked={three}
+            onChange={() => void chooseStyle(true)}
+          />
+          <span>3D, tap a piece and then its square. Downloads 5 MB the first time.</span>
+        </label>
+      </fieldset>
       <fieldset class="field">
         <legend>Squares</legend>
         <div class="swatches">

@@ -3,10 +3,12 @@ import type { Api } from 'chessground/api';
 import type { Config } from 'chessground/config';
 import type { DrawShape } from 'chessground/draw';
 import type { Key } from 'chessground/types';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { Chess } from 'chessops/chess';
 import { parseFen } from 'chessops/fen';
 import { captured, MaterialRow } from './Material';
+import { boardLook } from './boardTheme';
+import { useStore } from './store';
 import 'chessground/assets/chessground.base.css';
 import 'chessground/assets/chessground.cburnett.css';
 
@@ -26,8 +28,32 @@ export interface BoardProps {
   material?: boolean;
 }
 
-/** Chessground board that fills its container's width and stays square. */
+type Board3DModule = typeof import('./Board3D');
+
+/**
+ * The board every screen shows: flat, or in 3D when the player chose it in
+ * Settings. The 3D board and its pieces load only then; until they are
+ * ready, or if the device cannot draw them, the flat board stands in.
+ */
 export function Board(props: BoardProps) {
+  const { three } = useStore(boardLook);
+  const [view, setView] = useState<Board3DModule | 'failed'>();
+  useEffect(() => {
+    if (!three || view) return;
+    void import('./Board3D')
+      .then(async (m) => {
+        await m.loadSet();
+        setView(() => m);
+      })
+      .catch(() => setView('failed'));
+  }, [three]);
+  if (three && view && view !== 'failed')
+    return <view.Board3D {...props} onFail={() => setView('failed')} />;
+  return <Board2D {...props} />;
+}
+
+/** Chessground board that fills its container's width and stays square. */
+function Board2D(props: BoardProps) {
   const el = useRef<HTMLDivElement>(null);
   const api = useRef<Api | undefined>(undefined);
   const onMove = useRef(props.onMove);
@@ -128,7 +154,7 @@ export function kingState(fen: string): 'none' | 'check' | 'mate' {
   return pos.value.isCheck() ? 'check' : 'none';
 }
 
-function takenFor(fen: string) {
+export function takenFor(fen: string) {
   const setup = parseFen(fen);
   return setup.isErr ? undefined : captured(setup.value.board);
 }

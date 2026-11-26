@@ -610,6 +610,18 @@ input[aria-invalid='true'] {
   color: var(--text-2);
 }
 
+.board__3d {
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.board__3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .board__cg {
   width: 100%;
   height: 100%;
