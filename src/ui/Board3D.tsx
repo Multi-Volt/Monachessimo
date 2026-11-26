@@ -9,6 +9,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { parseFen } from 'chessops/fen';
 import { makeSquare, parseSquare } from 'chessops/util';
 import type { Square } from 'chessops/types';
@@ -47,6 +48,29 @@ function ivory(material: THREE.Material | THREE.Material[]): THREE.Material | TH
     tinted.set(material, t);
   }
   return t;
+}
+
+// A soft dark patch under each piece, where it meets the board.
+const CONTACT_SHAPE = new THREE.PlaneGeometry(SQ * 0.95, SQ * 0.95).rotateX(-Math.PI / 2);
+let contactMaterial: THREE.MeshBasicMaterial | undefined;
+
+function contactShadow(): THREE.MeshBasicMaterial {
+  if (contactMaterial) return contactMaterial;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  const fade = g.createRadialGradient(32, 32, 4, 32, 32, 32);
+  fade.addColorStop(0, 'rgba(0,0,0,0.28)');
+  fade.addColorStop(0.55, 'rgba(0,0,0,0.12)');
+  fade.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = fade;
+  g.fillRect(0, 0, 64, 64);
+  contactMaterial = new THREE.MeshBasicMaterial({
+    map: new THREE.CanvasTexture(c),
+    transparent: true,
+    depthWrite: false,
+  });
+  return contactMaterial;
 }
 
 /** One model per color and role, from the set's 32 pieces. */
@@ -204,13 +228,22 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 10);
     // Lit so that a square facing up shows about its chosen color.
     scene.add(new THREE.HemisphereLight('#ffffff', '#8a7a68', 1.5));
+    // A room reflected in the pieces' polish. It is given to the pieces only:
+    // the squares keep the light their colors were matched to.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const room = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
     const sun = new THREE.DirectionalLight('#fff6e8', 1.9);
     sun.position.set(-0.4, 1.2, -0.6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -0.35, right: 0.35, top: 0.35, bottom: -0.35 });
-    sun.shadow.bias = -0.0005;
+    sun.shadow.bias = -0.0004;
     scene.add(sun);
+    // A faint light from the other side, so the backs of the pieces are not flat.
+    const fill = new THREE.DirectionalLight('#dfe8ff', 0.45);
+    fill.position.set(0.6, 0.5, 0.8);
+    scene.add(fill);
 
     const light = new THREE.MeshLambertMaterial();
     const dark = new THREE.MeshLambertMaterial();
@@ -377,8 +410,19 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       // Without the wood the squares stay plain colors.
       .catch(() => undefined);
     void loadSet()
-      .then(() => {
-        if (live) sync();
+      .then((protos) => {
+        if (!live) return;
+        for (const proto of protos.values())
+          proto.traverse((o) => {
+            if (!(o instanceof THREE.Mesh)) return;
+            for (const m of [o.material].flat())
+              if (m instanceof THREE.MeshStandardMaterial) {
+                m.envMap = room;
+                m.envMapIntensity = 0.6;
+                m.needsUpdate = true;
+              }
+          });
+        sync();
       })
       .catch(() => latest.current.onFail?.());
 
@@ -389,6 +433,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
       controls.dispose();
+      room.dispose();
       for (const m of ink) {
         m.map?.dispose();
         m.dispose();
@@ -429,6 +474,9 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
         o.position.copy(center(sq));
         o.userData.square = sq;
         v.pieces.add(o);
+        const contact = new THREE.Mesh(CONTACT_SHAPE, contactShadow());
+        contact.position.copy(center(sq, TOP + 0.0002));
+        v.pieces.add(contact);
       }
       v.render();
     });

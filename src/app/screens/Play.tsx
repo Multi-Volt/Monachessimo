@@ -146,7 +146,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
   const [gameId, setGameId] = useState(route.kind === 'game' ? route.gameId : '');
   const [ply, setPly] = useState(route.kind === 'game' ? route.ply : 0);
   const [skill, setSkill] = useState<number>();
-  const [human, setHuman] = useState(false);
+  const [human, setHuman] = useState(true);
   const [maia, setMaia] = useState<number>();
   const [strictness, setStrictness] = useState<Strictness>('mistakes');
 
@@ -189,6 +189,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
       moves: [],
       skill: level,
       ...(human ? { maia: maiaLevel } : {}),
+      rating: Math.min(1900, Math.max(1100, Math.round(rating / 100) * 100)),
       strictness,
       startedAt: Date.now(),
       yourMoves: [],
@@ -549,6 +550,8 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
   }>();
   /** What a good move did, shown until the next move. */
   const [praise, setPraise] = useState<Praise>();
+  // How rarely players of the player's rating find the move just praised.
+  const [rare, setRare] = useState<string>();
   const [hints, setHints] = useState(0);
   const [refusedHere, setRefusedHere] = useState(0);
   /** Latest evaluation from White's side, from the coach's search. */
@@ -664,6 +667,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     setPhase({ kind: 'checking', uci });
     setNote(undefined);
     setPraise(undefined);
+    setRare(undefined);
     const t = await target.current!;
     const best = t.lines[0]?.score ?? { kind: 'cp' as const, value: 0 };
     const after = pos.clone();
@@ -782,6 +786,24 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     }
     const praise = praiseMove({ before: pos, uci, lines: t.lines, played, verdict });
     setPraise(praise);
+    setRare(undefined);
+    // A strong move that Maia says few players of this rating would find.
+    const rating = game.rating;
+    if (praise && rating && ['best', 'great', 'brilliant', 'excellent'].includes(praise.label)) {
+      const before = game.moves;
+      void import('../../engine/maiaPlayer')
+        .then((m) => m.maiaChance(rating, game.startFen, before, uci))
+        .then((p) => {
+          if (p === undefined || p >= 0.25) return;
+          const n = p < 0.01 ? 100 : Math.round(1 / p);
+          setRare(
+            n >= 100
+              ? `Fewer than 1 in 100 players rated ${rating} find this.`
+              : `Only about 1 in ${n} players rated ${rating} find this.`,
+          );
+        })
+        .catch(() => undefined);
+    }
     const label: MoveLabel | undefined = praise?.label ?? verdict.class ?? undefined;
     const first = firstTry.current ?? (label ? { label, drop: verdict.drop } : undefined);
     await save({
@@ -828,6 +850,7 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (!canTakeBack) return;
     setNote(undefined);
     setPraise(undefined);
+    setRare(undefined);
     setRefusal(undefined);
     setRefutation(undefined);
     await save({
@@ -991,7 +1014,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     if (phase.kind === 'checking')
       return { tone: 'neutral', title: `Checking ${sanWords(uciToSan(fen, phase.uci))}…` };
     if (phase.kind === 'thinking') {
-      if (praise) return { tone: praise.label, title: praise.headline, points: praise.points };
+      if (praise)
+        return {
+          tone: praise.label,
+          title: praise.headline,
+          ...(rare ? { text: rare } : {}),
+          points: praise.points,
+        };
       if (note)
         return {
           tone: note.cls,
@@ -1041,7 +1070,13 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
         title: threat,
         ...(praise ? { text: `Your last move: ${praise.headline}` } : {}),
       };
-    if (praise) return { tone: praise.label, title: praise.headline, points: praise.points };
+    if (praise)
+      return {
+        tone: praise.label,
+        title: praise.headline,
+        ...(rare ? { text: rare } : {}),
+        points: praise.points,
+      };
     return { tone: 'neutral', title: 'Your move.' };
   })();
 

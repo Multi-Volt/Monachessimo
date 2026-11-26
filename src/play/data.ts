@@ -36,6 +36,8 @@ export interface PracticeGame {
   skill: number;
   /** The rating of the Maia network that plays the opponent; missing means Stockfish. */
   maia?: number;
+  /** The player's rating, rounded to a Maia network, for how rare their good moves are. */
+  rating?: number;
   strictness: Strictness;
   startedAt: number;
   yourMoves: PlyRecord[];

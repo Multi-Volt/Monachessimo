@@ -63,3 +63,24 @@ export async function maiaMove(
   for (const m of pool) if ((r -= m.p) <= 0) return m.uci;
   return top.uci;
 }
+
+/**
+ * How often a player of `rating` plays `uci` after `moves` from `startFen`,
+ * by Maia's prediction. It rejects when the network cannot load.
+ */
+export async function maiaChance(
+  rating: number,
+  startFen: string,
+  moves: string[],
+  uci: string,
+): Promise<number | undefined> {
+  const [net, t] = await load(rating);
+  const history: Chess[] = [fromFen(startFen)];
+  for (const m of moves) {
+    const next = playUci(history[history.length - 1]!, m);
+    if (!next) return undefined;
+    history.push(next);
+  }
+  const { moves: ranked } = predict(net, t, history, startFen === START);
+  return ranked.find((m) => m.uci === uci)?.p ?? 0;
+}
