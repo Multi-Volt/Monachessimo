@@ -70,4 +70,24 @@ Result: you lose a bishop (3 points) and a queen (9 points) and you win a queen 
       checkCoachText(notes, 'Pawn to a6 lets your opponent take your bishop for free.'),
     ).toContain('claim: for free');
   });
+
+  it("rejects a text that misnames the player's move, misses the mate or swaps an owner", () => {
+    const notes = `Your move: Nf6. Verdict: a blunder.
+Patterns: a forced mate.
+Why: Your pawn on f7 was already attacked by your opponent's pawn, and this move does not save it.
+What happens next:
+- Your knight now attacks your opponent's queen on h5.
+- Your opponent plays Qxf7#. Checkmate.
+Result: your opponent gives checkmate.`;
+    const good =
+      "Knight to f6 does not save your pawn on f7. Your opponent's queen on h5 takes it with checkmate.";
+    expect(checkCoachText(notes, good)).toEqual([]);
+    expect(checkCoachText(notes, good.replace('f6', 'g6'))).toContain('move: yours, knight to f6');
+    expect(checkCoachText(notes, good.replace('with checkmate', 'with check'))).toContain(
+      'mate: not said',
+    );
+    expect(
+      checkCoachText(notes, good.replace('your pawn on f7', "your opponent's pawn on f7")),
+    ).toContain("owner: your opponent's pawn on f7");
+  });
 });

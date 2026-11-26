@@ -362,6 +362,7 @@ export function checkCoachText(notes: string, text: string): string[] {
     facts += `\nFact: a pawn becomes a ${{ Q: 'queen', R: 'rook', B: 'bishop', N: 'knight' }[m[1]!]}.`;
   const problems = checkPhrasing(opponentVoice(facts), opponentVoice(text));
   problems.push(...wrongMaterialClaims(notes, text));
+  problems.push(...wrongMoveOrOwner(notes, text));
   if (
     /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten) pawns? (up|down|ahead|behind|of)\b/i.test(
       text,
@@ -413,5 +414,36 @@ function wrongMaterialClaims(notes: string, text: string): string[] {
   const result = /^Result: (.*)$/m.exec(notes)?.[1] ?? '';
   if (/\bfor free\b/.test(t) && /even trade|no material|points? up/.test(result))
     out.push('claim: for free');
+  return out;
+}
+
+/**
+ * The text must name the player's move as the notes do, say a checkmate is
+ * one, and give "your knight on d5" the owner the notes give the piece on
+ * that square.
+ */
+function wrongMoveOrOwner(notes: string, text: string): string[] {
+  const out: string[] = [];
+  const t = text.toLowerCase();
+  const san = /^Your move: (\S+?)\. Verdict/m.exec(notes)?.[1];
+  if (san) {
+    // "knight takes d5", without the check or the promotion's new piece.
+    const words = sanWords(san, true).replace(/ with check$|, becoming .*$/, '');
+    const named = /^castles/.test(words) ? /castl/.test(t) : t.includes(words);
+    if (!named) out.push(`move: yours, ${words}`);
+  }
+  if (/Checkmate\.|gives checkmate/.test(notes) && !/\bcheckmate|\bmate\b/.test(t))
+    out.push('mate: not said');
+  const spelled = spellMoves(notes);
+  const said = (owner: string, role: string, square: string) =>
+    new RegExp(`(?<!opponent's )\\b${owner} ${role} on ${square}\\b`, 'i').test(spelled);
+  const owners = new RegExp(`\\b(your opponent['’]s|their|your) (${ROLES}) on ([a-h][1-8])\\b`, 'g');
+  for (const m of t.matchAll(owners)) {
+    const [, who, role, square] = m;
+    const mine = who === 'your';
+    const right = mine ? said('your', role!, square!) : said("your opponent's", role!, square!);
+    const wrong = mine ? said("your opponent's", role!, square!) : said('your', role!, square!);
+    if (wrong && !right) out.push(`owner: ${who} ${role} on ${square}`);
+  }
   return out;
 }
