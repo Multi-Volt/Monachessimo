@@ -89,7 +89,7 @@ export default defineConfig(({ mode }) => {
                 globPatterns: ['**/*.{js,css,html,wasm,woff2,png,svg}'],
                 // The coach model and its 10 MB runtime are fetched only by players who
                 // turn the model on; wllama keeps the model in its own cache.
-                // The 3D board's pieces and three.js load only for players who choose it.
+                // The 3D board, three.js and Maia's networks load only for players who choose them.
                 globIgnores: [
                   'puzzles/**',
                   'models/**',
@@ -110,9 +110,10 @@ export default defineConfig(({ mode }) => {
                   {
                     urlPattern: ({ url }) =>
                       url.pathname.includes('/3d/') ||
+                      url.pathname.includes('/maia/') ||
                       /\/assets\/Board3D-[^/]+\.js$/.test(url.pathname),
                     handler: 'CacheFirst',
-                    options: { cacheName: 'board-3d', expiration: { maxEntries: 20 } },
+                    options: { cacheName: 'on-demand', expiration: { maxEntries: 40 } },
                   },
                   {
                     urlPattern: ({ url }) => /\/assets\/wllama-[^/]+\.wasm$/.test(url.pathname),

@@ -146,11 +146,15 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
   const [gameId, setGameId] = useState(route.kind === 'game' ? route.gameId : '');
   const [ply, setPly] = useState(route.kind === 'game' ? route.ply : 0);
   const [skill, setSkill] = useState<number>();
+  const [human, setHuman] = useState(false);
+  const [maia, setMaia] = useState<number>();
   const [strictness, setStrictness] = useState<Strictness>('mistakes');
 
   if (data.status !== 'ok' || !data.value) return <p class="screen">Loading…</p>;
   const { games, mistakes, rating } = data.value;
   const level = skill ?? skillFor(rating);
+  // Maia has networks from 1100 to 1900, every hundred.
+  const maiaLevel = maia ?? Math.min(1900, Math.max(1100, Math.round(rating / 100) * 100));
   const chosen = games.find((g) => g.id === gameId) ?? games[0];
 
   const start = async () => {
@@ -184,6 +188,7 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
       you,
       moves: [],
       skill: level,
+      ...(human ? { maia: maiaLevel } : {}),
       strictness,
       startedAt: Date.now(),
       yourMoves: [],
@@ -290,20 +295,49 @@ function Setup({ route, onStart }: { route: PlayRoute; onStart: (g: PracticeGame
           </fieldset>
         )}
 
-        <div class="field">
-          <label for="skill">
-            Opponent strength: {skillLabel(level)}, Stockfish Skill Level {level}
+        <fieldset class="field">
+          <legend>Opponent</legend>
+          <label class="choice">
+            <input type="radio" name="opponent" checked={!human} onChange={() => setHuman(false)} />
+            <span>Stockfish, set to a strength</span>
           </label>
-          <input
-            id="skill"
-            type="range"
-            min={0}
-            max={20}
-            value={level}
-            onInput={(e) => setSkill(Number(e.currentTarget.value))}
-          />
-          <p class="hint">Suggested from your puzzle rating of {rating}.</p>
-        </div>
+          <label class="choice">
+            <input type="radio" name="opponent" checked={human} onChange={() => setHuman(true)} />
+            <span>Maia, which plays the moves people of a rating play</span>
+          </label>
+        </fieldset>
+        {human ? (
+          <div class="field">
+            <label for="maia">Plays like a player rated {maiaLevel}</label>
+            <input
+              id="maia"
+              type="range"
+              min={1100}
+              max={1900}
+              step={100}
+              value={maiaLevel}
+              onInput={(e) => setMaia(Number(e.currentTarget.value))}
+            />
+            <p class="hint">
+              Suggested from your puzzle rating of {rating}. Downloads 1.2 MB the first time.
+            </p>
+          </div>
+        ) : (
+          <div class="field">
+            <label for="skill">
+              Opponent strength: {skillLabel(level)}, Stockfish Skill Level {level}
+            </label>
+            <input
+              id="skill"
+              type="range"
+              min={0}
+              max={20}
+              value={level}
+              onInput={(e) => setSkill(Number(e.currentTarget.value))}
+            />
+            <p class="hint">Suggested from your puzzle rating of {rating}.</p>
+          </div>
+        )}
 
         <fieldset class="field">
           <legend>Coach</legend>
@@ -607,10 +641,18 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     let live = true;
     void (async () => {
       await new Promise((r) => setTimeout(r, 250));
-      const reply = await opponent.current!.search({ fen, movetime: OPPONENT_MS });
-      if (!live || !reply.bestmove) return;
-      setPhase({ kind: 'opponent', uci: reply.bestmove });
-      await save({ ...game, moves: [...game.moves, reply.bestmove] });
+      // Maia picks the move a person of its rating would; Stockfish stands
+      // in if its network cannot load.
+      const human = game.maia
+        ? await import('../../engine/maiaPlayer')
+            .then((m) => m.maiaMove(game.maia!, game.startFen, game.moves))
+            .catch(() => undefined)
+        : undefined;
+      const bestmove =
+        human ?? (await opponent.current!.search({ fen, movetime: OPPONENT_MS })).bestmove;
+      if (!live || !bestmove) return;
+      setPhase({ kind: 'opponent', uci: bestmove });
+      await save({ ...game, moves: [...game.moves, bestmove] });
     })();
     return () => {
       live = false;
@@ -1007,8 +1049,11 @@ function GameView({ initial, onNew }: { initial: PracticeGame; onNew: () => void
     <section class="screen screen--drill screen--play" aria-labelledby="game-title">
       <p class="drill__count">
         You play {game.you}
-        {game.source ? ` · from ${game.source.label}` : ''} · {skillLabel(game.skill)} opponent,
-        Skill Level {game.skill} · {STRICTNESS_TEXT[game.strictness]}
+        {game.source ? ` · from ${game.source.label}` : ''} ·{' '}
+        {game.maia
+          ? `Maia ${game.maia}, plays like a player of that rating`
+          : `${skillLabel(game.skill)} opponent, Skill Level ${game.skill}`}{' '}
+        · {STRICTNESS_TEXT[game.strictness]}
       </p>
       <h1 id="game-title" class="play__status">
         {phase.kind === 'your-move' || phase.kind === 'refused' || phase.kind === 'checking'

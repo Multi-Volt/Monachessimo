@@ -34,6 +34,8 @@ export interface PracticeGame {
   /** All moves from the start position, both sides, in UCI. */
   moves: string[];
   skill: number;
+  /** The rating of the Maia network that plays the opponent; missing means Stockfish. */
+  maia?: number;
   strictness: Strictness;
   startedAt: number;
   yourMoves: PlyRecord[];

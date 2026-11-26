@@ -1,11 +1,14 @@
 // The board in 3D, drawn with three.js (MIT). The pieces are "Chess Set" by
 // Riley Queen from Poly Haven (CC0), in public/3d/chess-set; the squares are
 // drawn here in the app's board colors, so the set's own board is left out.
-// A move is made by tapping a piece, then a square, as on the flat board.
+// The squares carry a faint grain from "Oak Veneer 01" by Jenelle van
+// Heerden (Poly Haven, CC0), turned grey so they keep their colors. Dragging
+// turns the board and pinching zooms; a tap on a piece, then a square, moves.
 // It takes the flat board's props, so every screen can show either.
 import { useEffect, useRef } from 'preact/hooks';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { parseFen } from 'chessops/fen';
 import { makeSquare, parseSquare } from 'chessops/util';
 import type { Square } from 'chessops/types';
@@ -74,7 +77,87 @@ interface View {
   plane: THREE.Mesh;
   pieces: THREE.Group;
   marks: THREE.Group;
+  controls: OrbitControls;
+  /** The file letters and rank numbers on the frame. */
+  labels: THREE.Group;
+  ink: THREE.MeshBasicMaterial[];
+  /** The side the camera was last placed for. */
+  side?: 'white' | 'black';
   render: () => void;
+}
+
+/** A letter or number as a white glyph on a clear square, tinted by its material. */
+function glyph(text: string): THREE.MeshBasicMaterial {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#ffffff';
+  g.font = '600 48px system-ui, sans-serif';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(text, 32, 34);
+  const map = new THREE.CanvasTexture(c);
+  map.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false });
+}
+
+/**
+ * Coordinates on the frame for the player's side: files along the near
+ * edge, ranks along the left, each lying flat and upright from that side.
+ */
+function placeLabels(group: THREE.Group, ink: THREE.MeshBasicMaterial[], side: 'white' | 'black') {
+  group.clear();
+  const size = 0.32 * SQ;
+  const edge = 4.18 * SQ;
+  const shape = new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2);
+  const white = side === 'white';
+  const add = (i: number, x: number, z: number) => {
+    const m = new THREE.Mesh(shape, ink[i]!);
+    m.position.set(x, TOP + 0.0003, z);
+    // A flat glyph reads upright from the side the camera starts on.
+    m.rotation.y = white ? Math.PI : 0;
+    group.add(m);
+  };
+  for (let f = 0; f < 8; f++) add(f, center(f).x, white ? -edge : edge);
+  for (let r = 0; r < 8; r++) add(8 + r, white ? edge : -edge, center(r * 8).z);
+}
+
+/** How strong the grain is: 0 is flat color, 1 the wood's full contrast. */
+const GRAIN = 0.35;
+
+/**
+ * The wood texture as grey grain around 1, so it multiplies a square's
+ * color only a little; also the factor that keeps the mean color as chosen.
+ */
+async function grain(): Promise<{ texture: THREE.Texture; mean: number }> {
+  const img = await new THREE.ImageLoader().loadAsync(
+    `${import.meta.env.BASE_URL}3d/wood/oak_veneer_01_diff_1k.jpg`,
+  );
+  const c = document.createElement('canvas');
+  c.width = img.width;
+  c.height = img.height;
+  const g = c.getContext('2d')!;
+  g.drawImage(img, 0, 0);
+  const data = g.getImageData(0, 0, c.width, c.height);
+  const px = data.data;
+  let max = 0;
+  const lum = new Float32Array(px.length / 4);
+  for (let i = 0; i < lum.length; i++) {
+    lum[i] = 0.2126 * px[4 * i]! + 0.7152 * px[4 * i + 1]! + 0.0722 * px[4 * i + 2]!;
+    max = Math.max(max, lum[i]!);
+  }
+  let sum = 0;
+  for (let i = 0; i < lum.length; i++) {
+    const v = 255 * (1 - GRAIN * (1 - lum[i]! / max));
+    sum += v;
+    px[4 * i] = px[4 * i + 1] = px[4 * i + 2] = v;
+  }
+  g.putImageData(data, 0, 0);
+  const texture = new THREE.CanvasTexture(c);
+  // Grey data, not a color: a value of 1 leaves the square's color as it is.
+  texture.colorSpace = THREE.NoColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  return { texture, mean: sum / lum.length / 255 };
 }
 
 export function Board3D(props: BoardProps & { onFail?: () => void }) {
@@ -115,9 +198,16 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     const light = new THREE.MeshLambertMaterial();
     const dark = new THREE.MeshLambertMaterial();
     const frame = new THREE.MeshLambertMaterial();
-    const tile = new THREE.PlaneGeometry(SQ, SQ).rotateX(-Math.PI / 2);
     for (let sq = 0; sq < 64; sq++) {
       const isDark = ((sq % 8) + Math.floor(sq / 8)) % 2 === 0;
+      // Each square shows its own part of the wood, turned a quarter on
+      // alternate squares, as an inlaid board is.
+      const tile = new THREE.PlaneGeometry(SQ, SQ).rotateX(-Math.PI / 2);
+      const uv = tile.attributes.uv!;
+      for (let i = 0; i < uv.count; i++) {
+        const [u, w] = isDark ? [uv.getY(i), uv.getX(i)] : [uv.getX(i), uv.getY(i)];
+        uv.setXY(i, ((sq % 8) + u) / 8, (Math.floor(sq / 8) + w) / 8);
+      }
       const m = new THREE.Mesh(tile, isDark ? dark : light);
       m.position.copy(center(sq));
       m.receiveShadow = true;
@@ -136,10 +226,35 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     scene.add(plane);
     const pieces = new THREE.Group();
     const marks = new THREE.Group();
-    scene.add(pieces, marks);
+    const labels = new THREE.Group();
+    const ink = [...'abcdefgh12345678'].map(glyph);
+    scene.add(pieces, marks, labels);
 
     const render = () => renderer.render(scene, camera);
-    view.current = { renderer, scene, camera, light, dark, frame, plane, pieces, marks, render };
+    // Drag to turn the board, pinch or scroll to zoom; the camera stays
+    // above the board and looks at its center.
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
+    controls.minDistance = 0.55;
+    controls.maxDistance = 1.6;
+    controls.minPolarAngle = 0.05;
+    controls.maxPolarAngle = 1.3;
+    controls.addEventListener('change', render);
+    view.current = {
+      renderer,
+      scene,
+      camera,
+      light,
+      dark,
+      frame,
+      plane,
+      pieces,
+      marks,
+      controls,
+      labels,
+      ink,
+      render,
+    };
 
     const size = () => {
       const w = el.clientWidth;
@@ -150,10 +265,13 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     resize.observe(el);
     size();
 
+    // The grain darkens on average; the colors are raised to make up for it.
+    let lift = 1;
     const paint = (c: BoardColors) => {
-      light.color.set(c.light);
-      dark.color.set(c.dark);
-      frame.color.set(mix(c.dark, '#000000', 0.45));
+      light.color.set(c.light).multiplyScalar(lift);
+      dark.color.set(c.dark).multiplyScalar(lift);
+      frame.color.set(mix(c.dark, '#000000', 0.45)).multiplyScalar(lift);
+      for (const m of ink) m.color.set(c.light);
       render();
     };
     paint(boardLook.get().colors);
@@ -229,6 +347,18 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     });
 
     let live = true;
+    void grain()
+      .then(({ texture, mean }) => {
+        if (!live) return;
+        for (const m of [light, dark, frame]) {
+          m.map = texture;
+          m.needsUpdate = true;
+        }
+        lift = 1 / mean;
+        paint(boardLook.get().colors);
+      })
+      // Without the wood the squares stay plain colors.
+      .catch(() => undefined);
     void loadSet()
       .then(() => {
         if (live) sync();
@@ -241,6 +371,11 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       resize.disconnect();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
+      controls.dispose();
+      for (const m of ink) {
+        m.map?.dispose();
+        m.dispose();
+      }
       renderer.dispose();
       canvas.remove();
       view.current = undefined;
@@ -256,9 +391,15 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       shownFen.current = p.fen;
       selected.current = undefined;
     }
-    const white = p.orientation === 'white';
-    v.camera.position.set(0, 0.86, white ? -0.66 : 0.66);
-    v.camera.lookAt(0, 0, white ? -0.012 : 0.012);
+    // From the player's side when the game starts or the board turns over;
+    // after that the camera stays where the player turned it.
+    if (v.side !== p.orientation) {
+      v.side = p.orientation;
+      v.camera.position.set(0, 0.92, p.orientation === 'white' ? -0.7 : 0.7);
+      v.controls.target.set(0, 0, 0);
+      v.controls.update();
+      placeLabels(v.labels, v.ink, p.orientation);
+    }
 
     void set?.then((protos) => {
       v.pieces.clear();

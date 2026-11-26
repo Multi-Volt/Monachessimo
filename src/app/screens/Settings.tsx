@@ -169,7 +169,10 @@ function BoardPanel() {
             checked={three}
             onChange={() => void chooseStyle(true)}
           />
-          <span>3D, tap a piece and then its square. Downloads 5 MB the first time.</span>
+          <span>
+            3D, tap a piece and then its square, drag to turn the board. Downloads 6 MB the first
+            time.
+          </span>
         </label>
       </fieldset>
       <fieldset class="field">

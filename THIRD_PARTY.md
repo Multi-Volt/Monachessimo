@@ -20,6 +20,9 @@ This file lists every dependency, its license, and its source. Update it wheneve
 | Coach wording model, fine-tuned from SmolLM2-360M-Instruct by Hugging Face on texts written by local models (Bonsai 2.5 27B for coach-v2), served from a release of this repository | Apache-2.0       | https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct |
 | three 0.187.0, loaded only when the 3D board is chosen                                                                                                                              | MIT              | https://github.com/mrdoob/three.js                         |
 | "Chess Set" 3D pieces by Riley Queen, from Poly Haven, in `public/3d/chess-set/`                                                                                                    | CC0-1.0          | https://polyhaven.com/a/chess_set                          |
+| "Oak Veneer 01" wood texture by Jenelle van Heerden, from Poly Haven, in `public/3d/wood/`                                                                                          | CC0-1.0          | https://polyhaven.com/a/oak_veneer_01                      |
+| Maia 1100 to 1900 networks by the CSSLab, University of Toronto, release v1.0, converted into `public/maia/`                                                                        | GPL-3.0          | https://github.com/CSSLab/maia-chess                       |
+| Leela Chess Zero policy map and move list, in `public/maia/tables.json`                                                                                                             | GPL-3.0-or-later | https://github.com/LeelaChessZero/lc0                      |
 
 ## Build and test tools (not shipped)
 
