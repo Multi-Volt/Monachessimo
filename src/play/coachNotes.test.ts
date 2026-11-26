@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fromFen } from '../detectors/board';
-import { coachNotes, coachVoice } from './coachNotes';
+import { checkCoachText, coachNotes, coachVoice } from './coachNotes';
 import { judgeMove } from './coach';
 import { explainMove } from './explain';
 import { narrateLine } from './narrate';
@@ -53,5 +53,21 @@ describe('coach notes', () => {
     expect(coachVoice('I play Kd6, threatening b4.')).toBe(
       'Your opponent plays Kd6, threatening b4.',
     );
+    expect(
+      coachVoice(
+        'Your pawn now attacks my queen on a4. You have to: anything else loses about 2.4 pawns.',
+      ),
+    ).toBe("Your pawn now attacks your opponent's queen on a4. It is the only good move here.");
+  });
+
+  it('rejects "for free" when the player gets something back', () => {
+    const notes = `Your move: a6. Verdict: a blunder.
+What happens next:
+- Your opponent's knight takes your bishop on e6.
+- Your pawn takes your opponent's queen on a4.
+Result: you lose a bishop (3 points) and a queen (9 points) and you win a queen (9 points) and a knight (3 points), so it is an even trade.`;
+    expect(
+      checkCoachText(notes, 'Pawn to a6 lets your opponent take your bishop for free.'),
+    ).toContain('claim: for free');
   });
 });

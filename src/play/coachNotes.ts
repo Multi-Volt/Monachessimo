@@ -134,7 +134,10 @@ function standing(n: number): string {
 export function coachVoice(text: string): string {
   return text
     .replace(/, and (?:you are \d+ pawns? (?:up|down)|material is even)/g, '')
-    .replace(/ You have to: anything else loses [^.]*\./g, ' You have to.')
+    .replace(
+      / You have to: anything else loses (?:far more|about \d+(?:\.\d+)? pawns?)\./g,
+      ' It is the only good move here.',
+    )
     .replace(/\bI take back\b/g, 'Your opponent takes back')
     .replace(/\bI play\b/g, 'Your opponent plays')
     .replace(/\bI answer\b/g, 'Your opponent answers')
@@ -356,5 +359,9 @@ function wrongMaterialClaims(notes: string, text: string): string[] {
     'g',
   );
   for (const m of t.matchAll(lost)) if (!lose.has(m[1]!)) out.push(`claim: loses ${m[1]}`);
+  // "For free" only when the player gets nothing back.
+  const result = /^Result: (.*)$/m.exec(notes)?.[1] ?? '';
+  if (/\bfor free\b/.test(t) && /even trade|no material|points? up/.test(result))
+    out.push('claim: for free');
   return out;
 }
