@@ -22,10 +22,8 @@ test('piece colors can be changed, apply to the boards, and are kept', async ({ 
   await page.goto(`./#/play/fen/${encodeURIComponent(start)}`);
   await page.getByRole('button', { name: 'Start the game' }).click();
   await page.waitForTimeout(1000);
-  await page
-    .locator('.board-frame')
-    .screenshot({
-      path: '/tmp/claude-1000/-home-js-Documents-GitHub-Monachessimo/1f9490a1-7acd-481b-b011-7023526fbdd0/scratchpad/pieces-2d.png',
-    });
+  await page.locator('.board-frame').screenshot({
+    path: '/tmp/claude-1000/-home-js-Documents-GitHub-Monachessimo/1f9490a1-7acd-481b-b011-7023526fbdd0/scratchpad/pieces-2d.png',
+  });
   expect(errors).toEqual([]);
 });
