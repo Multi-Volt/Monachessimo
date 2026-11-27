@@ -47,6 +47,8 @@ export interface ImportOptions {
   max: number;
   /** Only fetch games that started after this time (milliseconds). */
   since?: number;
+  /** Only fetch games that started before this time (milliseconds). */
+  until?: number;
   signal?: AbortSignal;
   /** Called once per normalized game, in the order the site sends them. */
   onGame: (game: Game) => void | Promise<void>;

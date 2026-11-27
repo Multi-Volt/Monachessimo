@@ -18,7 +18,12 @@ export const importState = createStore<ImportState>({ status: 'idle', count: 0 }
 let ctrl: AbortController | undefined;
 
 /** Imports games, then queues and starts analysis. */
-export async function startImport(source: Source, username: string, max: number): Promise<void> {
+export async function startImport(
+  source: Source,
+  username: string,
+  max: number,
+  range?: { from: number; to?: number },
+): Promise<void> {
   const { repo, runner } = await getServices();
   ctrl?.abort();
   ctrl = new AbortController();
@@ -35,6 +40,7 @@ export async function startImport(source: Source, username: string, max: number)
       source,
       username,
       max,
+      ...(range ? { range } : {}),
       signal: ctrl.signal,
       onCount: (count) => importState.set({ count, waitingUntil: undefined }),
       onWait: (ms) => importState.set({ waitingUntil: Date.now() + ms }),

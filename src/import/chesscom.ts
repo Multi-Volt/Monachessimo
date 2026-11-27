@@ -164,6 +164,8 @@ export async function importChessCom(
   let count = 0;
   for (const [i, monthUrl] of archives.entries()) {
     if (opts.since !== undefined && monthEnd(monthUrl) <= opts.since) break;
+    // Months that start after the range are skipped without a request.
+    if (opts.until !== undefined && monthStart(monthUrl) >= opts.until) continue;
     if (i > 0) await sleep(MONTH_DELAY_MS, opts.signal);
     const month = await getJson(monthUrl, opts, fetchImpl);
     if (!month.body) continue;
@@ -173,11 +175,19 @@ export async function importChessCom(
       const game = normalizeChessCom(json, username);
       if (!game) continue;
       if (opts.since !== undefined && game.playedAt <= opts.since) return count;
+      if (opts.until !== undefined && game.playedAt >= opts.until) continue;
       await opts.onGame(game);
       if (++count >= opts.max) return count;
     }
   }
   return count;
+}
+
+/** First millisecond of the month named by an archive URL ending in /YYYY/MM. */
+export function monthStart(url: string): number {
+  const m = /\/(\d{4})\/(\d{2})$/.exec(url);
+  if (!m) return Number.NEGATIVE_INFINITY;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, 1);
 }
 
 /** First millisecond after the month named by an archive URL ending in /YYYY/MM. */

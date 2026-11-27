@@ -29,7 +29,7 @@ export interface LichessGameJson {
   analysis?: Array<{ eval?: number; mate?: number }>;
 }
 
-export function lichessUrl(username: string, max: number, since?: number): string {
+export function lichessUrl(username: string, max: number, since?: number, until?: number): string {
   const params = new URLSearchParams({
     max: String(max),
     rated: 'true',
@@ -40,6 +40,7 @@ export function lichessUrl(username: string, max: number, since?: number): strin
     finished: 'true',
   });
   if (since !== undefined) params.set('since', String(since + 1));
+  if (until !== undefined) params.set('until', String(until - 1));
   return `${API}${encodeURIComponent(username)}?${params}`;
 }
 
@@ -128,7 +129,7 @@ export async function importLichess(
   opts: ImportOptions,
   fetchImpl: typeof fetch = fetch,
 ): Promise<number> {
-  const url = lichessUrl(username, opts.max, opts.since);
+  const url = lichessUrl(username, opts.max, opts.since, opts.until);
   let res: Response | undefined;
   for (let attempt = 0; ; attempt++) {
     try {
@@ -162,4 +163,39 @@ export async function importLichess(
     count++;
   }
   return count;
+}
+
+/** A Lichess game's id from its link, "https://lichess.org/abcd1234/black" or the bare id. */
+export function lichessGameId(link: string): string | undefined {
+  const m =
+    /^(?:https?:\/\/)?(?:www\.)?(?:lichess\.org\/)?([A-Za-z0-9]{8})(?:[A-Za-z0-9]{4})?(?:[/#?].*)?$/.exec(
+      link.trim(),
+    );
+  return m?.[1];
+}
+
+/** When a Lichess game started, in milliseconds, from its link or id. */
+export async function lichessGameTime(
+  link: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<number> {
+  const id = lichessGameId(link);
+  if (!id) throw new ImportError('That is not a Lichess game link.', 'notFound');
+  let res: Response;
+  try {
+    res = await fetchImpl(
+      `https://lichess.org/game/export/${id}?moves=false&clocks=false&evals=false`,
+      {
+        headers: { Accept: 'application/json' },
+      },
+    );
+  } catch {
+    throw new ImportError('Could not reach Lichess. Check your connection.', 'network');
+  }
+  if (res.status === 404) throw new ImportError('Lichess has no game with that link.', 'notFound');
+  if (!res.ok) throw new ImportError(`Lichess answered with HTTP ${res.status}.`, 'badResponse');
+  const body = (await res.json()) as { createdAt?: number };
+  if (typeof body.createdAt !== 'number')
+    throw new ImportError('Lichess did not say when that game was played.', 'badResponse');
+  return body.createdAt;
 }

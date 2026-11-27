@@ -14,7 +14,7 @@ test('import from Lichess, analyze on device, review a blunder', async ({ page }
   await expect(page.getByText('Enter a username of 2 to 30')).toBeVisible();
 
   await page.getByLabel('Username').fill('TestPlayer');
-  await page.getByLabel('Games to import').selectOption('25');
+  await page.getByLabel('How many').fill('25');
   await page.getByRole('button', { name: 'Import games' }).click();
 
   await expect(page.getByRole('heading', { name: 'Import and analysis' })).toBeVisible();

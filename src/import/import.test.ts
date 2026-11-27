@@ -1,6 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { importLichess, normalizeLichess, readNdjson, type LichessGameJson } from './lichess';
-import { importChessCom, monthEnd, normalizeChessCom, parseTimeControl } from './chesscom';
+import {
+  importLichess,
+  lichessGameId,
+  lichessGameTime,
+  lichessUrl,
+  normalizeLichess,
+  readNdjson,
+  type LichessGameJson,
+} from './lichess';
+import {
+  importChessCom,
+  monthEnd,
+  monthStart,
+  normalizeChessCom,
+  parseTimeControl,
+} from './chesscom';
 import { parseClock, sanToUci } from './normalize';
 import type { Game } from './types';
 
@@ -192,5 +206,57 @@ describe('Chess.com', () => {
     expect(n).toBe(2);
     expect(urls[1]).toMatch(/2026\/10$/);
     expect(urls).toHaveLength(2);
+  });
+});
+
+describe('import ranges', () => {
+  it('asks Lichess for games inside the range', () => {
+    const url = new URL(lichessUrl('TestPlayer', 1000, 1_000, 5_000));
+    expect(url.searchParams.get('since')).toBe('1001');
+    expect(url.searchParams.get('until')).toBe('4999');
+  });
+
+  it('reads a Lichess game id from its link', () => {
+    expect(lichessGameId('https://lichess.org/abcd1234')).toBe('abcd1234');
+    expect(lichessGameId('https://lichess.org/abcd1234/black')).toBe('abcd1234');
+    expect(lichessGameId('lichess.org/abcd1234wxyz')).toBe('abcd1234');
+    expect(lichessGameId('abcd1234')).toBe('abcd1234');
+    expect(lichessGameId('https://example.com/x')).toBeUndefined();
+  });
+
+  it('looks up when a Lichess game was played', async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      expect(String(input)).toContain('/game/export/abcd1234');
+      return Response.json({ createdAt: 1_700_000_000_000 });
+    });
+    expect(await lichessGameTime('https://lichess.org/abcd1234', fetchImpl as typeof fetch)).toBe(
+      1_700_000_000_000,
+    );
+  });
+
+  it('skips Chess.com months after the range without asking for them', async () => {
+    expect(monthStart('https://api.chess.com/pub/player/x/games/2026/10')).toBe(
+      Date.UTC(2026, 9, 1),
+    );
+    const urls: string[] = [];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      urls.push(url);
+      if (url.endsWith('/archives'))
+        return Response.json({
+          archives: [
+            'https://api.chess.com/pub/player/testplayer/games/2026/09',
+            'https://api.chess.com/pub/player/testplayer/games/2026/10',
+          ],
+        });
+      return Response.json({ games: [ccGame] });
+    });
+    await importChessCom(
+      'TestPlayer',
+      { max: 10, until: Date.UTC(2026, 9, 1), onGame: () => undefined },
+      fetchImpl as typeof fetch,
+    );
+    expect(urls.some((u) => u.endsWith('2026/10'))).toBe(false);
+    expect(urls.some((u) => u.endsWith('2026/09'))).toBe(true);
   });
 });
