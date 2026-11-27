@@ -1184,6 +1184,23 @@ input[aria-invalid='true'] {
 
 /* Board color settings */
 
+.piece-preview.cg-wrap {
+  display: flex;
+  position: static;
+  width: fit-content;
+  padding: var(--s2);
+  border-radius: 6px;
+  margin-bottom: var(--s4);
+}
+
+.piece-preview piece {
+  position: static;
+  display: block;
+  width: 40px;
+  height: 40px;
+  will-change: auto;
+}
+
 .board-preview {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

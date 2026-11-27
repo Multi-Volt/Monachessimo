@@ -14,12 +14,12 @@ test('board square colors can be changed and are kept', async ({ page }) => {
   await expect.poll(() => squareVar(page, '--sq-dark')).toBe('#769656');
   expect(await squareVar(page, '--sq-light')).toBe('#eeeed2');
 
-  await page.getByLabel('Custom').check();
+  await page.getByLabel('Custom').first().check();
   await page.getByLabel('Dark squares').fill('#336699');
   await expect.poll(() => squareVar(page, '--sq-dark')).toBe('#336699');
 
   await page.reload();
   await expect.poll(() => squareVar(page, '--sq-dark')).toBe('#336699');
-  await expect(page.getByLabel('Custom')).toBeChecked();
+  await expect(page.getByLabel('Custom').first()).toBeChecked();
   expect(errors).toEqual([]);
 });

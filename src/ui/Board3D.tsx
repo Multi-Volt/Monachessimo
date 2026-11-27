@@ -43,19 +43,38 @@ function squareAt(p: THREE.Vector3): Square | undefined {
 type Pieces = Map<string, THREE.Object3D>;
 let set: Promise<Pieces> | undefined;
 
-const IVORY = '#f4e4c1';
-const tinted = new Map<THREE.Material, THREE.Material>();
+/** Black's own ebony, kept when the dark color is the default. */
+const EBONY = '#2b2420';
+const tinted = new Map<string, THREE.Material>();
+let marble: THREE.Material | undefined;
 
-/** The set's white material with an ivory tint, made once and shared. */
-function ivory(material: THREE.Material | THREE.Material[]): THREE.Material | THREE.Material[] {
-  if (Array.isArray(material)) return material.map((m) => ivory(m) as THREE.Material);
-  let t = tinted.get(material);
+/** A copy of `material` with `color` multiplied in, made once per pair and shared. */
+function tint(material: THREE.Material, color: string): THREE.Material {
+  const k = `${material.uuid} ${color}`;
+  let t = tinted.get(k);
   if (!t) {
     t = material.clone();
-    if ('color' in t && t.color instanceof THREE.Color) t.color.set(IVORY);
-    tinted.set(material, t);
+    if ('color' in t && t.color instanceof THREE.Color) t.color.set(color);
+    tinted.set(k, t);
   }
   return t;
+}
+
+/**
+ * A piece's material in the chosen colors: White's marble tinted with the
+ * light color; Black's ebony for the default, else the marble tinted dark,
+ * since a tint barely shows on ebony.
+ */
+function dressed(
+  material: THREE.Material | THREE.Material[],
+  white: boolean,
+  colors: { light: string; dark: string },
+): THREE.Material | THREE.Material[] {
+  if (Array.isArray(material))
+    return material.map((m) => dressed(m, white, colors) as THREE.Material);
+  if (white) return tint(material, colors.light);
+  if (colors.dark === EBONY || !marble) return material;
+  return tint(marble, colors.dark);
 }
 
 const simpler = new Map<THREE.Material, THREE.MeshLambertMaterial>();
@@ -112,8 +131,9 @@ export function loadSet(): Promise<Pieces> {
         proto.position.set(0, 0, 0);
         proto.traverse((c) => {
           c.castShadow = true;
-          // White's pieces are warmed a little toward ivory.
-          if (m[2] === 'white' && c instanceof THREE.Mesh) c.material = ivory(c.material);
+          if (m[2] === 'white' && c instanceof THREE.Mesh && !marble)
+            marble = [c.material].flat()[0];
+          c.userData.white = m[2] === 'white';
         });
         out.set(key, proto);
       });
@@ -144,6 +164,8 @@ interface View {
   pieces: THREE.Group;
   marks: THREE.Group;
   controls: OrbitControls;
+  /** The room the pieces reflect, none on the lighter board. */
+  room: THREE.Texture | null;
   /** The file letters and rank numbers on the frame. */
   labels: THREE.Group;
   ink: THREE.MeshBasicMaterial[];
@@ -346,6 +368,7 @@ export function Board3D(
     controls.addEventListener('change', render);
     view.current = {
       renderer,
+      room,
       scene,
       camera,
       light,
@@ -385,7 +408,18 @@ export function Board3D(
       render();
     };
     paint(boardLook.get().colors);
-    const offColors = boardLook.subscribe((l) => paint(l.colors));
+    let pieceColors = boardLook.get().pieces;
+    const offColors = boardLook.subscribe((l) => {
+      paint(l.colors);
+      if (l.pieces === pieceColors) return;
+      // New piece colors: the pieces are dressed again.
+      pieceColors = l.pieces;
+      if (view.current) {
+        delete view.current.drawn;
+        delete view.current.piecesFen;
+      }
+      sync();
+    });
 
     // A tap, not a drag: the pointer goes up near where it went down.
     let down: { x: number; y: number } | undefined;
@@ -551,8 +585,10 @@ export function Board3D(
     }
 
     void set?.then((protos) => {
-      if (v.piecesFen === p.fen) return;
-      v.piecesFen = p.fen;
+      const colors = boardLook.get().pieces;
+      const dressedFor = `${p.fen} ${colors.light} ${colors.dark}`;
+      if (v.piecesFen === dressedFor) return;
+      v.piecesFen = dressedFor;
       v.renderer.shadowMap.needsUpdate = true;
       v.pieces.clear();
       const setup = parseFen(p.fen);
@@ -561,9 +597,20 @@ export function Board3D(
         const proto = protos.get(`${piece.color} ${piece.role}`);
         if (!proto) continue;
         const o = proto.clone();
-        // The lighter board lights the pieces simply: their color texture
-        // alone, no normal or roughness maps.
-        if (lite) o.traverse((c) => c instanceof THREE.Mesh && (c.material = simple(c.material)));
+        o.traverse((c) => {
+          if (!(c instanceof THREE.Mesh)) return;
+          c.material = dressed(c.material, !!c.userData.white, colors);
+          // Materials are shared between boards; each sets its own room.
+          for (const m of [c.material].flat())
+            if (m instanceof THREE.MeshStandardMaterial && m.envMap !== v.room) {
+              m.envMap = v.room;
+              m.envMapIntensity = 0.6;
+              m.needsUpdate = true;
+            }
+          // The lighter board lights the pieces simply: their color texture
+          // alone, no normal or roughness maps.
+          if (lite) c.material = simple(c.material);
+        });
         o.position.copy(center(sq));
         o.userData.square = sq;
         v.pieces.add(o);

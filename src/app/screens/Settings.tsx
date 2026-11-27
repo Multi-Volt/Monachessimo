@@ -1,3 +1,4 @@
+import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { deleteEverything } from '../../store/db';
 import { useServices } from '../../ui/hooks';
@@ -8,6 +9,7 @@ import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors, defaultThree } from '../../ui/boardTheme';
 import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
 import { board3dHealth, board3dLevel, gpuName, resetBoard3d } from '../../ui/board3dHealth';
+import { DEFAULT_PIECES, PIECE_PRESETS, type PieceColors } from '../../ui/pieceTheme';
 import {
   deleteModel,
   getManifest,
@@ -375,6 +377,7 @@ export function Settings() {
       </div>
 
       <BoardPanel />
+      <PiecesPanel />
 
       <VoicePanel />
       <CoachModelPanel />
@@ -453,6 +456,88 @@ function Board3dReport() {
       <button type="button" class="button" onClick={resetBoard3d}>
         Try the full 3D board again
       </button>
+    </div>
+  );
+}
+
+function PiecesPanel() {
+  const services = useServices()!;
+  const current = services.settings.pieces ?? DEFAULT_PIECES;
+  const [colors, setColors] = useState<PieceColors>(current);
+  const presetKey = Object.keys(PIECE_PRESETS).find((k) => {
+    const p = PIECE_PRESETS[k]!.colors;
+    return p.light === colors.light && p.dark === colors.dark;
+  });
+  const [custom, setCustom] = useState(!presetKey);
+  const choose = async (c: PieceColors) => {
+    setColors(c);
+    await services.saveSettings({ ...services.settings, pieces: c });
+  };
+  return (
+    <div class="panel">
+      <h2>Piece colors</h2>
+      <div
+        class="cg-wrap piece-preview"
+        style={{ background: services.settings.board?.light ?? DEFAULT_BOARD.light }}
+        aria-hidden="true"
+      >
+        {(['white', 'black'] as const).flatMap((side) =>
+          (['king', 'queen', 'knight'] as const).map((r) =>
+            h('piece', { key: `${side}${r}`, class: `${r} ${side}` }),
+          ),
+        )}
+      </div>
+      <fieldset class="field">
+        <legend>Pieces</legend>
+        <div class="swatches">
+          {Object.entries(PIECE_PRESETS).map(([k, p]) => (
+            <label key={k} class="swatch">
+              <input
+                type="radio"
+                name="pieces"
+                checked={!custom && presetKey === k}
+                onChange={() => {
+                  setCustom(false);
+                  void choose(p.colors);
+                }}
+              />
+              <span class="swatch__chip" aria-hidden="true">
+                <span style={{ background: p.colors.light }} />
+                <span style={{ background: p.colors.dark }} />
+              </span>
+              <span>{p.label}</span>
+            </label>
+          ))}
+          <label class="swatch">
+            <input type="radio" name="pieces" checked={custom} onChange={() => setCustom(true)} />
+            <span class="swatch__chip" aria-hidden="true">
+              <span style={{ background: colors.light }} />
+              <span style={{ background: colors.dark }} />
+            </span>
+            <span>Custom</span>
+          </label>
+        </div>
+      </fieldset>
+      {custom && (
+        <div class="row">
+          <label class="color-field">
+            <input
+              type="color"
+              value={colors.light}
+              onInput={(e) => void choose({ ...colors, light: e.currentTarget.value })}
+            />
+            <span>White's pieces</span>
+          </label>
+          <label class="color-field">
+            <input
+              type="color"
+              value={colors.dark}
+              onInput={(e) => void choose({ ...colors, dark: e.currentTarget.value })}
+            />
+            <span>Black's pieces</span>
+          </label>
+        </div>
+      )}
     </div>
   );
 }

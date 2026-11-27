@@ -206,9 +206,15 @@ export function defaultThree(): boolean {
 }
 
 /** How boards look: flat or in 3D, and the square colors the 3D board paints. */
-export const boardLook = createStore<{ three: boolean; colors: BoardColors }>({
+export const boardLook = createStore<{
+  three: boolean;
+  colors: BoardColors;
+  /** Piece colors, set by applyPieceColors in pieceTheme. */
+  pieces: { light: string; dark: string };
+}>({
   three: false,
   colors: DEFAULT_BOARD,
+  pieces: { light: '#f4e4c1', dark: '#2b2420' },
 });
 
 export function applyBoardColors(c: BoardColors | undefined): void {

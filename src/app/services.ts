@@ -5,6 +5,7 @@ import { workerTransport } from '../engine/worker';
 import { Repo } from '../store/repo';
 import { retagIfNeeded } from '../profile/data';
 import { applyBoardColors, boardLook, defaultThree, type BoardColors } from '../ui/boardTheme';
+import { applyPieceColors, type PieceColors } from '../ui/pieceTheme';
 
 export interface AppSettings {
   workers: number;
@@ -15,6 +16,8 @@ export interface AppSettings {
   voice?: VoiceSettings;
   /** Word the coach's explanations with the on-device model. Missing means off. */
   coachModel?: boolean;
+  /** Piece colors. Missing means ivory and ebony. */
+  pieces?: PieceColors;
   /** Show boards in 3D. Missing means 3D, see defaultThree; without WebGL they are flat. */
   board3d?: boolean;
 }
@@ -64,6 +67,7 @@ export function getServices(): Promise<Services> {
       analysis: DEFAULT_SETTINGS,
     });
     applyBoardColors(settings.board);
+    applyPieceColors(settings.pieces);
     boardLook.set({ three: settings.board3d ?? defaultThree() });
     await retagIfNeeded(repo, settings.analysis);
     const pool = new EnginePool(workerTransport, settings.workers);
@@ -78,6 +82,7 @@ export function getServices(): Promise<Services> {
         await repo.setSetting('app', next);
         pool.resize(next.workers);
         applyBoardColors(next.board);
+        applyPieceColors(next.pieces);
         boardLook.set({ three: next.board3d ?? defaultThree() });
         runner.setSettings(next.analysis);
       },
