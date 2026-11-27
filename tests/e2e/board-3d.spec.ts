@@ -75,3 +75,37 @@ test.describe('on an unfolded phone', () => {
     await expect(page.getByText(/The 3D board stopped on this device/)).toBeHidden();
   });
 });
+
+test.describe('on a GPU known to drop the full board', () => {
+  test.use({ viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2.6 });
+
+  test('starts on the lighter board, says why, and offers the full one', async ({ page }) => {
+    // Report the Pixel 10's GPU, as Chrome does there.
+    await page.addInitScript(() => {
+      const name = 'ANGLE (Imagination Technologies, PowerVR D-Series DXT-48-1536, OpenGL ES 3.2)';
+      for (const proto of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype]) {
+        const get = proto.getParameter;
+        proto.getParameter = function (p: number) {
+          return p === 0x9246 ? name : get.call(this, p);
+        };
+      }
+    });
+    await page.goto('./#/settings');
+    await page.getByLabel(/^3D/).check();
+    await expect(page.getByText(/is known to stop the full 3D board/)).toBeVisible();
+    const start = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    await page.goto(`./#/play/fen/${encodeURIComponent(start)}`);
+    await page.getByRole('button', { name: 'Start the game' }).click();
+    const canvas = page.locator('.board__3d canvas');
+    await expect(canvas).toBeVisible({ timeout: 30_000 });
+    expect(await canvas.evaluate((c) => (c as HTMLCanvasElement).width)).toBeLessThanOrEqual(900);
+    await page.goto('./#/settings');
+    await page.getByRole('button', { name: 'Try the full 3D board again' }).click();
+    await page.goto(`./#/play/fen/${encodeURIComponent(start)}`);
+    await page.getByRole('button', { name: 'Start the game' }).click();
+    await expect(canvas).toBeVisible({ timeout: 30_000 });
+    await expect
+      .poll(() => canvas.evaluate((c) => (c as HTMLCanvasElement).width))
+      .toBeGreaterThan(900);
+  });
+});

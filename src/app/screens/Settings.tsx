@@ -7,7 +7,7 @@ import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors, defaultThree } from '../../ui/boardTheme';
 import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
-import { board3dHealth, resetBoard3d } from '../../ui/board3dHealth';
+import { board3dHealth, board3dLevel, gpuName, resetBoard3d } from '../../ui/board3dHealth';
 import {
   deleteModel,
   getManifest,
@@ -433,17 +433,21 @@ export function Settings() {
 
 /** What happened when this device's GPU dropped the 3D board, and a way back. */
 function Board3dReport() {
-  const { quality, failure } = useStore(board3dHealth);
-  if (quality === 'full' || !failure) return null;
+  const health = useStore(board3dHealth);
+  const level = board3dLevel(health);
+  const { failure } = health;
+  if (level === 'full') return null;
+  const gpu = failure?.gpu ?? gpuName();
   return (
     <div class="notice">
       <p>
-        The 3D board stopped on this device
-        {failure.gpu ? ` (${failure.gpu})` : ''} while drawing{' '}
-        {failure.quality === 'full' ? 'the full board' : 'the lighter board'} at {failure.width} by{' '}
-        {failure.height} pixels.{' '}
-        {quality === 'lite'
-          ? 'It now draws a lighter board, without smoothing, cast shadows or reflections.'
+        {failure
+          ? `The 3D board stopped on this device${gpu ? ` (${gpu})` : ''} while drawing ${
+              failure.quality === 'full' ? 'the full board' : 'the lighter board'
+            } at ${failure.width} by ${failure.height} pixels.`
+          : `This device's GPU${gpu ? ` (${gpu})` : ''} is known to stop the full 3D board.`}{' '}
+        {level === 'lite'
+          ? 'It draws a lighter board, without smoothing, shadows or reflections.'
           : 'Boards are flat on this device now.'}
       </p>
       <button type="button" class="button" onClick={resetBoard3d}>

@@ -8,7 +8,7 @@ import { Chess } from 'chessops/chess';
 import { parseFen } from 'chessops/fen';
 import { captured, MaterialRow } from './Material';
 import { boardLook } from './boardTheme';
-import { board3dFailed, board3dHealth } from './board3dHealth';
+import { board3dFailed, board3dHealth, board3dLevel } from './board3dHealth';
 import { useStore } from './store';
 import 'chessground/assets/chessground.base.css';
 import 'chessground/assets/chessground.cburnett.css';
@@ -38,7 +38,8 @@ type Board3DModule = typeof import('./Board3D');
  */
 export function Board(props: BoardProps) {
   const { three } = useStore(boardLook);
-  const { quality } = useStore(board3dHealth);
+  const health = useStore(board3dHealth);
+  const quality = board3dLevel(health);
   const [view, setView] = useState<Board3DModule | 'failed'>();
   useEffect(() => {
     if (!three || view) return;

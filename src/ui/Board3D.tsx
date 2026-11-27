@@ -58,6 +58,23 @@ function ivory(material: THREE.Material | THREE.Material[]): THREE.Material | TH
   return t;
 }
 
+const simpler = new Map<THREE.Material, THREE.MeshLambertMaterial>();
+
+/** A plain diffuse copy of a piece's material, for the lighter board. */
+function simple(material: THREE.Material | THREE.Material[]): THREE.Material | THREE.Material[] {
+  if (Array.isArray(material)) return material.map((m) => simple(m) as THREE.Material);
+  let s = simpler.get(material);
+  if (!s) {
+    const std = material as THREE.MeshStandardMaterial;
+    s = new THREE.MeshLambertMaterial({
+      ...(std.map ? { map: std.map } : {}),
+      ...(std.color ? { color: std.color.clone() } : {}),
+    });
+    simpler.set(material, s);
+  }
+  return s;
+}
+
 // A soft dark patch under each piece, where it meets the board.
 const CONTACT_SHAPE = new THREE.PlaneGeometry(SQ * 0.95, SQ * 0.95).rotateX(-Math.PI / 2);
 let contactMaterial: THREE.MeshBasicMaterial | undefined;
@@ -239,6 +256,13 @@ export function Board3D(
       latest.current.onFail?.();
       return;
     }
+    // After a GPU crash Chrome hands the page lost contexts until it reloads;
+    // the flat board stands in for this visit, the saved level for the next.
+    if (renderer.getContext().isContextLost()) {
+      renderer.dispose();
+      latest.current.onFail?.();
+      return;
+    }
     // Shadows are worked out again only when pieces move.
     renderer.shadowMap.autoUpdate = false;
     renderer.shadowMap.needsUpdate = true;
@@ -256,9 +280,13 @@ export function Board3D(
     scene.add(new THREE.HemisphereLight('#ffffff', '#8a7a68', 1.5));
     // A room reflected in the pieces' polish. It is given to the pieces only:
     // the squares keep the light their colors were matched to.
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const room = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    pmrem.dispose();
+    // The lighter board has none: a GPU that drops the full board may choke on it.
+    let room: THREE.Texture | null = null;
+    if (!lite) {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      room = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+    }
     const sun = new THREE.DirectionalLight('#fff6e8', 1.9);
     sun.position.set(-0.4, 1.2, -0.6);
     sun.castShadow = !lite;
@@ -461,7 +489,7 @@ export function Board3D(
             if (!(o instanceof THREE.Mesh)) return;
             for (const m of [o.material].flat())
               if (m instanceof THREE.MeshStandardMaterial) {
-                m.envMap = lite ? null : room;
+                m.envMap = room;
                 m.envMapIntensity = 0.6;
                 m.needsUpdate = true;
               }
@@ -479,7 +507,7 @@ export function Board3D(
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('webglcontextlost', onLost);
       controls.dispose();
-      room.dispose();
+      room?.dispose();
       for (const m of ink) {
         m.map?.dispose();
         m.dispose();
@@ -533,6 +561,9 @@ export function Board3D(
         const proto = protos.get(`${piece.color} ${piece.role}`);
         if (!proto) continue;
         const o = proto.clone();
+        // The lighter board lights the pieces simply: their color texture
+        // alone, no normal or roughness maps.
+        if (lite) o.traverse((c) => c instanceof THREE.Mesh && (c.material = simple(c.material)));
         o.position.copy(center(sq));
         o.userData.square = sq;
         v.pieces.add(o);
