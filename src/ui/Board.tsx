@@ -8,6 +8,7 @@ import { Chess } from 'chessops/chess';
 import { parseFen } from 'chessops/fen';
 import { captured, MaterialRow } from './Material';
 import { boardLook } from './boardTheme';
+import { board3dFailed, board3dHealth } from './board3dHealth';
 import { useStore } from './store';
 import 'chessground/assets/chessground.base.css';
 import 'chessground/assets/chessground.cburnett.css';
@@ -37,6 +38,7 @@ type Board3DModule = typeof import('./Board3D');
  */
 export function Board(props: BoardProps) {
   const { three } = useStore(boardLook);
+  const { quality } = useStore(board3dHealth);
   const [view, setView] = useState<Board3DModule | 'failed'>();
   useEffect(() => {
     if (!three || view) return;
@@ -47,8 +49,16 @@ export function Board(props: BoardProps) {
       })
       .catch(() => setView('failed'));
   }, [three]);
-  if (three && view && view !== 'failed')
-    return <view.Board3D {...props} onFail={() => setView('failed')} />;
+  // A board the GPU dropped is drawn again lighter, then flat; see board3dHealth.
+  if (three && quality !== 'off' && view && view !== 'failed')
+    return (
+      <view.Board3D
+        key={quality}
+        {...props}
+        lite={quality === 'lite'}
+        onFail={(failure) => (failure ? board3dFailed(failure) : setView('failed'))}
+      />
+    );
   return <Board2D {...props} />;
 }
 

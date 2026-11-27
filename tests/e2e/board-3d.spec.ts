@@ -41,22 +41,37 @@ test.describe('on an unfolded phone', () => {
     const canvas = page.locator('.board__3d canvas');
     await expect(canvas).toBeVisible({ timeout: 30_000 });
     const width = await canvas.evaluate((c) => (c as HTMLCanvasElement).width);
-    expect(width).toBeLessThanOrEqual(1536);
+    expect(width).toBeLessThanOrEqual(1280);
   });
 
-  test('a lost GPU context brings back the flat board', async ({ page }) => {
+  test('a lost GPU context draws a lighter board, then the flat one, and Settings says why', async ({
+    page,
+  }) => {
     await page.goto('./#/settings');
     await page.getByLabel(/^3D/).check();
     const start = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     await page.goto(`./#/play/fen/${encodeURIComponent(start)}`);
     await page.getByRole('button', { name: 'Start the game' }).click();
     const canvas = page.locator('.board__3d canvas');
+    const lose = () =>
+      canvas.evaluate((c) => {
+        const gl = (c as HTMLCanvasElement).getContext('webgl2');
+        gl?.getExtension('WEBGL_lose_context')?.loseContext();
+      });
     await expect(canvas).toBeVisible({ timeout: 30_000 });
-    await canvas.evaluate((c) => {
-      const gl = (c as HTMLCanvasElement).getContext('webgl2');
-      gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    });
+    const fullWidth = await canvas.evaluate((c) => (c as HTMLCanvasElement).width);
+    await lose();
+    // The lighter board draws fewer pixels.
+    await expect
+      .poll(() => canvas.evaluate((c) => (c as HTMLCanvasElement).width), { timeout: 10_000 })
+      .toBeLessThan(fullWidth);
+    await lose();
     await expect(page.locator('.board cg-board')).toBeVisible({ timeout: 10_000 });
     await expect(canvas).toBeHidden();
+    await page.goto('./#/settings');
+    await expect(page.getByText(/The 3D board stopped on this device/)).toBeVisible();
+    await expect(page.getByText(/Boards are flat on this device now/)).toBeVisible();
+    await page.getByRole('button', { name: 'Try the full 3D board again' }).click();
+    await expect(page.getByText(/The 3D board stopped on this device/)).toBeHidden();
   });
 });

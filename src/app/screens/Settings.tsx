@@ -7,6 +7,7 @@ import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
 import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors, defaultThree } from '../../ui/boardTheme';
 import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
+import { board3dHealth, resetBoard3d } from '../../ui/board3dHealth';
 import {
   deleteModel,
   getManifest,
@@ -175,6 +176,7 @@ function BoardPanel() {
           </span>
         </label>
       </fieldset>
+      <Board3dReport />
       <fieldset class="field">
         <legend>Squares</legend>
         <div class="swatches">
@@ -426,5 +428,27 @@ export function Settings() {
         <a href={href('about')}>About, credits and privacy</a>
       </p>
     </section>
+  );
+}
+
+/** What happened when this device's GPU dropped the 3D board, and a way back. */
+function Board3dReport() {
+  const { quality, failure } = useStore(board3dHealth);
+  if (quality === 'full' || !failure) return null;
+  return (
+    <div class="notice">
+      <p>
+        The 3D board stopped on this device
+        {failure.gpu ? ` (${failure.gpu})` : ''} while drawing{' '}
+        {failure.quality === 'full' ? 'the full board' : 'the lighter board'} at {failure.width} by{' '}
+        {failure.height} pixels.{' '}
+        {quality === 'lite'
+          ? 'It now draws a lighter board, without smoothing, cast shadows or reflections.'
+          : 'Boards are flat on this device now.'}
+      </p>
+      <button type="button" class="button" onClick={resetBoard3d}>
+        Try the full 3D board again
+      </button>
+    </div>
   );
 }

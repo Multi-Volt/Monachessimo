@@ -16,9 +16,14 @@ import type { Square } from 'chessops/types';
 import { kingState, takenFor, type BoardProps } from './Board';
 import { MaterialRow } from './Material';
 import { boardLook, mix, type BoardColors } from './boardTheme';
+import type { Board3dFailure } from './board3dHealth';
 
-/** The widest drawing buffer, in device pixels; larger ones crash some phone GPUs. */
-const MAX_PIXELS = 1536;
+/**
+ * The widest drawing buffer, in device pixels: larger ones crash some phone
+ * GPUs, such as an unfolded Pixel 10 Pro Fold. The light board draws fewer.
+ */
+const MAX_PIXELS = 1280;
+const MAX_PIXELS_LITE = 900;
 
 /** The set's square size and board height, in its own units (meters). */
 const SQ = 0.058;
@@ -208,7 +213,15 @@ async function grain(): Promise<{ texture: THREE.Texture; mean: number }> {
   return { texture, mean: sum / lum.length / 255 };
 }
 
-export function Board3D(props: BoardProps & { onFail?: () => void }) {
+export function Board3D(
+  props: BoardProps & {
+    /** Draw a lighter board: no smoothing, cast shadows or reflections, fewer pixels. */
+    lite?: boolean;
+    /** The board cannot be drawn: with what failed when the GPU dropped it. */
+    onFail?: (failure?: Board3dFailure) => void;
+  },
+) {
+  const lite = !!props.lite;
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<View | undefined>(undefined);
   const latest = useRef(props);
@@ -221,16 +234,20 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     if (!el) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: true });
     } catch {
       latest.current.onFail?.();
       return;
     }
-    renderer.shadowMap.enabled = true;
     // Shadows are worked out again only when pieces move.
     renderer.shadowMap.autoUpdate = false;
     renderer.shadowMap.needsUpdate = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // The GPU's name, for the report if it drops the board.
+    const gl = renderer.getContext();
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const gpu = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : undefined;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.enabled = !lite;
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -244,7 +261,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     pmrem.dispose();
     const sun = new THREE.DirectionalLight('#fff6e8', 1.9);
     sun.position.set(-0.4, 1.2, -0.6);
-    sun.castShadow = true;
+    sun.castShadow = !lite;
     sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -0.35, right: 0.35, top: 0.35, bottom: -0.35 });
     sun.shadow.bias = -0.0004;
@@ -320,7 +337,9 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       if (!w) return;
       // A wide screen at a high pixel density, such as an unfolded phone,
       // would ask for a drawing buffer the GPU drops; cap it.
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2, MAX_PIXELS / w));
+      renderer.setPixelRatio(
+        Math.min(devicePixelRatio, lite ? 1.5 : 2, (lite ? MAX_PIXELS_LITE : MAX_PIXELS) / w),
+      );
       renderer.setSize(w, w);
       render();
     };
@@ -400,7 +419,13 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     // If the GPU drops the board anyway, the flat board takes its place.
     const onLost = (e: Event) => {
       e.preventDefault();
-      latest.current.onFail?.();
+      latest.current.onFail?.({
+        ...(gpu ? { gpu } : {}),
+        width: canvas.width,
+        height: canvas.height,
+        quality: lite ? 'lite' : 'full',
+        at: Date.now(),
+      });
     };
     canvas.addEventListener('webglcontextlost', onLost);
     canvas.addEventListener('pointerup', onUp);
@@ -436,7 +461,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
             if (!(o instanceof THREE.Mesh)) return;
             for (const m of [o.material].flat())
               if (m instanceof THREE.MeshStandardMaterial) {
-                m.envMap = room;
+                m.envMap = lite ? null : room;
                 m.envMapIntensity = 0.6;
                 m.needsUpdate = true;
               }
