@@ -14,7 +14,7 @@ test('time to analyze 50 games', async ({ page }) => {
     ua: navigator.userAgent,
   }));
   await page.getByLabel('Username').fill('TestPlayer');
-  await page.getByLabel('Games to import').selectOption('50');
+  await page.getByLabel('How many').fill('50');
   const start = Date.now();
   await page.getByRole('button', { name: 'Import games' }).click();
   await expect(page.getByText('Imported 50 new games')).toBeVisible({ timeout: 60_000 });

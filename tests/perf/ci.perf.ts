@@ -17,7 +17,7 @@ test('engine load and 10-game analysis stay within budget', async ({ page }) => 
   await mockLichess(page, games);
   await page.goto('./');
   await page.getByLabel('Username').fill('TestPlayer');
-  await page.getByLabel('Games to import').selectOption('25');
+  await page.getByLabel('How many').fill('25');
   const start = Date.now();
   await page.getByRole('button', { name: 'Import games' }).click();
   await expect(page.getByText('Finished. Analyzed 10 of 10 games.')).toBeVisible({
