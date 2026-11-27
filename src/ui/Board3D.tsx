@@ -17,6 +17,9 @@ import { kingState, takenFor, type BoardProps } from './Board';
 import { MaterialRow } from './Material';
 import { boardLook, mix, type BoardColors } from './boardTheme';
 
+/** The widest drawing buffer, in device pixels; larger ones crash some phone GPUs. */
+const MAX_PIXELS = 1536;
+
 /** The set's square size and board height, in its own units (meters). */
 const SQ = 0.058;
 const TOP = 0.0174;
@@ -223,7 +226,6 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       latest.current.onFail?.();
       return;
     }
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     // Shadows are worked out again only when pieces move.
     renderer.shadowMap.autoUpdate = false;
@@ -315,6 +317,10 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
 
     const size = () => {
       const w = el.clientWidth;
+      if (!w) return;
+      // A wide screen at a high pixel density, such as an unfolded phone,
+      // would ask for a drawing buffer the GPU drops; cap it.
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2, MAX_PIXELS / w));
       renderer.setSize(w, w);
       render();
     };
@@ -391,6 +397,12 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
     };
     const canvas = renderer.domElement;
     canvas.addEventListener('pointerdown', onDown);
+    // If the GPU drops the board anyway, the flat board takes its place.
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      latest.current.onFail?.();
+    };
+    canvas.addEventListener('webglcontextlost', onLost);
     canvas.addEventListener('pointerup', onUp);
     // For tests: where a square's center is on the page.
     Object.assign(canvas, {
@@ -440,6 +452,7 @@ export function Board3D(props: BoardProps & { onFail?: () => void }) {
       resize.disconnect();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('webglcontextlost', onLost);
       controls.dispose();
       room.dispose();
       for (const m of ink) {
