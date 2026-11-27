@@ -196,6 +196,15 @@ const THEME_VARS = {
 } as const satisfies Record<keyof Tokens, string>;
 
 /** Applies the colors to every board, and lets the theme follow them. */
+/**
+ * Whether boards are 3D for a player who has not chosen: yes, except in a
+ * browser driven by automation, such as the end-to-end tests, which draws
+ * without a GPU and tests the 3D board where it chooses it.
+ */
+export function defaultThree(): boolean {
+  return !(typeof navigator !== 'undefined' && navigator.webdriver);
+}
+
 /** How boards look: flat or in 3D, and the square colors the 3D board paints. */
 export const boardLook = createStore<{ three: boolean; colors: BoardColors }>({
   three: false,

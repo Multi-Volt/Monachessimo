@@ -5,7 +5,7 @@ import { DEPTH_PRESETS } from '../services';
 import { href } from '../router';
 import { useStore } from '../../ui/store';
 import { install, isIos, pwaState } from '../../pwa/register';
-import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors } from '../../ui/boardTheme';
+import { BOARD_PRESETS, DEFAULT_BOARD, type BoardColors, defaultThree } from '../../ui/boardTheme';
 import { canSpeak, pickVoice, speak, useVoices, voiceLabel } from '../../ui/speech';
 import {
   deleteModel,
@@ -131,7 +131,7 @@ function BoardPanel() {
     return p.light === colors.light && p.dark === colors.dark;
   });
   const [custom, setCustom] = useState(!presetKey);
-  const [three, setThree] = useState(services.settings.board3d ?? true);
+  const [three, setThree] = useState(services.settings.board3d ?? defaultThree());
   const chooseStyle = async (next: boolean) => {
     setThree(next);
     await services.saveSettings({ ...services.settings, board3d: next });

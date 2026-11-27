@@ -4,7 +4,7 @@ import { EnginePool, defaultPoolSize } from '../engine/pool';
 import { workerTransport } from '../engine/worker';
 import { Repo } from '../store/repo';
 import { retagIfNeeded } from '../profile/data';
-import { applyBoardColors, boardLook, type BoardColors } from '../ui/boardTheme';
+import { applyBoardColors, boardLook, defaultThree, type BoardColors } from '../ui/boardTheme';
 
 export interface AppSettings {
   workers: number;
@@ -15,7 +15,7 @@ export interface AppSettings {
   voice?: VoiceSettings;
   /** Word the coach's explanations with the on-device model. Missing means off. */
   coachModel?: boolean;
-  /** Show boards in 3D. Missing means 3D; a device without WebGL shows them flat. */
+  /** Show boards in 3D. Missing means 3D, see defaultThree; without WebGL they are flat. */
   board3d?: boolean;
 }
 
@@ -64,7 +64,7 @@ export function getServices(): Promise<Services> {
       analysis: DEFAULT_SETTINGS,
     });
     applyBoardColors(settings.board);
-    boardLook.set({ three: settings.board3d ?? true });
+    boardLook.set({ three: settings.board3d ?? defaultThree() });
     await retagIfNeeded(repo, settings.analysis);
     const pool = new EnginePool(workerTransport, settings.workers);
     const runner = new AnalysisRunner(repo, pool, settings.analysis);
@@ -78,7 +78,7 @@ export function getServices(): Promise<Services> {
         await repo.setSetting('app', next);
         pool.resize(next.workers);
         applyBoardColors(next.board);
-        boardLook.set({ three: next.board3d ?? true });
+        boardLook.set({ three: next.board3d ?? defaultThree() });
         runner.setSettings(next.analysis);
       },
     };
